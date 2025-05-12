@@ -15,40 +15,286 @@ namespace aktiensim
 {
     public partial class Form1 : Form
     {
-        public Panel loginPanel;
+        Panel loginPanel, registerPanel;
+        TextBox vNameInput;
+        TextBox nNameInput;
+        TextBox loginEmailInput, loginPasswordInput;
+        TextBox passwdInput;
+        TextBox passwdCheckInput;
         public Form1()
         {
             InitializeComponent();
+            InitLoginUi();
+            InitRegisterUI();
         }
-        public void InitUi()
+        public void InitLoginUi()
         {
             loginPanel = new Panel
             {
-                Size = new Size(this.ClientSize.Width, this.ClientSize.Height),
+                Size = this.ClientSize,
                 Location = new Point(0, 0),
                 BackColor = Color.LightBlue
             };
-            TextBox box = new TextBox
+            Label loginLb = new Label
             {
-                Size = new Size(100, 30),
-                Location = new Point((loginPanel.Width - 80)/2, (loginPanel.Height -80)/2),
-                Text = "Email..."
+                Text = "Login",
+                Font = new Font("Arial", 16),
+                Location = new Point(150, 20),
+                AutoSize = true
             };
-            loginPanel.Controls.Add(box);
+            loginPanel.Controls.Add(loginLb);
+            loginEmailInput = new TextBox
+            {
+                Text = "Email...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 60),
+                Size = new Size(200, 22)
+            };
+            loginEmailInput.GotFocus += (s, e) =>
+            {
+                if (loginEmailInput.Text == "Email...")
+                {
+                    loginEmailInput.Text = "";
+                    loginEmailInput.ForeColor = Color.Black;
+                }
+            };
+            loginEmailInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(loginEmailInput.Text))
+                {
+                    loginEmailInput.Text = "Email...";
+                    loginEmailInput.ForeColor = Color.Gray;
+                }
+            };
+            loginPanel.Controls.Add(loginEmailInput);
+            loginPasswordInput = new TextBox
+            {
+                Text = "Passwort...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 90),
+                Size = new Size(200, 22),
+            };
+            loginPasswordInput.GotFocus += (s, e) =>
+            {
+                if (loginPasswordInput.Text == "Passwort...")
+                {
+                    loginPasswordInput.Text = "";
+                    loginPasswordInput.ForeColor = Color.Black;
+                }
+            };
+            loginPasswordInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(loginPasswordInput.Text))
+                {
+                    loginPasswordInput.Text = "Passwort...";
+                    loginPasswordInput.ForeColor = Color.Gray;
+                }
+            };
+            loginPanel.Controls.Add(loginPasswordInput);
+            Button loginBtn = new Button
+            {
+                Text = "Login",
+                Location = new Point(100, 130),
+                BackColor = Color.SteelBlue,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            loginPanel.Controls.Add(loginBtn);
+            Button registerBtn = new Button
+            {
+                Text = "Hier, zum Registrieren",
+                Location = new Point(100, 170),
+                Size = new Size(200, 30),
+                BackColor = Color.SeaGreen,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            registerBtn.Click += (s, e) =>
+            {
+                loginPanel.Visible = false;
+                registerPanel.Visible = true;
+            };
+            loginPanel.Controls.Add(registerBtn);
             Controls.Add(loginPanel);
+        }
+        public void InitRegisterUI()
+        {
+            registerPanel = new Panel
+            {
+                Size = this.ClientSize,
+                Location = new Point(0, 0),
+                BackColor = Color.LightGreen,
+                Visible = false
+            };
+            Label registerLabel = new Label
+            {
+                Text = "Registrieren",
+                Font = new Font("Arial", 16),
+                Location = new Point(150, 20),
+                AutoSize = true
+            };
+            registerPanel.Controls.Add(registerLabel);
+            vNameInput = new TextBox
+            {
+                Text = "Vorname...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 60),
+                Size = new Size(200, 22)
+            };
+            vNameInput.GotFocus += (s, e) =>
+            {
+                if (vNameInput.Text == "Vorname...")
+                {
+                    vNameInput.Text = "";
+                    vNameInput.ForeColor = Color.Black;
+                }
+            };
+            vNameInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(vNameInput.Text))
+                {
+                    vNameInput.Text = "Vorname...";
+                    vNameInput.ForeColor = Color.Gray;
+                }
+            };
+            registerPanel.Controls.Add(vNameInput);
+            nNameInput = new TextBox
+            {
+                Text = "Nachname...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 90),
+                Size = new Size(200, 22)
+            };
+            nNameInput.GotFocus += (s, e) =>
+            {
+                if (nNameInput.Text == "Nachname...")
+                {
+                    nNameInput.Text = "";
+                    nNameInput.ForeColor = Color.Black;
+                }
+            };
+            nNameInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(nNameInput.Text))
+                {
+                    nNameInput.Text = "Vorname...";
+                    nNameInput.ForeColor = Color.Gray;
+                }
+            };
+            registerPanel.Controls.Add(nNameInput);
+            emailInput = new TextBox
+            {
+                Text = "Email...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 120),
+                Size = new Size(200, 22)
+            };
+            emailInput.GotFocus += (s, e) =>
+            {
+                if (emailInput.Text == "Email...")
+                {
+                    emailInput.Text = "";
+                    emailInput.ForeColor = Color.Black;
+                }
+            };
+            emailInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(emailInput.Text))
+                {
+                    emailInput.Text = "Email...";
+                    emailInput.ForeColor = Color.Gray;
+                }
+            };
+            registerPanel.Controls.Add(emailInput);
+            passwdInput = new TextBox
+            {
+                Text = "Passwort...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 150),
+                Size = new Size(200, 22)
+            };
+            passwdInput.GotFocus += (s, e) =>
+            {
+                if (passwdInput.Text == "Passwort...")
+                {
+                    passwdInput.Text = "";
+                    passwdInput.ForeColor = Color.Black;
+                }
+
+            };
+            passwdInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(passwdInput.Text))
+                {
+                    passwdInput.Text = "Passwort...";
+                    passwdInput.ForeColor = Color.Gray;
+                }
+
+            };
+            registerPanel.Controls.Add(passwdInput);
+            passwdCheckInput = new TextBox
+            {
+                Text = "Passwort wiederholen...",
+                ForeColor = Color.Gray,
+                Location = new Point(100, 180),
+                Size = new Size(200, 22)
+            };
+            passwdCheckInput.GotFocus += (s, e) =>
+            {
+                if (passwdCheckInput.Text == "Passwort wiederholen...")
+                {
+                    passwdCheckInput.Text = "";
+                    passwdCheckInput.ForeColor = Color.Black;
+                }
+            };
+            passwdCheckInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(passwdCheckInput.Text))
+                {
+                    passwdCheckInput.Text = "Passwort wiederholen...";
+                    passwdCheckInput.ForeColor = Color.Gray;
+                }
+            };
+            registerPanel.Controls.Add(passwdCheckInput);
+            Button registerBtn = new Button
+            {
+                Text = "Registrieren",
+                Location = new Point(100, 220),
+                BackColor = Color.SeaGreen,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            registerBtn.Click += RegisterBtn_Click;
+            registerPanel.Controls.Add(registerBtn);
+            Button loginBtn = new Button
+            {
+                Text = "Zurück zum Login",
+                Location = new Point(100, 260),
+                Size = new Size(200, 30),
+                BackColor = Color.SteelBlue,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            loginBtn.Click += (s, e) =>
+            {
+                registerPanel.Visible = false;
+                loginPanel.Show();
+            };
+            registerPanel.Controls.Add(loginBtn);
+            Controls.Add(registerPanel);
         }
 
         private void RegisterBtn_Click(object sender, EventArgs e)
         {
             int BID = 0;
             string email = emailInput.Text;
-            string vName = vornameInput.Text;
-            string nName = nachnameInput.Text;
-            string password = passwortInput.Text;
-            string passwdCheck = passwortCheck.Text;
+            string vName = vNameInput.Text;
+            string nName = nNameInput.Text;
+            string password = passwdInput.Text;
+            string passwdCheck = passwdCheckInput.Text;
             if (email == "" || vName == "" || nName == "" || password == "" || passwdCheck == "")
             {
-                MessageBox.Show("Alle Felder wurden nicht ausgefüllt");
+                MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
                 return;
             }
             if (password != passwdCheck)
