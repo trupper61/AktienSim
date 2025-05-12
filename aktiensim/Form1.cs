@@ -339,7 +339,7 @@ namespace aktiensim
 
         private void RegisterBtn_Click(object sender, EventArgs e)
         {
-            int BID = 0;
+            string BID = "";
             string email = emailInput.Text;
             string vName = vNameInput.Text;
             string nName = nNameInput.Text;
@@ -382,7 +382,7 @@ namespace aktiensim
             return string.Concat(hash.Select(b => b.ToString("x2")));
         }
 
-        public void BenutzerAnlegen(string email, string vName, string nName, string password, string passwdCheck, int BID) 
+        public void BenutzerAnlegen(string email, string vName, string nName, string password, string passwdCheck, string BID) 
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
@@ -390,7 +390,7 @@ namespace aktiensim
 
             string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid ,@passwort)";
-            string qryRd = "SELECT BenutzerID FROM benutzer WHERE Email = @email";
+            string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
             
             
 
@@ -402,10 +402,20 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("date", DateTime.Now);
                 cmd.ExecuteNonQuery();
             }
-            using(MySqlCommand cmd = new MySqlCommand(qryRd, conn)) //BenutzerID des erstellten Benutzers entnehmen
+            using (MySqlConnection connection = new MySqlConnection(connString)) //BenutzerID des erstellten Benutzers entnehmen
             {
-                cmd.Parameters.AddWithValue("email", email);
-                BID = cmd.ExecuteNonQuery();
+                connection.Open();
+                MySqlCommand cmds = new MySqlCommand(qryRd, connection);
+                cmds.Parameters.AddWithValue("email", email);
+                MySqlDataReader reader = cmds.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    email = reader["Email"].ToString();
+                    BID = reader["BenutzerID"].ToString();
+                    MessageBox.Show(BID);
+                }
+
             }
             using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
             {
