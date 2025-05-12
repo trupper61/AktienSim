@@ -3,6 +3,7 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
@@ -99,6 +100,7 @@ namespace aktiensim
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
+            loginBtn.Click += LoginBtn_Click;
             loginPanel.Controls.Add(loginBtn);
             Button registerBtn = new Button
             {
@@ -299,13 +301,25 @@ namespace aktiensim
             }
             if (password != passwdCheck)
             {
-                MessageBox.Show("Passwörter stimmen nicht über ein!");
+                MessageBox.Show("Passwörter stimmen nicht überein!");
                 return;
             }
             string passHash = Hash(password);
             MessageBox.Show(passHash);
 
             BenutzerAnlegen(email, vName, nName, password, passwdCheck, BID);
+        }
+        private void LoginBtn_Click(object sender, EventArgs e) 
+        {
+            string email = loginEmailInput.Text;
+            string password = loginPasswordInput.Text;
+
+            if(email == "" || password == "") 
+            {
+                MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
+                return;
+            }
+            BenutzerEinloggen(email, password);
         }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
         static string Hash(string input)
@@ -323,6 +337,8 @@ namespace aktiensim
             string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid ,@passwort)";
             string qryRd = "SELECT BenutzerID FROM benutzer WHERE Email = @email";
+            
+            
 
             using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen
             {
@@ -336,7 +352,6 @@ namespace aktiensim
             {
                 cmd.Parameters.AddWithValue("email", email);
                 BID = cmd.ExecuteNonQuery();
-                MessageBox.Show(cmd.ExecuteNonQuery().ToString());
             }
             using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
             {
@@ -345,6 +360,34 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("passwort", password);
                 cmd.ExecuteNonQuery();
             }
+
+            
+        }
+
+        public void BenutzerEinloggen(string email, string password) 
+        {
+            MessageBox.Show("Eingeloggt!");
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            MySqlConnection conn = new MySqlConnection(connString);
+            conn.Open();
+
+            string qryRd = "SELECT Name FROM benutzer WHERE Email = 'johnpork@gmail.com'";
+
+            using (MySqlConnection connection = new MySqlConnection(connString))
+            {
+                connection.Open();
+                MySqlCommand cmds = new MySqlCommand(qryRd, connection);
+                MySqlDataReader reader = cmds.ExecuteReader();
+
+                if(reader.Read()) 
+                {
+                    email = reader["Email"].ToString();
+                    MessageBox.Show(email);
+                }
+                
+            }
+            //Eingabe des Nutzers sollen geholt werden
+
         }
     }
 }
