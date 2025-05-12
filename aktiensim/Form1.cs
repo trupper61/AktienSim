@@ -366,12 +366,11 @@ namespace aktiensim
 
         public void BenutzerEinloggen(string email, string password) 
         {
-            MessageBox.Show("Eingeloggt!");
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
             conn.Open();
 
-            string qryRd = "SELECT Name FROM benutzer WHERE Email = 'johnpork@gmail.com'";
+            string qryRd = "SELECT * FROM logininfo";
 
             using (MySqlConnection connection = new MySqlConnection(connString))
             {
@@ -382,9 +381,18 @@ namespace aktiensim
                 if(reader.Read()) 
                 {
                     email = reader["Email"].ToString();
-                    MessageBox.Show(email);
+                    password = reader["passwort"].ToString();
                 }
                 
+            }
+
+            if(loginEmailInput.Text == email && loginPasswordInput.Text == password) 
+            {
+                MessageBox.Show("Login erfolgreich!");
+            }
+            else 
+            {
+                MessageBox.Show("Login fehlgeschlagen!");
             }
             //Eingabe des Nutzers sollen geholt werden
 
