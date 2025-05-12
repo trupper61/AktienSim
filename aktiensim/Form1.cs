@@ -442,6 +442,14 @@ namespace aktiensim
 
                     MessageBox.Show(loginID);
                 }
+                using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
+                {
+                    cmd.Parameters.AddWithValue("email", email);
+                    //cmd.Parameters.AddWithValue("benutzerid", BID); //Lese die Benutzer ID des erstellten Benutzers aus und Füge sie hinzu
+                    cmd.Parameters.AddWithValue("passwort", password);
+                    cmd.Parameters.AddWithValue("loginID", loginID);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
