@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,11 +23,61 @@ namespace aktiensim
         TextBox loginEmailInput, loginPasswordInput;
         TextBox passwdInput;
         TextBox passwdCheckInput;
+        FlowLayoutPanel flowLayoutPanel;
+        Panel homePanel;
         public Form1()
         {
             InitializeComponent();
             InitLoginUi();
             InitRegisterUI();
+            InitUI();
+        }
+        public void InitUI()
+        {
+            flowLayoutPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Left,
+                Size = new Size(100, this.ClientSize.Height),
+                FlowDirection = FlowDirection.TopDown,
+                BackColor = Color.DarkCyan,
+                Visible = false
+            };
+            Label menuLb = new Label
+            {
+                Text = "Menü",
+                AutoSize = true,
+                Font = new Font("Arial", 15, FontStyle.Bold),
+                ForeColor = Color.White
+            };
+            flowLayoutPanel.Controls.Add(menuLb);
+            Button homeBtn = new Button
+            {
+                Text = "Home",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            flowLayoutPanel.Controls.Add(homeBtn);
+            Button profileBtn = new Button
+            {
+                Text = "Profile",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            flowLayoutPanel.Controls.Add(profileBtn);
+
+            homePanel = new Panel
+            {
+                Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
+                Location = new Point(flowLayoutPanel.Right, 0),
+                BackColor = Color.LightCyan,
+                Visible = false
+            };
+            Controls.Add(homePanel);
+            Controls.Add(flowLayoutPanel);
         }
         public void InitLoginUi()
         {
@@ -306,9 +357,12 @@ namespace aktiensim
             }
             string passHash = Hash(password);
             MessageBox.Show(passHash);
-
             BenutzerAnlegen(email, vName, nName, password, passwdCheck, BID);
+            MessageBox.Show("Bitte, logen Sie sich ein");
+            registerPanel.Visible = false;
+            loginPanel.Visible = true;
         }
+
         private void LoginBtn_Click(object sender, EventArgs e) 
         {
             string email = loginEmailInput.Text;
@@ -360,8 +414,6 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("passwort", password);
                 cmd.ExecuteNonQuery();
             }
-
-            
         }
 
         public void BenutzerEinloggen(string email, string password) 
@@ -385,10 +437,17 @@ namespace aktiensim
                 }
                 
             }
-
+            if (email == null || password == null)
+            {
+                MessageBox.Show("Not Data");
+                return;
+            }    
             if(loginEmailInput.Text == email && loginPasswordInput.Text == password) 
             {
                 MessageBox.Show("Login erfolgreich!");
+                loginPanel.Visible = false;
+                flowLayoutPanel.Visible = true;
+                homePanel.Visible = true;
             }
             else 
             {
