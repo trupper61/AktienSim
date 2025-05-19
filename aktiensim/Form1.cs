@@ -84,15 +84,25 @@ namespace aktiensim
             };
             profileBtn.Click += (s, e) =>
             {
+                int y = 10;
                 homePanel.Controls.Clear();
                 Label lb = new Label
                 {
                     AutoSize = true,
                     Font = new Font("Arial", 12),
-                    Location = new Point(15, 10),
+                    Location = new Point(15, y),
                     Text = $"Hallo, {activeUser.vorname} {activeUser.name}"
                 };
                 homePanel.Controls.Add(lb);
+
+                Button button = new Button
+                {
+                    Size = new Size(20, 20),
+                    Font = new Font("Arial", 12),
+                    Location = new Point(120, y),
+                    Text = $"Daten Bearbeiten"
+                };
+                homePanel.Controls.Add(button);
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
