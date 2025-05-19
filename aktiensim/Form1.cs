@@ -406,7 +406,7 @@ namespace aktiensim
             conn.Open();
 
             string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
-            string qry2 = "UPDATE benutzer SET ID_Login = '@loginID' WHERE Email = @email";
+            string qryLogUpdate = "UPDATE benutzer SET ID_Login = @loginID WHERE Email = @email";
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
             string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
             string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
@@ -458,7 +458,7 @@ namespace aktiensim
                     loginID = reader["LoginID"].ToString();
                 }
             }
-            using (MySqlCommand cmd = new MySqlCommand(qry2, conn)) //Benutzer erstellen mit allen essenziellen Daten
+            using (MySqlCommand cmd = new MySqlCommand(qryLogUpdate, conn)) //Loginid updaten
             {
                 cmd.Parameters.AddWithValue("email", email);
                 cmd.Parameters.AddWithValue("loginID", loginID);
