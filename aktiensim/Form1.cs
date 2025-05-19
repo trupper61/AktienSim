@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using ScottPlot.WinForms;
+
 namespace aktiensim
 {
     public partial class Form1 : Form
@@ -26,12 +28,15 @@ namespace aktiensim
         FlowLayoutPanel flowLayoutPanel;
         Panel homePanel;
         public Benutzer activeUser;
+        FormsPlot plot;
+        List<Aktie> stonks;
         public Form1()
         {
             InitializeComponent();
             InitLoginUi();
             InitRegisterUI();
             InitUI();
+            stonks = new List<Aktie>() { new Aktie("DAX"), new Aktie("DHL"), new Aktie("Lufthansa")};
         }
         public void InitUI()
         {
@@ -62,6 +67,11 @@ namespace aktiensim
             homeBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
+                ShowGraphs();
+                Timer timer1 = new Timer();
+                timer1.Tick += timer_Tick;
+                timer1.Interval = 200;
+                timer1.Start();
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -74,6 +84,7 @@ namespace aktiensim
             };
             profileBtn.Click += (s, e) =>
             {
+                homePanel.Controls.Clear();
                 Label lb = new Label
                 {
                     AutoSize = true,
@@ -541,6 +552,25 @@ namespace aktiensim
             else
             {
                 return null;
+            }
+        }
+        public void ShowGraphs()
+        {
+            int x = 10;
+            foreach (Aktie a in stonks)
+            {
+                a.plot.Plot.HideAxesAndGrid();
+                a.plot.Location = new Point(x, 0);
+                a.plot.Plot.Title(a.name);
+                homePanel.Controls.Add(a.plot);
+                x += 160;
+            }
+        }
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            foreach(Aktie a in stonks)
+            {
+                a.UpdateChart();
             }
         }
     }
