@@ -406,9 +406,10 @@ namespace aktiensim
             conn.Open();
 
             string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
+            string qry2 = "UPDATE benutzer SET ID_Login = '@loginID' WHERE Email = @email";
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
             string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
-            string qryRdLogIn = "SELECT * FROM logininfo WHERE Email = @email";
+            string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
 
             using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen mit allen essenziellen Daten
             {
@@ -434,7 +435,6 @@ namespace aktiensim
             using (MySqlConnection connection = new MySqlConnection(connString)) //Logininfo ergänzen
             {
                 connection.Open();
-                MySqlCommand cmds = new MySqlCommand(qryRdLogIn, connection);
                 
                 using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
                 {
@@ -443,6 +443,26 @@ namespace aktiensim
                     cmd.Parameters.AddWithValue("passwort", password);
                     cmd.ExecuteNonQuery();
                 }
+            }
+            //LoginId in benutzer hinzufügen
+            using (MySqlConnection connection = new MySqlConnection(connString)) 
+            {
+                connection.Open();
+                MySqlCommand cmds = new MySqlCommand(qryRdLogIn, connection);
+
+                cmds.Parameters.AddWithValue("email", email);
+                MySqlDataReader reader = cmds.ExecuteReader();
+
+                if(reader.Read()) 
+                {
+                    loginID = reader["LoginID"].ToString();
+                }
+            }
+            using (MySqlCommand cmd = new MySqlCommand(qry2, conn)) //Benutzer erstellen mit allen essenziellen Daten
+            {
+                cmd.Parameters.AddWithValue("email", email);
+                cmd.Parameters.AddWithValue("loginID", loginID);
+                cmd.ExecuteNonQuery();
             }
         }
 
