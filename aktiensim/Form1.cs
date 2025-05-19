@@ -459,18 +459,20 @@ namespace aktiensim
             MySqlConnection conn = new MySqlConnection(connString);
             conn.Open();
 
-            string qryRd = "SELECT * FROM logininfo";
+            string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
 
             using (MySqlConnection connection = new MySqlConnection(connString))
             {
                 connection.Open();
                 MySqlCommand cmds = new MySqlCommand(qryRd, connection);
+                cmds.Parameters.AddWithValue("email", email);
                 MySqlDataReader reader = cmds.ExecuteReader();
 
                 if(reader.Read()) 
                 {
                     email = reader["Email"].ToString();
                     password = reader["passwort"].ToString();
+                    MessageBox.Show("");
                 }
                 
             }
