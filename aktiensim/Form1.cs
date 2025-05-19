@@ -410,9 +410,6 @@ namespace aktiensim
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
             string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
             string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
-            
-            
-            string qryRdLogIn = "SELECT * FROM logininfo WHERE Email = @email";
 
             using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen mit allen essenziellen Daten
             {
