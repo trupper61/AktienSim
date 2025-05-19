@@ -355,6 +355,7 @@ namespace aktiensim
 
         private void RegisterBtn_Click(object sender, EventArgs e)
         {
+            string loginID = "";
             string BID = "";
             string email = emailInput.Text;
             string vName = vNameInput.Text;
@@ -373,7 +374,7 @@ namespace aktiensim
             }
             string passHash = Hash(password);
             MessageBox.Show(passHash);
-            BenutzerAnlegen(email, vName, nName, password, passwdCheck, BID);
+            BenutzerAnlegen(email, vName, nName, passHash, BID, loginID);
             MessageBox.Show("Bitte, logen Sie sich ein");
             registerPanel.Visible = false;
             loginPanel.Visible = true;
@@ -398,17 +399,18 @@ namespace aktiensim
             return string.Concat(hash.Select(b => b.ToString("x2")));
         }
 
-        public void BenutzerAnlegen(string email, string vName, string nName, string password, string passwdCheck, string BID)
+        public void BenutzerAnlegen(string email, string vName, string nName, string password, string BID, string loginID) 
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
             conn.Open();
 
             string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
-            string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid ,@passwort)";
+            string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
             string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
+            string qryRdLogIn = "SELECT * FROM logininfo WHERE Email = @email";
 
-            using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen
+            using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen mit allen essenziellen Daten
             {
                 cmd.Parameters.AddWithValue("nName", nName);
                 cmd.Parameters.AddWithValue("vName", vName);
@@ -420,37 +422,44 @@ namespace aktiensim
             {
                 connection.Open();
                 MySqlCommand cmds = new MySqlCommand(qryRd, connection);
+
                 cmds.Parameters.AddWithValue("email", email);
                 MySqlDataReader reader = cmds.ExecuteReader();
 
                 if (reader.Read())
                 {
-                    email = reader["Email"].ToString();
                     BID = reader["BenutzerID"].ToString();
-                    MessageBox.Show(BID);
                 }
             }
-            using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
+            using (MySqlConnection connection = new MySqlConnection(connString)) //Logininfo ergänzen
             {
-                cmd.Parameters.AddWithValue("email", email);
-                cmd.Parameters.AddWithValue("benutzerid", BID); //Lese die Benutzer ID des erstellten Benutzers aus und Füge sie hinzu
-                cmd.Parameters.AddWithValue("passwort", password);
-                cmd.ExecuteNonQuery();
+                connection.Open();
+                MySqlCommand cmds = new MySqlCommand(qryRdLogIn, connection);
+                
+                using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
+                {
+                    cmd.Parameters.AddWithValue("email", email);
+                    cmd.Parameters.AddWithValue("benutzerid", BID);
+                    cmd.Parameters.AddWithValue("passwort", password);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
         public void BenutzerEinloggen(string email, string password)
         {
+            string passHash = Hash(password);
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
             conn.Open();
 
-            string qryRd = "SELECT * FROM logininfo";
+            string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
 
             using (MySqlConnection connection = new MySqlConnection(connString))
             {
                 connection.Open();
                 MySqlCommand cmds = new MySqlCommand(qryRd, connection);
+                cmds.Parameters.AddWithValue("email", email);
                 MySqlDataReader reader = cmds.ExecuteReader();
 
                 if (reader.Read())
@@ -462,10 +471,10 @@ namespace aktiensim
             }
             if (email == null || password == null)
             {
-                MessageBox.Show("Not Data");
+                MessageBox.Show("No Data");
                 return;
-            }
-            if (loginEmailInput.Text == email && loginPasswordInput.Text == password)
+            }    
+            if(loginEmailInput.Text == email && passHash == password) 
             {
                 MessageBox.Show("Login erfolgreich!");
                 loginPanel.Visible = false;

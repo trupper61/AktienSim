@@ -135,7 +135,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aktien.cs" />
     <Compile Include="Benutzer.cs" />
+    <Compile Include="Depot.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
