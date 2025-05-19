@@ -25,6 +25,7 @@ namespace aktiensim
         TextBox passwdCheckInput;
         FlowLayoutPanel flowLayoutPanel;
         Panel homePanel;
+        public Benutzer activeUser;
         public Form1()
         {
             InitializeComponent();
@@ -58,6 +59,10 @@ namespace aktiensim
                 ForeColor = Color.White,
                 Font = new Font("Sans-Serif", 10)
             };
+            homeBtn.Click += (s, e) =>
+            {
+                homePanel.Controls.Clear();
+            };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
             {
@@ -66,6 +71,17 @@ namespace aktiensim
                 BackColor = Color.DarkBlue,
                 ForeColor = Color.White,
                 Font = new Font("Sans-Serif", 10)
+            };
+            profileBtn.Click += (s, e) =>
+            {
+                Label lb = new Label
+                {
+                    AutoSize = true,
+                    Font = new Font("Arial", 12),
+                    Location = new Point(15, 10),
+                    Text = $"Hallo, {activeUser.vorname} {activeUser.name}"
+                };
+                homePanel.Controls.Add(lb);
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
@@ -363,12 +379,12 @@ namespace aktiensim
             loginPanel.Visible = true;
         }
 
-        private void LoginBtn_Click(object sender, EventArgs e) 
+        private void LoginBtn_Click(object sender, EventArgs e)
         {
             string email = loginEmailInput.Text;
             string password = loginPasswordInput.Text;
 
-            if(email == "" || password == "") 
+            if (email == "" || password == "")
             {
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
                 return;
@@ -382,7 +398,7 @@ namespace aktiensim
             return string.Concat(hash.Select(b => b.ToString("x2")));
         }
 
-        public void BenutzerAnlegen(string email, string vName, string nName, string password, string passwdCheck, string BID) 
+        public void BenutzerAnlegen(string email, string vName, string nName, string password, string passwdCheck, string BID)
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
@@ -391,8 +407,6 @@ namespace aktiensim
             string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid ,@passwort)";
             string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
-            
-            
 
             using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen
             {
@@ -415,7 +429,6 @@ namespace aktiensim
                     BID = reader["BenutzerID"].ToString();
                     MessageBox.Show(BID);
                 }
-
             }
             using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
             {
@@ -426,7 +439,7 @@ namespace aktiensim
             }
         }
 
-        public void BenutzerEinloggen(string email, string password) 
+        public void BenutzerEinloggen(string email, string password)
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
@@ -440,31 +453,66 @@ namespace aktiensim
                 MySqlCommand cmds = new MySqlCommand(qryRd, connection);
                 MySqlDataReader reader = cmds.ExecuteReader();
 
-                if(reader.Read()) 
+                if (reader.Read())
                 {
                     email = reader["Email"].ToString();
                     password = reader["passwort"].ToString();
                 }
-                
+
             }
             if (email == null || password == null)
             {
                 MessageBox.Show("Not Data");
                 return;
-            }    
-            if(loginEmailInput.Text == email && loginPasswordInput.Text == password) 
+            }
+            if (loginEmailInput.Text == email && loginPasswordInput.Text == password)
             {
                 MessageBox.Show("Login erfolgreich!");
                 loginPanel.Visible = false;
                 flowLayoutPanel.Visible = true;
                 homePanel.Visible = true;
+                Benutzer tmpUser = GetUserByEMail(email);
+                if (tmpUser != null)
+                {
+                    activeUser = tmpUser;
+                }
             }
-            else 
+            else
             {
                 MessageBox.Show("Login fehlgeschlagen!");
             }
             //Eingabe des Nutzers sollen geholt werden
 
+        }
+        public Benutzer GetUserByEMail(string givenEmail)
+        {
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            MySqlConnection conn = new MySqlConnection(connString);
+            conn.Open();
+            string sql = $"SELECT BenutzerID, Name, Vorname, Email FROM benutzer WHERE Email = '{givenEmail}'";
+            string email = null, benutzerID = null, name = null, vName = null;
+            using (MySqlConnection connection = new MySqlConnection(connString))
+            {
+                connection.Open();
+                MySqlCommand cmds = new MySqlCommand(sql, connection);
+                MySqlDataReader reader = cmds.ExecuteReader();
+                if (reader.Read())
+                {
+                    email = reader["Email"].ToString();
+                    benutzerID = reader["BenutzerID"].ToString();
+                    name = reader["Name"].ToString();
+                    vName = reader["Vorname"].ToString();
+                }
+            }
+            if (givenEmail == email)
+            {
+                Benutzer user = new Benutzer(name, vName, email, Convert.ToInt32(benutzerID));
+                return user;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
