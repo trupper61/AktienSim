@@ -21,7 +21,7 @@ namespace aktiensim
             this.name = name;
             timeX = new List<double>();
             amountY = new List<double>();
-            plot = new FormsPlot();
+            //plot = new FormsPlot();
             counter = 0;
         }
         public void UpdateChart()
