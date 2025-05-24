@@ -92,7 +92,7 @@ namespace aktiensim
                     AutoSize = true,
                     Font = new Font("Arial", 12),
                     Location = new Point(15, y),
-                    Text = $"Hallo, {activeUser.vorname} {activeUser.name}"
+                    Text = $"Hallo, {benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {benutzerverwaltung.ReturnActiveUser(activeUser).name}"
                 };
                 homePanel.Controls.Add(lb);
 
@@ -394,7 +394,7 @@ namespace aktiensim
                 MessageBox.Show("Passwörter stimmen nicht überein!");
                 return;
             }
-            string passHash = Hash(password);
+            string passHash = benutzerverwaltung.Hash(password);
             MessageBox.Show(passHash);
             benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID);
             MessageBox.Show("Bitte, logen Sie sich ein");
@@ -412,91 +412,9 @@ namespace aktiensim
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
                 return;
             }
-            BenutzerEinloggen(email, password);
+            benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
         }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
-        static string Hash(string input)
-        {
-            var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
-            return string.Concat(hash.Select(b => b.ToString("x2")));
-        }
-        public void BenutzerEinloggen(string email, string password)
-        {
-            string passHash = Hash(password);
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
-
-            using (MySqlConnection connection = new MySqlConnection(connString))
-            {
-                connection.Open();
-                MySqlCommand cmds = new MySqlCommand(qryRd, connection);
-                cmds.Parameters.AddWithValue("email", email);
-                MySqlDataReader reader = cmds.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    email = reader["Email"].ToString();
-                    password = reader["passwort"].ToString();
-                }
-
-            }
-            if (email == null || password == null)
-            {
-                MessageBox.Show("No Data");
-                return;
-            }    
-            if(loginEmailInput.Text == email && passHash == password) 
-            {
-                MessageBox.Show("Login erfolgreich!");
-                loginPanel.Visible = false;
-                flowLayoutPanel.Visible = true;
-                homePanel.Visible = true;
-                Benutzer tmpUser = GetUserByEMail(email);
-                if (tmpUser != null)
-                {
-                    activeUser = tmpUser;
-                }
-            }
-            else
-            {
-                MessageBox.Show("Login fehlgeschlagen!");
-            }
-            //Eingabe des Nutzers sollen geholt werden
-
-        }
-        public Benutzer GetUserByEMail(string givenEmail)
-        {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-            string sql = $"SELECT BenutzerID, Name, Vorname, Email FROM benutzer WHERE Email = '{givenEmail}'";
-            string email = null, benutzerID = null, name = null, vName = null;
-            using (MySqlConnection connection = new MySqlConnection(connString))
-            {
-                connection.Open();
-                MySqlCommand cmds = new MySqlCommand(sql, connection);
-                MySqlDataReader reader = cmds.ExecuteReader();
-                if (reader.Read())
-                {
-                    email = reader["Email"].ToString();
-                    benutzerID = reader["BenutzerID"].ToString();
-                    name = reader["Name"].ToString();
-                    vName = reader["Vorname"].ToString();
-                }
-            }
-            if (givenEmail == email)
-            {
-                Benutzer user = new Benutzer(name, vName, email, Convert.ToInt32(benutzerID));
-                return user;
-            }
-            else
-            {
-                return null;
-            }
-        }
         public void ShowGraphs()
         {
             int x = 10;
