@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using ScottPlot.WinForms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace aktiensim
 {
@@ -38,6 +39,10 @@ namespace aktiensim
             InitRegisterUI();
             InitUI();
             stonks = new List<Aktie>() { new Aktie("DAX"), new Aktie("DHL"), new Aktie("Lufthansa")};
+            foreach(Aktie aktie in stonks) 
+            {
+                addAktienGesellschaft(aktie.name, "Test", "0");
+            }
         }
         public void InitUI()
         {
@@ -456,6 +461,44 @@ namespace aktiensim
             foreach(Aktie a in stonks)
             {
                 a.UpdateChart();
+            }
+        }
+
+        public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
+        {
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            MySqlConnection conn = new MySqlConnection(connString);
+            conn.Open();
+
+            string chckqry = "SELECT Firma FROM aktiendaten WHERE Firma = @Firma";
+            string qry = "INSERT INTO aktiendaten(Firma, Name, Wert) VALUES(@Firma, @Name, @Wert)";
+
+            string chkFirma; string chkName; string chkWert;
+
+            using (MySqlCommand cmdCheck = new MySqlCommand(chckqry, conn)) 
+            {
+                cmdCheck.Parameters.AddWithValue("Firma", Firma);
+                //cmdCheck.ExecuteNonQuery();
+                MySqlDataReader reader = cmdCheck.ExecuteReader();
+
+                if(reader.Read()) 
+                {
+                    chkFirma = reader["Firma"].ToString();
+
+                    if (chkFirma == Firma)
+                    {
+                        return;
+                    }
+                }
+            }
+            conn.Close();
+            conn.Open();
+            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            {
+                cmd.Parameters.AddWithValue("Firma", Firma);
+                cmd.Parameters.AddWithValue("Name", Name);
+                cmd.Parameters.AddWithValue("Wert", Wert);
+                cmd.ExecuteNonQuery();
             }
         }
     }
