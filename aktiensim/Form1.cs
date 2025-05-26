@@ -425,7 +425,7 @@ namespace aktiensim
             }
             string passHash = benutzerverwaltung.Hash(password);
             MessageBox.Show(passHash);
-            benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID);
+            benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
             MessageBox.Show("Bitte, logen Sie sich ein");
             registerPanel.Visible = false;
             loginPanel.Visible = true;

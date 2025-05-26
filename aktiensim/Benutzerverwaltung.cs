@@ -12,7 +12,7 @@ namespace aktiensim
     public class Benutzerverwaltung
     {
         Benutzer user;
-        public void BenutzerAnlegen(string email, string vName, string nName, string password, string BID, string loginID)
+        public void BenutzerAnlegen(string email, string vName, string nName, string password, string BID, string loginID, Benutzer activeUser)
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             MySqlConnection conn = new MySqlConnection(connString);
@@ -77,6 +77,9 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("loginID", loginID);
                 cmd.ExecuteNonQuery();
             }
+            
+            Benutzer user = new Benutzer(nName, vName, email, BID, 0);
+            user.AddKonto(BID, 0);
         }
 
         public void BenutzerEinloggen(string email, string password, string inputEmail, string inputPassword, Benutzer activeUser, Panel loginPanel, Panel flowLayoutPanel, Panel homePanel)
@@ -156,7 +159,7 @@ namespace aktiensim
             }
             if (givenEmail == email)
             {
-                Benutzer user = new Benutzer(name, vName, email, Convert.ToInt32(benutzerID), 0);
+                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0);
                 return user;
             }
             else
