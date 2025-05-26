@@ -98,7 +98,7 @@ namespace aktiensim
             }
             conn.Close();
             conn.Open();
-            using (MySqlCommand command2 = new MySqlCommand(konIdUpdateQry, conn)) 
+            using (MySqlCommand command2 = new MySqlCommand(konIdUpdateQry, conn))
             {
                 command2.Parameters.AddWithValue("ID_Benutzer", BID);
                 command2.Parameters.AddWithValue("ID_Konto", KontoID);
