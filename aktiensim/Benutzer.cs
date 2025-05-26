@@ -41,5 +41,10 @@ namespace aktiensim
                 cmd.ExecuteNonQuery();
             }
         }
+
+        public void UpdateKontoStand() //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
+        {
+            
+        }
     }
 }

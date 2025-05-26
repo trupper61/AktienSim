@@ -80,6 +80,31 @@ namespace aktiensim
             
             Benutzer user = new Benutzer(nName, vName, email, BID, 0);
             user.AddKonto(BID, 0);
+
+            string konIdQry = "SELECT KontoID FROM konto WHERE ID_Benutzer = @ID_Benutzer";
+            string konIdUpdateQry = "UPDATE benutzer SET ID_Konto = @ID_Konto WHERE BenutzerID = @ID_Benutzer";
+            string KontoID = "";
+
+            using (MySqlCommand command = new MySqlCommand(konIdQry, conn)) 
+            {
+                command.Parameters.AddWithValue("ID_Benutzer", BID);
+
+                MySqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read()) 
+                {
+                    KontoID = reader["KontoID"].ToString();
+                }
+            }
+            conn.Close();
+            conn.Open();
+            using (MySqlCommand command2 = new MySqlCommand(konIdUpdateQry, conn)) 
+            {
+                command2.Parameters.AddWithValue("ID_Benutzer", BID);
+                command2.Parameters.AddWithValue("ID_Konto", KontoID);
+
+                command2.ExecuteNonQuery();
+            }
         }
 
         public void BenutzerEinloggen(string email, string password, string inputEmail, string inputPassword, Benutzer activeUser, Panel loginPanel, Panel flowLayoutPanel, Panel homePanel)
