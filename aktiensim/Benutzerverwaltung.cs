@@ -156,7 +156,7 @@ namespace aktiensim
             }
             if (givenEmail == email)
             {
-                Benutzer user = new Benutzer(name, vName, email, Convert.ToInt32(benutzerID));
+                Benutzer user = new Benutzer(name, vName, email, Convert.ToInt32(benutzerID), 0);
                 return user;
             }
             else

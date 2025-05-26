@@ -94,18 +94,42 @@ namespace aktiensim
                     Location = new Point(15, y),
                     Text = $"Hallo, {benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {benutzerverwaltung.ReturnActiveUser(activeUser).name}"
                 };
+                Label kontostand = new Label
+                {
+                    AutoSize = true,
+                    ForeColor = Color.Green,
+                    Font = new Font("Arial", 12),
+                    Location = new Point(lb.Location.X, y + 20),
+                    Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}"
+                };
                 homePanel.Controls.Add(lb);
+                homePanel.Controls.Add(kontostand);
 
                 Button button = new Button
                 {
-                    Size = new Size(20, 20),
+                    AutoSize = true,
+                    Size = new Size(100, 20),
                     Font = new Font("Arial", 12),
-                    Location = new Point(120, y),
-                    Text = $"Daten Bearbeiten"
+                    Location = new Point(lb.Location.X + 160, y),
+                    Text = $"Bearbeiten"
                 };
                 homePanel.Controls.Add(button);
             };
             flowLayoutPanel.Controls.Add(profileBtn);
+
+            Button depotBtn = new Button
+            {
+                Text = "Depot",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            depotBtn.Click += (s, e) =>
+            {
+                homePanel.Controls.Clear();
+            };
+            flowLayoutPanel.Controls.Add(depotBtn);
 
             homePanel = new Panel
             {
