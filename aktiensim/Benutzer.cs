@@ -1,9 +1,11 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace aktiensim
 {
@@ -42,9 +44,30 @@ namespace aktiensim
             }
         }
 
-        public void UpdateKontoStand() //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
+        public void GeldHinzufuegen(int anzahl) //Die Person erhält Geld für testzwecke.
         {
-            
+            this.kontoStand += anzahl;
+
+            int stand = this.kontoStand;
+            string BID = this.benutzerID;
+            UpdateKontoStand(stand, BID);
+        }
+
+        public void UpdateKontoStand(int stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
+        {
+            //Update den Kontostand in der Datenbank.
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            string qry = "UPDATE Konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer";
+
+            MySqlConnection conn = new MySqlConnection(connString);
+            conn.Open();
+
+            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            {
+                cmd.Parameters.AddWithValue("Kontostand", stand);
+                cmd.Parameters.AddWithValue("ID_Benutzer", BID);
+                cmd.ExecuteNonQuery();
+            }
         }
     }
 }

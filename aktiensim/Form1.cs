@@ -133,6 +133,29 @@ namespace aktiensim
             depotBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
+
+                Label dplabel = new Label()
+                {
+                    AutoSize = true,
+                    Font = new Font("Arial", 12),
+                    Location = new Point(15, 10),
+                    Text = "Depot"
+                };
+                homePanel.Controls.Add(dplabel);
+
+                Button geldBtn = new Button()
+                {
+                    AutoSize = true,
+                    Size = new Size(100, 20),
+                    Font = new Font("Arial", 12),
+                    Location = new Point(dplabel.Location.X + 160, 10),
+                    Text = $"Bearbeiten"
+                };
+                geldBtn.Click += (f, g) =>
+                {
+                    benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
+                };
+                homePanel.Controls.Add(geldBtn);
             };
             flowLayoutPanel.Controls.Add(depotBtn);
 
