@@ -149,7 +149,7 @@ namespace aktiensim
                     Size = new Size(100, 20),
                     Font = new Font("Arial", 12),
                     Location = new Point(dplabel.Location.X + 160, 10),
-                    Text = $"Bearbeiten"
+                    Text = $"Geld Hinzufuegen(Test)"
                 };
                 geldBtn.Click += (f, g) =>
                 {
