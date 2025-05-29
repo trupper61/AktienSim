@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using ScottPlot.WinForms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace aktiensim
 {
@@ -30,6 +31,7 @@ namespace aktiensim
         public Benutzer activeUser;
         FormsPlot plot;
         List<Aktie> stonks;
+        Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
         public Form1()
         {
             InitializeComponent();
@@ -37,6 +39,10 @@ namespace aktiensim
             InitRegisterUI();
             InitUI();
             stonks = new List<Aktie>() { new Aktie("DAX"), new Aktie("DHL"), new Aktie("Lufthansa")};
+            foreach(Aktie aktie in stonks) 
+            {
+                addAktienGesellschaft(aktie.name, "Test", "0");
+            }
         }
         public void InitUI()
         {
@@ -84,17 +90,74 @@ namespace aktiensim
             };
             profileBtn.Click += (s, e) =>
             {
+                int y = 10;
                 homePanel.Controls.Clear();
                 Label lb = new Label
                 {
                     AutoSize = true,
                     Font = new Font("Arial", 12),
-                    Location = new Point(15, 10),
-                    Text = $"Hallo, {activeUser.vorname} {activeUser.name}"
+                    Location = new Point(15, y),
+                    Text = $"Hallo, {benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {benutzerverwaltung.ReturnActiveUser(activeUser).name}"
+                };
+                Label kontostand = new Label
+                {
+                    AutoSize = true,
+                    ForeColor = Color.Green,
+                    Font = new Font("Arial", 12),
+                    Location = new Point(lb.Location.X, y + 20),
+                    Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}"
                 };
                 homePanel.Controls.Add(lb);
+                homePanel.Controls.Add(kontostand);
+
+                Button button = new Button
+                {
+                    AutoSize = true,
+                    Size = new Size(100, 20),
+                    Font = new Font("Arial", 12),
+                    Location = new Point(lb.Location.X + 160, y),
+                    Text = $"Bearbeiten"
+                };
+                homePanel.Controls.Add(button);
             };
             flowLayoutPanel.Controls.Add(profileBtn);
+
+            Button depotBtn = new Button
+            {
+                Text = "Depot",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            depotBtn.Click += (s, e) =>
+            {
+                homePanel.Controls.Clear();
+
+                Label dplabel = new Label()
+                {
+                    AutoSize = true,
+                    Font = new Font("Arial", 12),
+                    Location = new Point(15, 10),
+                    Text = "Depot"
+                };
+                homePanel.Controls.Add(dplabel);
+
+                Button geldBtn = new Button()
+                {
+                    AutoSize = true,
+                    Size = new Size(100, 20),
+                    Font = new Font("Arial", 12),
+                    Location = new Point(dplabel.Location.X + 160, 10),
+                    Text = $"Geld Hinzufuegen(Test)"
+                };
+                geldBtn.Click += (f, g) =>
+                {
+                    benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
+                };
+                homePanel.Controls.Add(geldBtn);
+            };
+            flowLayoutPanel.Controls.Add(depotBtn);
 
             homePanel = new Panel
             {
@@ -383,9 +446,9 @@ namespace aktiensim
                 MessageBox.Show("Passwörter stimmen nicht überein!");
                 return;
             }
-            string passHash = Hash(password);
+            string passHash = benutzerverwaltung.Hash(password);
             MessageBox.Show(passHash);
-            BenutzerAnlegen(email, vName, nName, passHash, BID, loginID);
+            benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
             MessageBox.Show("Bitte, logen Sie sich ein");
             registerPanel.Visible = false;
             loginPanel.Visible = true;
@@ -401,159 +464,9 @@ namespace aktiensim
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
                 return;
             }
-            BenutzerEinloggen(email, password);
+            benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
         }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
-        static string Hash(string input)
-        {
-            var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
-            return string.Concat(hash.Select(b => b.ToString("x2")));
-        }
-
-        public void BenutzerAnlegen(string email, string vName, string nName, string password, string BID, string loginID) 
-        {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            string qry = "INSERT INTO benutzer(Name, Vorname, Email, MitgliedSeit) VALUES(@nName, @vName, @email, @date)";
-            string qry2 = "UPDATE benutzer SET ID_Login = '@loginID' WHERE Email = @email";
-            string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
-            string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
-            string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
-
-            using (MySqlCommand cmd = new MySqlCommand(qry, conn)) //Benutzer erstellen mit allen essenziellen Daten
-            {
-                cmd.Parameters.AddWithValue("nName", nName);
-                cmd.Parameters.AddWithValue("vName", vName);
-                cmd.Parameters.AddWithValue("email", email);
-                cmd.Parameters.AddWithValue("date", DateTime.Now);
-                cmd.ExecuteNonQuery();
-            }
-            using (MySqlConnection connection = new MySqlConnection(connString)) //BenutzerID des erstellten Benutzers entnehmen
-            {
-                connection.Open();
-                MySqlCommand cmds = new MySqlCommand(qryRd, connection);
-
-                cmds.Parameters.AddWithValue("email", email);
-                MySqlDataReader reader = cmds.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    BID = reader["BenutzerID"].ToString();
-                }
-            }
-            using (MySqlConnection connection = new MySqlConnection(connString)) //Logininfo ergänzen
-            {
-                connection.Open();
-                
-                using (MySqlCommand cmd = new MySqlCommand(qryInfo, conn))
-                {
-                    cmd.Parameters.AddWithValue("email", email);
-                    cmd.Parameters.AddWithValue("benutzerid", BID);
-                    cmd.Parameters.AddWithValue("passwort", password);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            //LoginId in benutzer hinzufügen
-            using (MySqlConnection connection = new MySqlConnection(connString)) 
-            {
-                connection.Open();
-                MySqlCommand cmds = new MySqlCommand(qryRdLogIn, connection);
-
-                cmds.Parameters.AddWithValue("email", email);
-                MySqlDataReader reader = cmds.ExecuteReader();
-
-                if(reader.Read()) 
-                {
-                    loginID = reader["LoginID"].ToString();
-                }
-            }
-            using (MySqlCommand cmd = new MySqlCommand(qry2, conn)) //Benutzer erstellen mit allen essenziellen Daten
-            {
-                cmd.Parameters.AddWithValue("email", email);
-                cmd.Parameters.AddWithValue("loginID", loginID);
-                cmd.ExecuteNonQuery();
-            }
-        }
-
-        public void BenutzerEinloggen(string email, string password)
-        {
-            string passHash = Hash(password);
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
-
-            using (MySqlConnection connection = new MySqlConnection(connString))
-            {
-                connection.Open();
-                MySqlCommand cmds = new MySqlCommand(qryRd, connection);
-                cmds.Parameters.AddWithValue("email", email);
-                MySqlDataReader reader = cmds.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    email = reader["Email"].ToString();
-                    password = reader["passwort"].ToString();
-                }
-
-            }
-            if (email == null || password == null)
-            {
-                MessageBox.Show("No Data");
-                return;
-            }    
-            if(loginEmailInput.Text == email && passHash == password) 
-            {
-                MessageBox.Show("Login erfolgreich!");
-                loginPanel.Visible = false;
-                flowLayoutPanel.Visible = true;
-                homePanel.Visible = true;
-                Benutzer tmpUser = GetUserByEMail(email);
-                if (tmpUser != null)
-                {
-                    activeUser = tmpUser;
-                }
-            }
-            else
-            {
-                MessageBox.Show("Login fehlgeschlagen!");
-            }
-            //Eingabe des Nutzers sollen geholt werden
-
-        }
-        public Benutzer GetUserByEMail(string givenEmail)
-        {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-            string sql = $"SELECT BenutzerID, Name, Vorname, Email FROM benutzer WHERE Email = '{givenEmail}'";
-            string email = null, benutzerID = null, name = null, vName = null;
-            using (MySqlConnection connection = new MySqlConnection(connString))
-            {
-                connection.Open();
-                MySqlCommand cmds = new MySqlCommand(sql, connection);
-                MySqlDataReader reader = cmds.ExecuteReader();
-                if (reader.Read())
-                {
-                    email = reader["Email"].ToString();
-                    benutzerID = reader["BenutzerID"].ToString();
-                    name = reader["Name"].ToString();
-                    vName = reader["Vorname"].ToString();
-                }
-            }
-            if (givenEmail == email)
-            {
-                Benutzer user = new Benutzer(name, vName, email, Convert.ToInt32(benutzerID));
-                return user;
-            }
-            else
-            {
-                return null;
-            }
-        }
         public void ShowGraphs()
         {
             int x = 10;
@@ -571,6 +484,44 @@ namespace aktiensim
             foreach(Aktie a in stonks)
             {
                 a.UpdateChart();
+            }
+        }
+
+        public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
+        {
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            MySqlConnection conn = new MySqlConnection(connString);
+            conn.Open();
+
+            string chckqry = "SELECT Firma FROM aktiendaten WHERE Firma = @Firma";
+            string qry = "INSERT INTO aktiendaten(Firma, Name, Wert) VALUES(@Firma, @Name, @Wert)";
+
+            string chkFirma; string chkName; string chkWert;
+
+            using (MySqlCommand cmdCheck = new MySqlCommand(chckqry, conn)) 
+            {
+                cmdCheck.Parameters.AddWithValue("Firma", Firma);
+                //cmdCheck.ExecuteNonQuery();
+                MySqlDataReader reader = cmdCheck.ExecuteReader();
+
+                if(reader.Read()) 
+                {
+                    chkFirma = reader["Firma"].ToString();
+
+                    if (chkFirma == Firma)
+                    {
+                        return;
+                    }
+                }
+            }
+            conn.Close();
+            conn.Open();
+            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            {
+                cmd.Parameters.AddWithValue("Firma", Firma);
+                cmd.Parameters.AddWithValue("Name", Name);
+                cmd.Parameters.AddWithValue("Wert", Wert);
+                cmd.ExecuteNonQuery();
             }
         }
     }

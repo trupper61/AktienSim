@@ -16,6 +16,7 @@ namespace aktiensim
         public string name;
         public FormsPlot plot;
         int counter;
+        public static int id = 0;
         public Aktie(string name)
         {
             this.name = name;
@@ -23,6 +24,7 @@ namespace aktiensim
             amountY = new List<double>();
             plot = new FormsPlot();
             counter = 0;
+            id++;
         }
         public void UpdateChart()
         {
