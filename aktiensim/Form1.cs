@@ -38,7 +38,7 @@ namespace aktiensim
             InitLoginUi();
             InitRegisterUI();
             InitUI();
-            stonks = new List<Aktie>() { new Aktie("DAX", 18.200, 18.100), new Aktie("DHL", 42.00, 42.50), new Aktie("Lufthansa", 6.80, 6.75)};
+            stonks = new List<Aktie>() { new Aktie("DAX", 18200.0, 18100.0), new Aktie("DHL", 42.00, 42.50), new Aktie("Lufthansa", 6.80, 6.75)};
             foreach(Aktie aktie in stonks) 
             {
                 addAktienGesellschaft(aktie.name, "Test", "0");

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ScottPlot.WinForms;
 using System.Windows.Forms;
 using System.Drawing;
+using System.IO.Pipelines;
 
 namespace aktiensim
 {
@@ -28,9 +29,25 @@ namespace aktiensim
             CurrentValue = startValue;
             timeX = new List<double>();
             ValueHistory = new List<double> ();
+            ValueHistory.Add(startValue);
             plot = new FormsPlot();
             counter = 0;
             id++;
+            InitializeChartData();
+        }
+        public double RandomChange()
+        {
+            double changePercent = rand.NextDouble() * 0.02 - 0.01; // Cahnge either -1% | +1%
+            return ValueHistory.Last() * changePercent;
+        }
+        private void InitializeChartData()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                counter++;
+                timeX.Add(counter);
+                ValueHistory.Add(ValueHistory.Last() + RandomChange());
+            }
         }
         public void SimulateNextStep()
         {
