@@ -38,7 +38,7 @@ namespace aktiensim
             InitLoginUi();
             InitRegisterUI();
             InitUI();
-            stonks = new List<Aktie>() { new Aktie("DAX"), new Aktie("DHL"), new Aktie("Lufthansa")};
+            stonks = new List<Aktie>() { new Aktie("DAX", 18.200, 18.100), new Aktie("DHL", 42.00, 42.50), new Aktie("Lufthansa", 6.80, 6.75)};
             foreach(Aktie aktie in stonks) 
             {
                 addAktienGesellschaft(aktie.name, "Test", "0");
@@ -76,8 +76,12 @@ namespace aktiensim
                 ShowGraphs();
                 Timer timer1 = new Timer();
                 timer1.Tick += timer_Tick;
-                timer1.Interval = 200;
+                timer1.Interval = 1000;
                 timer1.Start();
+                Timer timer2 = new Timer();
+                timer2.Tick += LastClose_Tick;
+                timer2.Interval = 60000;
+                timer2.Start();
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -169,6 +173,16 @@ namespace aktiensim
             Controls.Add(homePanel);
             Controls.Add(flowLayoutPanel);
         }
+
+        private void LastClose_Tick(object sender, EventArgs e)
+        {
+            foreach(Aktie a in stonks)
+            {
+                double lastClose = a.CurrentValue;
+                a.SetLastClose(lastClose);
+            }
+        }
+
         public void InitLoginUi()
         {
             loginPanel = new Panel
@@ -483,7 +497,7 @@ namespace aktiensim
         {
             foreach(Aktie a in stonks)
             {
-                a.UpdateChart();
+                a.SimulateNextStep();
             }
         }
 

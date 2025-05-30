@@ -12,34 +12,56 @@ namespace aktiensim
     public class Aktie
     {
         public List<double> timeX;
-        public List<double> amountY;
+        public double CurrentValue { get; private set; }
         public string name;
         public FormsPlot plot;
-        int counter;
+        public double LastClose { get; private set; }
+        public List<double> ValueHistory { get; private set; }
+
+        private int counter;
         public static int id = 0;
-        public Aktie(string name)
+        private static Random rand = new Random();
+        public Aktie(string name, double startValue, double lastClose = 0)
         {
             this.name = name;
+            this.LastClose = lastClose;
+            CurrentValue = startValue;
             timeX = new List<double>();
-            amountY = new List<double>();
+            ValueHistory = new List<double> ();
             plot = new FormsPlot();
             counter = 0;
             id++;
         }
-        public void UpdateChart()
+        public void SimulateNextStep()
         {
             counter++;
-            Random rand = new Random();
-            amountY.Add(rand.NextDouble() * rand.Next(1, 50));
+            double changePercent = rand.NextDouble() * 0.02 - 0.01; // Change either -1% | +1%
+            CurrentValue *= (1 + changePercent);
+            CurrentValue = Math.Round(CurrentValue, 2);
+
             timeX.Add(counter);
-            if (counter == 20)
+            ValueHistory.Add(CurrentValue);
+            
+            if (timeX.Count > 20)
             {
-                counter--;
-                amountY.RemoveAt(0);
+                timeX.RemoveAt(0);
+                ValueHistory.RemoveAt(0);
             }
-            plot.Plot.Add.Scatter(timeX, amountY, ScottPlot.Color.FromColor(Color.Red));
+            plot.Plot.Clear();
+            plot.Plot.Add.Scatter(timeX, ValueHistory, ScottPlot.Color.FromColor(Color.Blue));
+
+            if (LastClose > 0)
+            {
+                var hline = plot.Plot.Add.HorizontalLine(LastClose);
+                hline.Color = CurrentValue >= LastClose ? ScottPlot.Color.FromColor(Color.Green) : ScottPlot.Color.FromColor(Color.Red);
+                hline.Label.Text = "Last Close";
+            }
             plot.Plot.Axes.AutoScale();
             plot.Refresh();
+        }
+        public void SetLastClose(double value)
+        {
+            LastClose = value;
         }
     }
 }
