@@ -22,6 +22,8 @@ namespace aktiensim
         private int counter;
         public static int id = 0;
         private static Random rand = new Random();
+        private Timer nextStep;
+        private static Timer nextLastClose;
         public Aktie(string name, double startValue, double lastClose = 0)
         {
             this.name = name;
@@ -31,9 +33,26 @@ namespace aktiensim
             ValueHistory = new List<double> ();
             ValueHistory.Add(startValue);
             plot = new FormsPlot();
+            plot.Dock = DockStyle.Fill;
             counter = 0;
             id++;
             InitializeChartData();
+            nextStep = new Timer();
+            nextStep.Interval = 10000;
+            nextStep.Tick += NextStep_Tick;
+            nextStep.Start();
+            nextLastClose = new Timer();
+            nextLastClose.Interval = 120000;
+            nextLastClose.Tick += NextLastClose_Tick;
+            nextLastClose.Start();
+        }
+        private void NextLastClose_Tick(object sender, EventArgs e)
+        {
+            SetLastClose(CurrentValue);
+        }
+        private void NextStep_Tick(object sender, EventArgs e)
+        {
+            SimulateNextStep();
         }
         public double RandomChange()
         {
@@ -48,6 +67,7 @@ namespace aktiensim
                 timeX.Add(counter);
                 ValueHistory.Add(ValueHistory.Last() + RandomChange());
             }
+            SimulateNextStep();
         }
         public void SimulateNextStep()
         {
@@ -71,7 +91,6 @@ namespace aktiensim
             {
                 var hline = plot.Plot.Add.HorizontalLine(LastClose);
                 hline.Color = CurrentValue >= LastClose ? ScottPlot.Color.FromColor(Color.Green) : ScottPlot.Color.FromColor(Color.Red);
-                hline.Label.Text = "Last Close";
             }
             plot.Plot.Axes.AutoScale();
             plot.Refresh();

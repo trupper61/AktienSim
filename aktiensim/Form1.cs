@@ -70,15 +70,7 @@ namespace aktiensim
             homeBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
-                ShowGraphs();
-                Timer timer1 = new Timer();
-                timer1.Tick += timer_Tick;
-                timer1.Interval = 1000;
-                timer1.Start();
-                Timer timer2 = new Timer();
-                timer2.Tick += LastClose_Tick;
-                timer2.Interval = 60000;
-                timer2.Start();
+                ShowHomePanel();
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -169,14 +161,53 @@ namespace aktiensim
             };
             Controls.Add(homePanel);
             Controls.Add(flowLayoutPanel);
+            this.Resize += OnResize;
         }
-
-        private void LastClose_Tick(object sender, EventArgs e)
+        public void OnResize(object sender, EventArgs e)
         {
-            foreach(Aktie a in stonks)
+            homePanel.Width = this.ClientSize.Width - flowLayoutPanel.Width;
+            homePanel.Height = this.ClientSize.Height;
+            if (registerPanel.Visible)
+                InitRegisterUI();
+            else if (loginPanel.Visible)
+                InitLoginUi();
+        }
+        public void ShowHomePanel()
+        {
+            FlowLayoutPanel flp = new FlowLayoutPanel
             {
-                double lastClose = a.CurrentValue;
-                a.SetLastClose(lastClose);
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                WrapContents = true,
+                FlowDirection = FlowDirection.LeftToRight,
+                Padding = new Padding(10)
+            };
+            homePanel.Controls.Add(flp);
+            foreach(var stock in stonks)
+            {
+                Panel chartPanel = new Panel
+                {
+                    Size = new Size(300, 250),
+                    BorderStyle = BorderStyle.FixedSingle
+                };
+                stock.plot.Plot.Title(stock.name, 15);
+                stock.plot.Plot.HideGrid();
+                Label priceLb = new Label
+                {
+                    Text = $"Current Price: {stock.CurrentValue}€",
+                    Dock = DockStyle.Bottom,
+                    Height = 20
+                };
+                chartPanel.Controls.Add(priceLb);
+                stock.plot.MouseDown += (s, e) =>
+                {
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        MessageBox.Show($"You clicked on {stock.name}");
+                    }
+                };
+                chartPanel.Controls.Add(stock.plot);
+                flp.Controls.Add(chartPanel);
             }
         }
 
@@ -490,14 +521,6 @@ namespace aktiensim
                 x += 160;
             }
         }
-        private void timer_Tick(object sender, EventArgs e)
-        {
-            foreach(Aktie a in stonks)
-            {
-                a.SimulateNextStep();
-            }
-        }
-
         public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
