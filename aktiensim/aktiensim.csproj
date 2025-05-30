@@ -145,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aktie.cs" />
+    <Compile Include="AktienVerwaltung.cs" />
     <Compile Include="Benutzer.cs" />
     <Compile Include="Benutzerverwaltung.cs" />
     <Compile Include="Depot.cs" />
