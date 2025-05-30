@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -11,9 +12,20 @@ namespace aktiensim
     public class AktienVerwaltung
     {
         private string connectionString;
-        public AktienVerwaltung(string connectionString)
+        public AktienVerwaltung(string connectionString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"")
         {
             this.connectionString = connectionString;
+        }
+        public void UpdateAktie(Aktie aktie)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "UPDATE aktiendaten SET Wert = @Wert, letzterschluss = @letzterschluss WHERE Firma = @Firma";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@Wert", aktie.CurrentValue);
+            cmd.Parameters.AddWithValue("@letzterschluss", aktie.LastClose);
+            cmd.Parameters.AddWithValue("@Firma", aktie.name);
+            cmd.ExecuteNonQuery();
         }
         public Aktie LadeAktie(string firma)
         {
@@ -57,13 +69,12 @@ namespace aktiensim
         {
             MySqlConnection conn = new MySqlConnection(connectionString);
             conn.Open();
-            string query = "INSERT INTO aktiendaten (Firma, Name, Wert, letzterschluss, aktualisiertAm) VALUES(@Firma, @Name, @Wert, @letzterschluss, @aktualisiertAm)";
+            string query = "INSERT INTO aktiendaten (Firma, Name, Wert, letzterschluss) VALUES(@Firma, @Name, @Wert, @letzterschluss)";
             MySqlCommand cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@Firma", firma);
             cmd.Parameters.AddWithValue("@Name", name);
             cmd.Parameters.AddWithValue("@Wert", startWert);
             cmd.Parameters.AddWithValue("@letzterschluss", startWert);
-            cmd.Parameters.AddWithValue("@aktualisiertAm", DateTime.Now);
             cmd.ExecuteNonQuery();
         }
     }

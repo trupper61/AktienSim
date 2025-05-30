@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 30. Mai 2025 um 13:59
+-- Erstellungszeit: 30. Mai 2025 um 15:49
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -32,20 +32,19 @@ CREATE TABLE `aktiendaten` (
   `Firma` varchar(30) NOT NULL,
   `Name` varchar(30) NOT NULL,
   `Wert` decimal(15,2) NOT NULL,
-  `letzterschluss` decimal(15,2) DEFAULT NULL,
-  `aktualisiertAm` datetime DEFAULT NULL
+  `letzterschluss` decimal(15,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `aktiendaten`
 --
 
-INSERT INTO `aktiendaten` (`aktienID`, `Firma`, `Name`, `Wert`, `letzterschluss`, `aktualisiertAm`) VALUES
-(1, 'DAX', 'Deutscher Aktienindex', 18500.00, 18500.00, '2025-05-30 13:04:16'),
-(2, 'DHL', 'Deutsche Post DHL Group', 45.30, 45.30, '2025-05-30 13:04:16'),
-(3, 'LHA', 'Lufthansa AG', 7.85, 7.85, '2025-05-30 13:04:16'),
-(4, 'SAP', 'SAP SE', 125.70, 125.70, '2025-05-30 13:04:16'),
-(5, 'BMW', 'Bayerische Motoren Werke AG', 92.20, 92.20, '2025-05-30 13:04:16');
+INSERT INTO `aktiendaten` (`aktienID`, `Firma`, `Name`, `Wert`, `letzterschluss`) VALUES
+(1, 'DAX', 'Deutscher Aktienindex', 17523.35, 18307.03),
+(2, 'DHL', 'Deutsche Post DHL Group', 43.06, 43.86),
+(3, 'LHA', 'Lufthansa AG', 7.77, 7.74),
+(4, 'SAP', 'SAP SE', 128.04, 123.79),
+(5, 'BMW', 'Bayerische Motoren Werke AG', 85.86, 89.39);
 
 -- --------------------------------------------------------
 

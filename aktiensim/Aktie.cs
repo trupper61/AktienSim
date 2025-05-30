@@ -24,6 +24,7 @@ namespace aktiensim
         private static Random rand = new Random();
         private Timer nextStep;
         private static Timer nextLastClose;
+        private static AktienVerwaltung stocksManager = new AktienVerwaltung();
         public Aktie(string name, double startValue, double lastClose = 0)
         {
             this.name = name;
@@ -94,6 +95,7 @@ namespace aktiensim
             }
             plot.Plot.Axes.AutoScale();
             plot.Refresh();
+            stocksManager.UpdateAktie(this);
         }
         public void SetLastClose(double value)
         {
