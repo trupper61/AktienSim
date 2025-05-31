@@ -31,6 +31,7 @@ namespace aktiensim
         public Benutzer activeUser;
         FormsPlot plot;
         List<Aktie> stonks;
+        public Panel kaufPanel;
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
         public Form1()
         {
@@ -159,6 +160,14 @@ namespace aktiensim
                 BackColor = Color.LightCyan,
                 Visible = false
             };
+            kaufPanel = new Panel
+            {
+                Size = new Size(300, 200),
+                Location = new Point((homePanel.Width - 300) / 2, (homePanel.Height - 300) / 2),
+                BorderStyle = BorderStyle.FixedSingle,
+                Visible = false
+            };
+            this.Controls.Add(kaufPanel);
             Controls.Add(homePanel);
             Controls.Add(flowLayoutPanel);
             this.Resize += OnResize;
@@ -190,7 +199,7 @@ namespace aktiensim
                     Size = new Size(300, 250),
                     BorderStyle = BorderStyle.FixedSingle
                 };
-                stock.plot.Plot.Title(stock.name, 15);
+                stock.plot.Plot.Title(stock.firma, 15);
                 stock.plot.Plot.HideGrid();
                 Label priceLb = new Label
                 {
@@ -203,7 +212,7 @@ namespace aktiensim
                 {
                     if (e.Button == MouseButtons.Left)
                     {
-                        MessageBox.Show($"You clicked on {stock.name}");
+                        ShowKaufPanel(stock);
                     }
                 };
                 chartPanel.Controls.Add(stock.plot);
@@ -520,6 +529,62 @@ namespace aktiensim
                 homePanel.Controls.Add(a.plot);
                 x += 160;
             }
+        }
+        public void ShowKaufPanel(Aktie aktie)
+        {
+            kaufPanel.Controls.Clear();
+            kaufPanel.Visible = true;
+            kaufPanel.BringToFront();
+            Label nameLb = new Label
+            {
+                Text = $"Name: {aktie.firma}",
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            kaufPanel.Controls.Add(nameLb);
+            Label firmaLb = new Label
+            {
+                Text = $"Firma: {aktie.name}",
+                Location = new Point(10, 40),
+                AutoSize = true
+            };
+            kaufPanel.Controls.Add(firmaLb);
+            Label preisLb = new Label
+            {
+                Text = $"Aktueller Preis {aktie.CurrentValue:f2}€",
+                Location = new Point(10, 70),
+                AutoSize = true
+            };
+            kaufPanel.Controls.Add(preisLb);
+            Label anteilLb = new Label
+            {
+                Text = "Anzahl kaufen:",
+                Location = new Point(10, 100),
+                AutoSize = true
+            };
+            kaufPanel.Controls.Add(anteilLb);
+            NumericUpDown anteilNum = new NumericUpDown
+            {
+                Location = new Point(110, 100),
+                Minimum = 1,
+                Maximum = 10000,
+                Value = 1,
+                Width = 80
+            };
+            kaufPanel.Controls.Add(anteilNum);
+            Button kaufBtn = new Button
+            {
+                Text = "Kaufen",
+                Location = new Point(10, 140),
+                Width = 180,
+                Height = 30
+            };
+            kaufBtn.Click += (s, e) =>
+            {
+                MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
+                kaufPanel.Visible = false;
+            };
+            kaufPanel.Controls.Add(kaufBtn);
         }
         public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
         {

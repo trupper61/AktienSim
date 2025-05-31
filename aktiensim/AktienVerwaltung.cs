@@ -24,7 +24,7 @@ namespace aktiensim
             MySqlCommand cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@Wert", aktie.CurrentValue);
             cmd.Parameters.AddWithValue("@letzterschluss", aktie.LastClose);
-            cmd.Parameters.AddWithValue("@Firma", aktie.name);
+            cmd.Parameters.AddWithValue("@Firma", aktie.firma);
             cmd.ExecuteNonQuery();
         }
         public Aktie LadeAktie(string firma)
@@ -42,7 +42,7 @@ namespace aktiensim
                 string name = reader["Name"].ToString();
                 double wert = Convert.ToDouble(reader["Wert"]);
                 double letzterschluss = Convert.ToDouble(reader["letzterschluss"]);
-                aktie = new Aktie(firma, wert, letzterschluss);
+                aktie = new Aktie(name, firma, wert, letzterschluss);
             }
             return aktie;
         }

@@ -15,6 +15,7 @@ namespace aktiensim
         public List<double> timeX;
         public double CurrentValue { get; private set; }
         public string name;
+        public string firma;
         public FormsPlot plot;
         public double LastClose { get; private set; }
         public List<double> ValueHistory { get; private set; }
@@ -25,9 +26,10 @@ namespace aktiensim
         private Timer nextStep;
         private static Timer nextLastClose;
         private static AktienVerwaltung stocksManager = new AktienVerwaltung();
-        public Aktie(string name, double startValue, double lastClose = 0)
+        public Aktie(string name, string firma,double startValue, double lastClose = 0)
         {
             this.name = name;
+            this.firma = firma;
             this.LastClose = lastClose;
             CurrentValue = startValue;
             timeX = new List<double>();
