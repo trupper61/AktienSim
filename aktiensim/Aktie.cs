@@ -16,21 +16,22 @@ namespace aktiensim
         public double CurrentValue { get; private set; }
         public string name;
         public string firma;
+        public int id;
         public FormsPlot plot;
         public double LastClose { get; private set; }
         public List<double> ValueHistory { get; private set; }
 
         private int counter;
-        public static int id = 0;
         private static Random rand = new Random();
         private Timer nextStep;
         private static Timer nextLastClose;
         private static AktienVerwaltung stocksManager = new AktienVerwaltung();
-        public Aktie(string name, string firma,double startValue, double lastClose = 0)
+        public Aktie(string name, string firma,double startValue, int id,double lastClose = 0)
         {
             this.name = name;
             this.firma = firma;
             this.LastClose = lastClose;
+            this.id = id;
             CurrentValue = startValue;
             timeX = new List<double>();
             ValueHistory = new List<double> ();

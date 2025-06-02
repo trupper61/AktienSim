@@ -34,14 +34,14 @@ namespace aktiensim
         List<Aktie> stonks;
         public Panel kaufPanel;
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
+        public AktienVerwaltung stonkManager = new AktienVerwaltung();
         public Form1()
         {
             InitializeComponent();
             InitLoginUi();
             InitRegisterUI();
             InitUI();
-            AktienVerwaltung stonkManage = new AktienVerwaltung("server=localhost;database=aktiensimdb;uid=root;password=\"\"");
-            stonks = stonkManage.LadeAlleAktien(); // Loads all stonks in Database
+            stonks = stonkManager.LadeAlleAktien(); // Loads all stonks in Database
         }
         public void InitUI()
         {
@@ -213,6 +213,25 @@ namespace aktiensim
                     benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
                 };
                 homePanel.Controls.Add(geldBtn);
+                TextBox depotTb = new TextBox()
+                {
+                    Location = new Point(200, 60)
+                };
+                homePanel.Controls.Add(depotTb);
+                Button createDepot = new Button
+                {
+                    Size = new Size(60, 20),
+                    Location = new Point(depotTb.Right + 15, 60),
+                    Text = "Create Depot"
+                };
+                createDepot.Click += (h, i) =>
+                {
+                    string name = depotTb.Text;
+                    int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
+                    stonkManager.CreateDepot(name, userId);
+                    MessageBox.Show($"Depot '{name}' created");
+                };
+                homePanel.Controls.Add(createDepot);
             };
             flowLayoutPanel.Controls.Add(depotBtn);
 
@@ -644,7 +663,11 @@ namespace aktiensim
             };
             kaufBtn.Click += (s, e) =>
             {
-                MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
+                DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
+                if (result == DialogResult.OK )
+                {
+                    stonkManager.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), benutzerverwaltung.ReturnActiveUser(activeUser));
+                }
                 kaufPanel.Visible = false;
             };
             kaufPanel.Controls.Add(kaufBtn);

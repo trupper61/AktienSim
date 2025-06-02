@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace aktiensim
 {
-    internal class Depot
+    public class Depot
     {
+        public int ID { get; private set; }
+        public string name;
+        public List<Transaktion> transaktions;
+        public Depot(int id, string name) 
+        {
+            this.ID = id;
+            this.name = name;
+        }
     }
 }
