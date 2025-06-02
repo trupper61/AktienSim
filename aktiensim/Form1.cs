@@ -110,7 +110,7 @@ namespace aktiensim
                 PictureBox kontostandBild = new PictureBox()
                 {
                     Size = new Size(400, 56),
-                    Location = new Point(0, y + 200),
+                    Location = new Point(lb.Location.X - 120, y + 200),
                     Image = Properties.Resources.kontostand2,
                     SizeMode = PictureBoxSizeMode.StretchImage
                 };
@@ -146,7 +146,7 @@ namespace aktiensim
                 PictureBox benutzerdatenBild = new PictureBox()
                 {
                     Size = new Size(400, 56),
-                    Location = new Point(0, y + 270),
+                    Location = new Point(lb.Location.X - 120, y + 270),
                     Image = Properties.Resources.benutzerdaten,
                     SizeMode = PictureBoxSizeMode.StretchImage
                     
@@ -157,6 +157,47 @@ namespace aktiensim
                 benutzerdatenBild.MouseClick += (p, l) =>
                 {
                     homePanel.Controls.Clear();
+
+                    Label vorname = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y),
+                        Text = $"Vorname: {benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                    };
+                    homePanel.Controls.Add(vorname);
+                    Label nachname = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y + 20),
+                        Text = $"Name: {benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                    };
+                    homePanel.Controls.Add (nachname);
+                    Label email = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y + 40),
+                        Text = $"Email: {benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                    };
+                    homePanel.Controls.Add(email);
+                    Label benutzerID = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 8),
+                        Location = new Point(0, y + 330),
+                        Text = $"BenutzerID: {benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
+                    };
+                    homePanel.Controls.Add(benutzerID);
 
                     Button button = new Button
                     {
