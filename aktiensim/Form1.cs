@@ -208,6 +208,65 @@ namespace aktiensim
                         Text = $"Bearbeiten"
                     };
                     homePanel.Controls.Add(button);
+                    button.Click += (o, i) =>
+                    {
+                        button.Hide();
+                        vorname.Hide();
+                        nachname.Hide();
+                        email.Hide();
+
+                        TextBox vname = new TextBox
+                        {
+                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                            Font = new Font("Arial", 12),
+                            ForeColor = Color.Black,
+                            Location = new Point(0, y),
+                            Size = new Size(200, 22)
+                        };
+                        homePanel.Controls.Add(vname);
+
+                        TextBox nname = new TextBox
+                        {
+                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                            Font = new Font("Arial", 12),
+                            ForeColor = Color.Black,
+                            Location = new Point(0, y + 30),
+                            Size = new Size(200, 22)
+                        };
+                        homePanel.Controls.Add(nname);
+
+                        TextBox emailBox = new TextBox
+                        {
+                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                            Font = new Font("Arial", 12),
+                            ForeColor = Color.Black,
+                            Location = new Point(0, y + 60),
+                            Size = new Size(200, 22)
+                        };
+                        homePanel.Controls.Add(emailBox);
+
+                        Button fertig = new Button
+                        {
+                            AutoSize = true,
+                            Size = new Size(100, 20),
+                            Font = new Font("Arial", 12),
+                            Location = new Point(lb.Location.X + 160, y - 10),
+                            Text = $"Fertig"
+                        };
+                        homePanel.Controls.Add(fertig);
+                        
+                        fertig.Click += (t, z) =>
+                        {
+                            homePanel.Controls.Remove(fertig);
+                            homePanel.Controls.Remove(vname);
+                            homePanel.Controls.Remove(nname);
+                            homePanel.Controls.Remove(emailBox);
+                            button.Show();
+                            vorname.Show();
+                            nachname.Show();
+                            email.Show();
+                        };
+                    };
                 };
 
                 PictureBox backroundImage = new PictureBox()
