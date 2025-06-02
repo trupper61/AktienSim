@@ -88,18 +88,6 @@ namespace aktiensim
                 int y = 10;
                 homePanel.Controls.Clear();
 
-                
-
-                //Button button = new Button
-                //{
-                //    AutoSize = true,
-                //    Size = new Size(100, 20),
-                //    Font = new Font("Arial", 12),
-                //    Location = new Point(lb.Location.X + 160, y - 10),
-                //    Text = $"Bearbeiten"
-                //};
-                //homePanel.Controls.Add(button);
-
                 PictureBox profilbild = new PictureBox()
                 {
                     Size = new Size(80, 80),
@@ -168,6 +156,16 @@ namespace aktiensim
                 benutzerdatenBild.MouseClick += (p, l) =>
                 {
                     homePanel.Controls.Clear();
+
+                    Button button = new Button
+                    {
+                        AutoSize = true,
+                        Size = new Size(100, 20),
+                        Font = new Font("Arial", 12),
+                        Location = new Point(lb.Location.X + 160, y - 10),
+                        Text = $"Bearbeiten"
+                    };
+                    homePanel.Controls.Add(button);
                 };
 
                 PictureBox backroundImage = new PictureBox()
