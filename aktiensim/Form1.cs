@@ -257,6 +257,7 @@ namespace aktiensim
                         
                         fertig.Click += (t, z) =>
                         {
+                            benutzerverwaltung.UpdateBenutzerDaten(vname.Text, nname.Text, emailBox.Text, benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
                             homePanel.Controls.Remove(fertig);
                             homePanel.Controls.Remove(vname);
                             homePanel.Controls.Remove(nname);
@@ -265,6 +266,7 @@ namespace aktiensim
                             vorname.Show();
                             nachname.Show();
                             email.Show();
+                            MessageBox.Show("Loggen sie sich erneut ein, damit die Änderungen wirksam werden!");
                         };
                     };
                 };

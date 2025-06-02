@@ -198,5 +198,23 @@ namespace aktiensim
             activeUser = user;
             return activeUser;
         }
+
+        public void UpdateBenutzerDaten(string Vorname, string Nachname, string Email, string benutzerID) 
+        {
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            string qry = "UPDATE benutzer SET Vorname = @Vorname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Name = @Nachname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Email = @Email WHERE BenutzerID = @benutzerID";
+
+            MySqlConnection conn = new MySqlConnection(connString);
+            conn.Open();
+
+            using (MySqlCommand cmd = new MySqlCommand(qry, conn))
+            {
+                cmd.Parameters.AddWithValue("Vorname", Vorname);
+                cmd.Parameters.AddWithValue("Nachname", Nachname);
+                cmd.Parameters.AddWithValue("Email", Email);
+                cmd.Parameters.AddWithValue("benutzerID", benutzerID);
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }
