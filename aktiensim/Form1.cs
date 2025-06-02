@@ -88,27 +88,7 @@ namespace aktiensim
                 int y = 10;
                 homePanel.Controls.Clear();
 
-                //Label kontostand = new Label
-                //{
-                //    AutoSize = true,
-                //    ForeColor = Color.Green,
-                //    BackColor = Color.Transparent,
-                //    Font = new Font("Arial", 12),
-                //    Location = new Point(lb.Location.X, y + 110),
-                //    Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
-                //};
-                //homePanel.Controls.Add(kontostand);
-                //kontostand.BringToFront();
-
-                //Label schulden = new Label
-                //{
-                //    AutoSize = true,
-                //    ForeColor = Color.Red,
-                //    Font = new Font("Arial", 12),
-                //    Location = new Point(lb.Location.X, y + 140),
-                //    Text = $"Ihre Schulden: TBD"
-                //};
-                //homePanel.Controls.Add(schulden);
+                
 
                 //Button button = new Button
                 //{
@@ -151,6 +131,27 @@ namespace aktiensim
                 kontostandBild.MouseClick += (p, l) => 
                 {
                     homePanel.Controls.Clear();
+                    Label kontostand = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Green,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y),
+                        Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                    };
+                    homePanel.Controls.Add(kontostand);
+                    kontostand.BringToFront();
+
+                    Label schulden = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Red,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(kontostand.Location.X, y + 30),
+                        Text = $"Ihre Schulden: TBD"
+                    };
+                    homePanel.Controls.Add(schulden);
                 };
 
                 PictureBox benutzerdatenBild = new PictureBox()
