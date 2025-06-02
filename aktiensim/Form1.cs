@@ -34,6 +34,7 @@ namespace aktiensim
         List<Aktie> stonks;
         public Panel kaufPanel;
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
+        
         public Form1()
         {
             InitializeComponent();
@@ -109,7 +110,7 @@ namespace aktiensim
                 PictureBox kontostandBild = new PictureBox()
                 {
                     Size = new Size(400, 56),
-                    Location = new Point(0, y + 200),
+                    Location = new Point(lb.Location.X - 120, y + 200),
                     Image = Properties.Resources.kontostand2,
                     SizeMode = PictureBoxSizeMode.StretchImage
                 };
@@ -145,7 +146,7 @@ namespace aktiensim
                 PictureBox benutzerdatenBild = new PictureBox()
                 {
                     Size = new Size(400, 56),
-                    Location = new Point(0, y + 270),
+                    Location = new Point(lb.Location.X - 120, y + 270),
                     Image = Properties.Resources.benutzerdaten,
                     SizeMode = PictureBoxSizeMode.StretchImage
                     
@@ -157,6 +158,47 @@ namespace aktiensim
                 {
                     homePanel.Controls.Clear();
 
+                    Label vorname = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y),
+                        Text = $"Vorname: {benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                    };
+                    homePanel.Controls.Add(vorname);
+                    Label nachname = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y + 20),
+                        Text = $"Name: {benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                    };
+                    homePanel.Controls.Add (nachname);
+                    Label email = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y + 40),
+                        Text = $"Email: {benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                    };
+                    homePanel.Controls.Add(email);
+                    Label benutzerID = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Black,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 8),
+                        Location = new Point(0, y + 330),
+                        Text = $"BenutzerID: {benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
+                    };
+                    homePanel.Controls.Add(benutzerID);
+
                     Button button = new Button
                     {
                         AutoSize = true,
@@ -166,6 +208,65 @@ namespace aktiensim
                         Text = $"Bearbeiten"
                     };
                     homePanel.Controls.Add(button);
+                    button.Click += (o, i) =>
+                    {
+                        button.Hide();
+                        vorname.Hide();
+                        nachname.Hide();
+                        email.Hide();
+
+                        TextBox vname = new TextBox
+                        {
+                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                            Font = new Font("Arial", 12),
+                            ForeColor = Color.Black,
+                            Location = new Point(0, y),
+                            Size = new Size(200, 22)
+                        };
+                        homePanel.Controls.Add(vname);
+
+                        TextBox nname = new TextBox
+                        {
+                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                            Font = new Font("Arial", 12),
+                            ForeColor = Color.Black,
+                            Location = new Point(0, y + 30),
+                            Size = new Size(200, 22)
+                        };
+                        homePanel.Controls.Add(nname);
+
+                        TextBox emailBox = new TextBox
+                        {
+                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                            Font = new Font("Arial", 12),
+                            ForeColor = Color.Black,
+                            Location = new Point(0, y + 60),
+                            Size = new Size(200, 22)
+                        };
+                        homePanel.Controls.Add(emailBox);
+
+                        Button fertig = new Button
+                        {
+                            AutoSize = true,
+                            Size = new Size(100, 20),
+                            Font = new Font("Arial", 12),
+                            Location = new Point(lb.Location.X + 160, y - 10),
+                            Text = $"Fertig"
+                        };
+                        homePanel.Controls.Add(fertig);
+                        
+                        fertig.Click += (t, z) =>
+                        {
+                            homePanel.Controls.Remove(fertig);
+                            homePanel.Controls.Remove(vname);
+                            homePanel.Controls.Remove(nname);
+                            homePanel.Controls.Remove(emailBox);
+                            button.Show();
+                            vorname.Show();
+                            nachname.Show();
+                            email.Show();
+                        };
+                    };
                 };
 
                 PictureBox backroundImage = new PictureBox()
@@ -176,6 +277,24 @@ namespace aktiensim
                     SizeMode = PictureBoxSizeMode.StretchImage
                 };
                 homePanel.Controls.Add(backroundImage);
+                backroundImage.SendToBack();
+
+                Button buttonLogout = new Button
+                {
+                    Size = new Size(50, 50),
+                    Location = new Point(lb.Location.X + 280, lb.Location.Y - 130),
+                    BackgroundImage = Properties.Resources.Logout
+                };
+                homePanel.Controls.Add(buttonLogout);
+                buttonLogout.Click += (l, p) =>
+                {
+                    InitLoginUi();
+                    activeUser = null;
+                    loginPanel.Visible = true;
+                    flowLayoutPanel.Visible = false;
+                    homePanel.Visible = false;
+                };
+                buttonLogout.BringToFront();
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
@@ -579,6 +698,7 @@ namespace aktiensim
                 return;
             }
             benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
+            homePanel.Controls.Clear();
         }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
         public void ShowGraphs()
