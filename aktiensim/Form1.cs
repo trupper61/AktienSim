@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Tls;
 using ScottPlot.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
@@ -145,6 +146,12 @@ namespace aktiensim
                     SizeMode = PictureBoxSizeMode.StretchImage
                 };
                 homePanel.Controls.Add(kontostandBild);
+                kontostandBild.MouseEnter += MouseEnterEffectKonto;
+                kontostandBild.MouseLeave += MouseEnterEffectKontoLeave;
+                kontostandBild.MouseClick += (p, l) => 
+                {
+                    homePanel.Controls.Clear();
+                };
 
                 PictureBox benutzerdatenBild = new PictureBox()
                 {
@@ -152,8 +159,15 @@ namespace aktiensim
                     Location = new Point(0, y + 270),
                     Image = Properties.Resources.benutzerdaten,
                     SizeMode = PictureBoxSizeMode.StretchImage
+                    
                 };
                 homePanel.Controls.Add(benutzerdatenBild);
+                benutzerdatenBild.MouseHover += MouseEnterEffectDaten;
+                benutzerdatenBild.MouseLeave += MouseEnterEffectDatenLeave;
+                benutzerdatenBild.MouseClick += (p, l) =>
+                {
+                    homePanel.Controls.Clear();
+                };
 
                 PictureBox backroundImage = new PictureBox()
                 {
@@ -672,6 +686,31 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("Wert", Wert);
                 cmd.ExecuteNonQuery();
             }
+        }
+
+        public void MouseEnterEffectDaten(object sender, EventArgs e) 
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.benutzerdatenGlow;
+        }
+        public void MouseEnterEffectDatenLeave(object sender, EventArgs e)
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.benutzerdaten;
+        }
+        public void MouseEnterEffectKonto(object sender, EventArgs e)
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.kontostand2Glow;
+        }
+        public void MouseEnterEffectKontoLeave(object sender, EventArgs e)
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.kontostand2;
         }
     }
 }
