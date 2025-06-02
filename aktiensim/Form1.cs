@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Tls;
 using ScottPlot.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
@@ -86,33 +87,95 @@ namespace aktiensim
             {
                 int y = 10;
                 homePanel.Controls.Clear();
+
+                PictureBox profilbild = new PictureBox()
+                {
+                    Size = new Size(80, 80),
+                    Location = new Point(195, 50),
+                    Image = Properties.Resources.profile,
+                    SizeMode = PictureBoxSizeMode.StretchImage
+                };
+                homePanel.Controls.Add(profilbild);
+
                 Label lb = new Label
                 {
                     AutoSize = true,
                     Font = new Font("Arial", 12),
-                    Location = new Point(15, y),
+                    Location = new Point(profilbild.Location.X - 30, profilbild.Location.Y + 90),
                     Text = $"Hallo, {benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {benutzerverwaltung.ReturnActiveUser(activeUser).name}"
                 };
-                Label kontostand = new Label
-                {
-                    AutoSize = true,
-                    ForeColor = Color.Green,
-                    Font = new Font("Arial", 12),
-                    Location = new Point(lb.Location.X, y + 20),
-                    Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}"
-                };
                 homePanel.Controls.Add(lb);
-                homePanel.Controls.Add(kontostand);
 
-                Button button = new Button
+                PictureBox kontostandBild = new PictureBox()
                 {
-                    AutoSize = true,
-                    Size = new Size(100, 20),
-                    Font = new Font("Arial", 12),
-                    Location = new Point(lb.Location.X + 160, y),
-                    Text = $"Bearbeiten"
+                    Size = new Size(400, 56),
+                    Location = new Point(0, y + 200),
+                    Image = Properties.Resources.kontostand2,
+                    SizeMode = PictureBoxSizeMode.StretchImage
                 };
-                homePanel.Controls.Add(button);
+                homePanel.Controls.Add(kontostandBild);
+                kontostandBild.MouseEnter += MouseEnterEffectKonto;
+                kontostandBild.MouseLeave += MouseEnterEffectKontoLeave;
+                kontostandBild.MouseClick += (p, l) => 
+                {
+                    homePanel.Controls.Clear();
+                    Label kontostand = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Green,
+                        BackColor = Color.Transparent,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(0, y),
+                        Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                    };
+                    homePanel.Controls.Add(kontostand);
+                    kontostand.BringToFront();
+
+                    Label schulden = new Label
+                    {
+                        AutoSize = true,
+                        ForeColor = Color.Red,
+                        Font = new Font("Arial", 12),
+                        Location = new Point(kontostand.Location.X, y + 30),
+                        Text = $"Ihre Schulden: TBD"
+                    };
+                    homePanel.Controls.Add(schulden);
+                };
+
+                PictureBox benutzerdatenBild = new PictureBox()
+                {
+                    Size = new Size(400, 56),
+                    Location = new Point(0, y + 270),
+                    Image = Properties.Resources.benutzerdaten,
+                    SizeMode = PictureBoxSizeMode.StretchImage
+                    
+                };
+                homePanel.Controls.Add(benutzerdatenBild);
+                benutzerdatenBild.MouseHover += MouseEnterEffectDaten;
+                benutzerdatenBild.MouseLeave += MouseEnterEffectDatenLeave;
+                benutzerdatenBild.MouseClick += (p, l) =>
+                {
+                    homePanel.Controls.Clear();
+
+                    Button button = new Button
+                    {
+                        AutoSize = true,
+                        Size = new Size(100, 20),
+                        Font = new Font("Arial", 12),
+                        Location = new Point(lb.Location.X + 160, y - 10),
+                        Text = $"Bearbeiten"
+                    };
+                    homePanel.Controls.Add(button);
+                };
+
+                PictureBox backroundImage = new PictureBox()
+                {
+                    Size = new Size(603, 132),
+                    Location = new Point(0, -30),
+                    Image = Properties.Resources.Profilebackround,
+                    SizeMode = PictureBoxSizeMode.StretchImage
+                };
+                homePanel.Controls.Add(backroundImage);
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
@@ -622,6 +685,31 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("Wert", Wert);
                 cmd.ExecuteNonQuery();
             }
+        }
+
+        public void MouseEnterEffectDaten(object sender, EventArgs e) 
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.benutzerdatenGlow;
+        }
+        public void MouseEnterEffectDatenLeave(object sender, EventArgs e)
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.benutzerdaten;
+        }
+        public void MouseEnterEffectKonto(object sender, EventArgs e)
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.kontostand2Glow;
+        }
+        public void MouseEnterEffectKontoLeave(object sender, EventArgs e)
+        {
+            PictureBox pb = sender as PictureBox;
+
+            pb.Image = Properties.Resources.kontostand2;
         }
     }
 }
