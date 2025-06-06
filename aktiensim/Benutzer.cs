@@ -16,7 +16,9 @@ namespace aktiensim
         public string email;
         public string benutzerID;
         public int kontoStand;
-        public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand)
+        public Kredite.CreditRating rating;
+        public List<Kredite> kredite;
+        public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand, List<Kredite> Kredite, Kredite.CreditRating Rating)
         {
             this.name = name;
             this.vorname = vorname;
@@ -24,6 +26,8 @@ namespace aktiensim
             this.benutzerID = benutzerID;
             this.kontoStand = kontoStand;
             GetKontoStand(this);
+            Kredite = kredite;
+            this.rating = Rating;
         }
 
         public void AddKonto(string ID_Benutzer, int Kontostand) 
