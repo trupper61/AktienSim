@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
@@ -19,11 +20,11 @@ namespace aktiensim
 
         public Kredite(double betrag, int zinssatz, double restschuld, int laufzeit, Benutzer benutzer)
         {
-            Betrag = betrag;
-            Zinssatz = zinssatz;
-            Restschuld = restschuld;
-            Laufzeit = laufzeit;
-            Benutzer = benutzer;
+            this.Betrag = betrag;
+            this.Zinssatz = zinssatz;
+            this.Restschuld = restschuld;
+            this.Laufzeit = laufzeit;
+            this.Benutzer = benutzer;
         }
 
         public int bestimmeZinssatz() 
@@ -52,6 +53,17 @@ namespace aktiensim
         public enum CreditRating 
         {
             A, B, C, D
+        }
+
+        public void KreditHinzufuegen(double betrag, int zinssatz, double restschuld, int laufzeit, Benutzer benutzer) 
+        {
+            string kreditAdd = "INSERT INTO kredite(Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit) VALUES(@betrag, @ID_Benutzer, @zinssatz, @restschuld, @laufzeit)";
+            SqlConnection.ExecuteNonQuery(kreditAdd,
+                new MySqlParameter("@ID_Benutzer", benutzer.benutzerID),
+                new MySqlParameter("@betrag", betrag),
+                new MySqlParameter("@zinssatz", zinssatz),
+                new MySqlParameter("@restschuld", restschuld),
+                new MySqlParameter("@laufzeit", laufzeit));
         }
     }
 }

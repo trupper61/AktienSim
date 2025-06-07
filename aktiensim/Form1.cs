@@ -887,6 +887,15 @@ namespace aktiensim
                 Height = 30
             };
             kreditPanel.Controls.Add(kreditAufnehmen);
+            kreditAufnehmen.Click += (q, w) =>
+            {
+                kredit.Betrag = (double)auswahlMenge.Value;
+                kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
+                kredit.Laufzeit = (int)auswahlLaufzeit.Value;
+                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, benutzerverwaltung.ReturnActiveUser(activeUser));
+                kreditPanel.Visible = false;
+            };
+            
             
         }
         public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
