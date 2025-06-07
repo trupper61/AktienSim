@@ -64,6 +64,8 @@ namespace aktiensim
                 new MySqlParameter("@zinssatz", zinssatz),
                 new MySqlParameter("@restschuld", restschuld),
                 new MySqlParameter("@laufzeit", laufzeit));
+            benutzer.GeldHinzufuegen(betrag);
         }
+        
     }
 }

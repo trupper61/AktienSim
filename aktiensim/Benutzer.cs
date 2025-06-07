@@ -49,7 +49,7 @@ namespace aktiensim
             }
         }
 
-        public void GeldHinzufuegen(int anzahl) //Die Person erhält Geld für testzwecke.
+        public void GeldHinzufuegen(double anzahl) //Die Person erhält Geld für testzwecke.
         {
             this.kontoStand += anzahl;
 
