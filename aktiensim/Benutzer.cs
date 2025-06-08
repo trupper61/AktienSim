@@ -26,7 +26,8 @@ namespace aktiensim
             this.benutzerID = benutzerID;
             this.kontoStand = kontoStand;
             GetKontoStand(this);
-            Kredite = kredite;
+            Kredite = new List<Kredite>();
+            this.kredite = Kredite;
             this.rating = Rating;
         }
 

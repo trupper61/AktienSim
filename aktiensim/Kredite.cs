@@ -55,7 +55,7 @@ namespace aktiensim
             A, B, C, D
         }
 
-        public void KreditHinzufuegen(double betrag, int zinssatz, double restschuld, int laufzeit, Benutzer benutzer) 
+        public void KreditHinzufuegen(double betrag, int zinssatz, double restschuld, int laufzeit, Benutzer benutzer, DataGridView aktiveKredite, Kredite kredit) 
         {
             string kreditAdd = "INSERT INTO kredite(Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit) VALUES(@betrag, @ID_Benutzer, @zinssatz, @restschuld, @laufzeit)";
             SqlConnection.ExecuteNonQuery(kreditAdd,
@@ -65,6 +65,18 @@ namespace aktiensim
                 new MySqlParameter("@restschuld", restschuld),
                 new MySqlParameter("@laufzeit", laufzeit));
             benutzer.GeldHinzufuegen(betrag);
+            benutzer.kredite.Add(kredit);
+
+            aktiveKredite.Rows.Add(betrag, restschuld, zinssatz, DateTime.Now, laufzeit);
+        }
+
+        public static void RefreshDataGridView(DataGridView aktiveKredite, Benutzer benutzer) 
+        {
+            foreach(Kredite kred in benutzer.kredite) 
+            {
+                aktiveKredite.Rows.Add(kred.Betrag, kred.Restschuld, kred.Zinssatz, DateTime.Now, kred.Laufzeit);
+            }
+            
         }
         
     }

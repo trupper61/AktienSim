@@ -169,6 +169,24 @@ namespace aktiensim
                         };
                         homePanel.Controls.Add(kreditverwaltunglb);
 
+                        DataGridView aktiveKredite = new DataGridView
+                        {
+                            Name = "dgvKredite",
+                            Size = new Size(500, 250),
+                            Location = new Point(0, 100),
+                            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
+                            ReadOnly = true,
+                            AllowUserToAddRows = false,
+                            AllowUserToDeleteRows = false,
+                            SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                        };
+                        aktiveKredite.Columns.Add("Betrag", "Kreditbetrag");
+                        aktiveKredite.Columns.Add("Restschuld", "Restschuld");
+                        aktiveKredite.Columns.Add("Zinssatz", "Zinssatz");
+                        aktiveKredite.Columns.Add("Startdatum", "Startdatum");
+                        aktiveKredite.Columns.Add("Laufzeit", "Laufzeit");
+                        homePanel.Controls.Add(aktiveKredite);
+
                         Button kreditaufnahme = new Button
                         {
                             AutoSize = true,
@@ -179,9 +197,11 @@ namespace aktiensim
                         };
                         kreditaufnahme.Click += (u, t) =>
                         {
-                            ShowKreditPanel();
+                            ShowKreditPanel(aktiveKredite);
                         };
                         homePanel.Controls.Add(kreditaufnahme);
+
+                        Kredite.RefreshDataGridView(aktiveKredite, benutzerverwaltung.ReturnActiveUser(activeUser));
                     };
                 };
 
@@ -821,7 +841,7 @@ namespace aktiensim
             };
             kaufPanel.Controls.Add(kaufBtn);
         }
-        public void ShowKreditPanel()
+        public void ShowKreditPanel(DataGridView aktiveKredite)
         {
             Kredite kredit = new Kredite(0, 0, 0, 0, benutzerverwaltung.ReturnActiveUser(activeUser));
             kreditPanel.Controls.Clear();
@@ -892,7 +912,8 @@ namespace aktiensim
                 kredit.Betrag = (double)auswahlMenge.Value;
                 kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
                 kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, benutzerverwaltung.ReturnActiveUser(activeUser));
+                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+
                 kreditPanel.Visible = false;
             };
             
