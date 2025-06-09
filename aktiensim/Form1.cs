@@ -155,6 +155,16 @@ namespace aktiensim
                     };
                     homePanel.Controls.Add(kreditverwaltung);
 
+                    Button umsaetze = new Button
+                    {
+                        AutoSize = true,
+                        Size = new Size(100, 20),
+                        Font = new Font("Arial", 12),
+                        Location = new Point(schulden.Location.X, schulden.Location.Y + 90),
+                        Text = $"Umsätze"
+                    };
+                    homePanel.Controls.Add(umsaetze);
+
                     kreditverwaltung.Click += (o, i) =>
                     {
                         homePanel.Controls.Clear();
