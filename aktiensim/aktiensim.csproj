@@ -148,6 +148,7 @@
     <Compile Include="Benutzer.cs" />
     <Compile Include="Benutzerverwaltung.cs" />
     <Compile Include="Depot.cs" />
+    <Compile Include="Ereigniss.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
