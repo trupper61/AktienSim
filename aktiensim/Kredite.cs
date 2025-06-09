@@ -16,6 +16,7 @@ namespace aktiensim
         public int Zinssatz;
         public double Restschuld;
         public int Laufzeit;
+        public double zuZahlendeRate;
         public Benutzer Benutzer;
 
         public Kredite(double betrag, int zinssatz, double restschuld, int laufzeit, Benutzer benutzer)
@@ -25,6 +26,7 @@ namespace aktiensim
             this.Restschuld = restschuld;
             this.Laufzeit = laufzeit;
             this.Benutzer = benutzer;
+            this.zuZahlendeRate = restschuld / laufzeit;
         }
 
         public int bestimmeZinssatz() 

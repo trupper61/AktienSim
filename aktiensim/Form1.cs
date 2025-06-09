@@ -864,25 +864,8 @@ namespace aktiensim
                 Value = 100,
                 Width = 80
             };
-            Label schuldig = new Label
-            {
-                Text = $"Zu begleichender Betrag: {auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)}",
-                Location = new Point(10, 100),
-                AutoSize = true
-            };
-            kreditPanel.Controls.Add(schuldig);
-            auswahlMenge.ValueChanged += (y, x) =>
-            {
-                schuldig.Text = $"Zu begleichender Betrag: {auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)}";
-            };
             kreditPanel.Controls.Add(auswahlMenge);
-            Label laufzeit = new Label
-            {
-                Text = "Laufzeit(Monate): ",
-                Location = new Point(10, 40),
-                AutoSize = true
-            };
-            kreditPanel.Controls.Add (laufzeit);
+
             NumericUpDown auswahlLaufzeit = new NumericUpDown
             {
                 Location = new Point(100, 40),
@@ -892,6 +875,43 @@ namespace aktiensim
                 Width = 80
             };
             kreditPanel.Controls.Add(auswahlLaufzeit);
+
+            Label zuZahlendeRate = new Label
+            {
+                
+                Text = $"Monatlich Fällig: {Math.Round((auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)) / auswahlLaufzeit.Value, 2)}€",
+                Location = new Point(10, 130),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add(zuZahlendeRate);
+
+            Label schuldig = new Label
+            {
+                Text = $"Zu begleichender Betrag: {auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)}",
+                Location = new Point(10, 100),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add(schuldig);
+
+            auswahlMenge.ValueChanged += (y, x) =>
+            {
+                schuldig.Text = $"Zu begleichender Betrag: {auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)}";
+                zuZahlendeRate.Text = $"Monatlich Fällig: {Math.Round((auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)) / auswahlLaufzeit.Value, 2)}€";
+            };
+
+            auswahlLaufzeit.ValueChanged += (c, v) =>
+            {
+                zuZahlendeRate.Text = $"Monatlich Fällig: {Math.Round((auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)) / auswahlLaufzeit.Value, 2)}€";
+            };
+            
+            Label laufzeit = new Label
+            {
+                Text = "Laufzeit(Monate): ",
+                Location = new Point(10, 40),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add (laufzeit);
+            
             Label zinssatz = new Label
             {
                 Text = $"Zinssatz: { kredit.bestimmeZinssatz().ToString() }%",
@@ -899,10 +919,11 @@ namespace aktiensim
                 AutoSize = true
             };
             kreditPanel.Controls.Add(zinssatz);
+
             Button kreditAufnehmen = new Button()
             {
                 Text = $"Kredit Aufnehmen",
-                Location = new Point(10, 130),
+                Location = new Point(10, 160),
                 Width = 180,
                 Height = 30
             };
