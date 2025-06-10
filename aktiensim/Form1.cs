@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Math.EC.Endo;
 using Org.BouncyCastle.Tls;
 using ScottPlot.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
@@ -34,6 +35,7 @@ namespace aktiensim
         public Panel kaufPanel;
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
         public AktienVerwaltung stonkManager = new AktienVerwaltung();
+        public Button depotBtn;
         public Form1()
         {
             InitializeComponent();
@@ -177,7 +179,7 @@ namespace aktiensim
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
-            Button depotBtn = new Button
+            depotBtn = new Button
             {
                 Text = "Depot",
                 Size = new Size(80, 40),
@@ -238,7 +240,7 @@ namespace aktiensim
                         int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
                         stonkManager.CreateDepot(name, userId);
                         MessageBox.Show($"Depot '{name}' erstellt");
-                        LoadUserDepots(); 
+                        LoadUserDepots();
                     }
                     else
                     {
@@ -247,6 +249,7 @@ namespace aktiensim
                 };
                 homePanel.Controls.Add(createDepot);
 
+
                 Panel aktienImDepotPanel = new Panel()
                 {
                     Location = new Point(depotListBox.Right + 20, 100),
@@ -254,8 +257,14 @@ namespace aktiensim
                     AutoScroll = true,
                     BorderStyle = BorderStyle.FixedSingle
                 };
-                aktienImDepotPanel.Resize += (f, g) => aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+
+                aktienImDepotPanel.Resize += (f, g) =>
+                {
+                    aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+                };
+
                 homePanel.Controls.Add(aktienImDepotPanel);
+
                 void LoadUserDepots()
                 {
                     depotListBox.Items.Clear();
@@ -266,24 +275,39 @@ namespace aktiensim
                 }
                 LoadUserDepots();
 
+                // Event beim Wechsel des ausgewählten Depots
                 depotListBox.SelectedIndexChanged += (sender, args) =>
                 {
                     aktienImDepotPanel.Controls.Clear();
                     var selectedDepot = depotListBox.SelectedItem as Depot;
+
                     if (selectedDepot != null)
                     {
-                        var aktien = stonkManager.GetAktienByDepot(selectedDepot.ID);
                         int yPos = 10;
+                        var transaktionen = stonkManager.LadeTransaktionenFürDepot(selectedDepot.ID);
 
-                        foreach (var eintrag in stonkManager.LadeTransaktionenFürDepot(selectedDepot.ID))
+                        foreach (var transaktion in transaktionen)
                         {
-                            Aktie aktie = stonkManager.LoadAktieByID(eintrag.aktieID);
+                            Aktie aktie = stonkManager.LoadAktieByID(transaktion.aktieID);
+                            double gesamtwert = transaktion.anzahl * aktie.CurrentValue;
+
+                            double veraenderung = ((aktie.CurrentValue - (double)transaktion.einzelpreis) / (double)transaktion.einzelpreis) * 100;
+                            string veraenderungStr = veraenderung >= 0 ? $"+{veraenderung:F2}%" : $"{veraenderung:F2}%";
+
                             Label aktienLabel = new Label()
                             {
-                                Text = $"{aktie.name} ({aktie.firma}) - Anteile: {eintrag.anzahl} - Gesamtwert: {(eintrag.anzahl * aktie.CurrentValue):F2}€",
+                                Text = $"{aktie.name} ({aktie.firma}) - Anteile: {transaktion.anzahl} - Gesamtwert: {gesamtwert:F2}€ – Veränderung: {veraenderungStr}",
                                 Location = new Point(10, yPos),
                                 AutoSize = true,
-                                Font = new Font("Arial", 10)
+                                Font = new Font("Arial", 10),
+                                ForeColor = veraenderung >= 0 ? Color.Green : Color.Red,
+                                Tag = transaktion
+                            };
+                            aktienLabel.Click += (s2, e2) =>
+                            {
+                                if (depotListBox.SelectedItems.Count == 0) return;
+                                MessageBox.Show("Hello");
+                                ShowVerkaufPanel(transaktion);
                             };
                             aktienImDepotPanel.Controls.Add(aktienLabel);
                             yPos += 30;
@@ -300,7 +324,7 @@ namespace aktiensim
                 ForeColor = Color.White,
                 Font = new Font("Sans-Serif", 10)
             };
-            aktienBtn.Click += (s, e) =>
+            aktienBtn.Click += (s2, e2) =>
             {
                 homePanel.Controls.Clear();
                 ShowHomePanel();
@@ -771,6 +795,87 @@ namespace aktiensim
                 cmd.Parameters.AddWithValue("Wert", Wert);
                 cmd.ExecuteNonQuery();
             }
+        }
+        public void ShowVerkaufPanel(Transaktion transaktion)
+        {
+            Aktie aktie = stonkManager.LoadAktieByID(transaktion.aktieID);
+            Panel verkaufPanel = new Panel
+            {
+                Size = new Size(300, 200),
+                Location = new Point(550, 100),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White
+            };
+
+            Label info = new Label
+            {
+                Text = $"Verkauf: {aktie.firma}\n" +
+                       $"Anteile: {transaktion.anzahl:F2}\n" +
+                       $"Kaufpreis: {transaktion.einzelpreis:F2}€\n" +
+                       $"Aktuell: {aktie.CurrentValue:F2}€",
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+            verkaufPanel.Controls.Add(info);
+
+            double diff = aktie.CurrentValue - Convert.ToDouble(transaktion.einzelpreis);
+            double diffPercent = diff / (double)transaktion.einzelpreis * 100;
+
+            Label diffLabel = new Label
+            {
+                Text = $"Veränderung: {diffPercent:F2}%",
+                ForeColor = diff >= 0 ? Color.Green : Color.Red,
+                AutoSize = true,
+                Location = new Point(10, 60)
+            };
+            verkaufPanel.Controls.Add(diffLabel);
+
+            Label mengeLabel = new Label
+            {
+                Text = "Menge:",
+                Location = new Point(10, 90),
+                AutoSize = true
+            };
+            verkaufPanel.Controls.Add(mengeLabel);
+
+            TextBox mengeTb = new TextBox
+            {
+                Location = new Point(70, 90),
+                Width = 50
+            };
+            verkaufPanel.Controls.Add(mengeTb);
+
+            Button verkaufenBtn = new Button
+            {
+                Text = "Verkaufen",
+                Location = new Point(10, 130),
+                Width = 100
+            };
+            verkaufenBtn.Click += (s, e) =>
+            {
+                if (double.TryParse(mengeTb.Text, out double menge) && menge > 0 && menge <= transaktion.anzahl)
+                {
+                    double erloes = menge * aktie.CurrentValue;
+
+                    // Geld gutschreiben
+                    benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(Convert.ToInt32(erloes));
+
+                    transaktion.anzahl -= menge;
+                    stonkManager.AktualisiereTransaktion(transaktion);
+
+                    MessageBox.Show($"Du hast {menge} Anteile für {erloes:F2}€ verkauft.");
+                    homePanel.Controls.Remove(verkaufPanel);
+                    depotBtn.PerformClick(); 
+                }
+                else
+                {
+                    MessageBox.Show("Ungültige Menge.");
+                }
+            };
+            verkaufPanel.Controls.Add(verkaufenBtn);
+
+            homePanel.Controls.Add(verkaufPanel);
+            verkaufPanel.BringToFront();
         }
 
         public void MouseEnterEffectDaten(object sender, EventArgs e) 

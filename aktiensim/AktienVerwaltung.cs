@@ -44,6 +44,17 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@erstellt", DateTime.Now);
             cmd.ExecuteNonQuery();
         }
+        public void AktualisiereTransaktion(Transaktion t)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "UPDATE transaktion SET anzahl = @anzahl WHERE id = @id";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@anzahl", t.anzahl);
+            cmd.Parameters.AddWithValue("@id", t.id);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
         public Aktie LoadAktieByID(int aktieID)
         {
             Aktie aktie = null;
@@ -62,6 +73,7 @@ namespace aktiensim
                 string firma = reader["Firma"].ToString();
                 aktie = new Aktie(name, firma, wert, aktieID, letzterschluss);
             }
+            conn.Close();
             return aktie;
         }
         public List<Aktie> GetAktienByDepot(int depotID)

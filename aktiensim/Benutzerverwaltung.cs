@@ -140,6 +140,8 @@ namespace aktiensim
                 MessageBox.Show("Login erfolgreich!");
                 loginPanel.Visible = false;
                 flowLayoutPanel.Visible = true;
+                if (homePanel == null)
+                    return;
                 homePanel.Visible = true;
                 Benutzer tmpUser = GetUserByEMail(email);
                 if (tmpUser != null)
