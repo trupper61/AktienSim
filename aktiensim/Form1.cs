@@ -30,7 +30,6 @@ namespace aktiensim
         FlowLayoutPanel flowLayoutPanel;
         Panel homePanel;
         public Benutzer activeUser;
-        FormsPlot plot;
         List<Aktie> stonks;
         public Panel kaufPanel;
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
@@ -72,7 +71,6 @@ namespace aktiensim
             homeBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
-                ShowHomePanel();
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -190,7 +188,6 @@ namespace aktiensim
             depotBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
-
                 Label dplabel = new Label()
                 {
                     AutoSize = true,
@@ -206,35 +203,109 @@ namespace aktiensim
                     Size = new Size(100, 20),
                     Font = new Font("Arial", 12),
                     Location = new Point(dplabel.Location.X + 160, 10),
-                    Text = $"Geld Hinzufuegen(Test)"
+                    Text = $"Geld Hinzufügen (Test)"
                 };
                 geldBtn.Click += (f, g) =>
                 {
                     benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
+                    MessageBox.Show("100€ hinzugefügt");
                 };
                 homePanel.Controls.Add(geldBtn);
+
                 TextBox depotTb = new TextBox()
                 {
                     Location = new Point(200, 60)
                 };
                 homePanel.Controls.Add(depotTb);
+
+                ListBox depotListBox = new ListBox()
+                {
+                    Location = new Point(15, 100),
+                    Size = new Size(200, homePanel.Height - 120)
+                };
+                homePanel.Controls.Add(depotListBox);
                 Button createDepot = new Button
                 {
-                    Size = new Size(60, 20),
+                    Size = new Size(80, 25),
                     Location = new Point(depotTb.Right + 15, 60),
-                    Text = "Create Depot"
+                    Text = "Depot erstellen"
                 };
                 createDepot.Click += (h, i) =>
                 {
-                    string name = depotTb.Text;
-                    int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
-                    stonkManager.CreateDepot(name, userId);
-                    MessageBox.Show($"Depot '{name}' created");
+                    string name = depotTb.Text.Trim();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
+                        stonkManager.CreateDepot(name, userId);
+                        MessageBox.Show($"Depot '{name}' erstellt");
+                        LoadUserDepots(); 
+                    }
+                    else
+                    {
+                        MessageBox.Show("Bitte einen Depotnamen eingeben.");
+                    }
                 };
                 homePanel.Controls.Add(createDepot);
+
+                Panel aktienImDepotPanel = new Panel()
+                {
+                    Location = new Point(depotListBox.Right + 20, 100),
+                    Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120),
+                    AutoScroll = true,
+                    BorderStyle = BorderStyle.FixedSingle
+                };
+                aktienImDepotPanel.Resize += (f, g) => aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+                homePanel.Controls.Add(aktienImDepotPanel);
+                void LoadUserDepots()
+                {
+                    depotListBox.Items.Clear();
+                    int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
+                    var depots = stonkManager.GetUserDepot(userId);
+                    foreach (var depot in depots)
+                        depotListBox.Items.Add(depot);
+                }
+                LoadUserDepots();
+
+                depotListBox.SelectedIndexChanged += (sender, args) =>
+                {
+                    aktienImDepotPanel.Controls.Clear();
+                    var selectedDepot = depotListBox.SelectedItem as Depot;
+                    if (selectedDepot != null)
+                    {
+                        var aktien = stonkManager.GetAktienByDepot(selectedDepot.ID);
+                        int yPos = 10;
+
+                        foreach (var eintrag in stonkManager.LadeTransaktionenFürDepot(selectedDepot.ID))
+                        {
+                            Aktie aktie = stonkManager.LoadAktieByID(eintrag.aktieID);
+                            Label aktienLabel = new Label()
+                            {
+                                Text = $"{aktie.name} ({aktie.firma}) - Anteile: {eintrag.anzahl} - Gesamtwert: {(eintrag.anzahl * aktie.CurrentValue):F2}€",
+                                Location = new Point(10, yPos),
+                                AutoSize = true,
+                                Font = new Font("Arial", 10)
+                            };
+                            aktienImDepotPanel.Controls.Add(aktienLabel);
+                            yPos += 30;
+                        }
+                    }
+                };
             };
             flowLayoutPanel.Controls.Add(depotBtn);
-
+            Button aktienBtn = new Button
+            {
+                Text = "Aktien",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            aktienBtn.Click += (s, e) =>
+            {
+                homePanel.Controls.Clear();
+                ShowHomePanel();
+            };
+            flowLayoutPanel.Controls.Add(aktienBtn);
             homePanel = new Panel
             {
                 Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
@@ -598,20 +669,11 @@ namespace aktiensim
                 return;
             }
             benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
+            Benutzer aNutzer = benutzerverwaltung.ReturnActiveUser(activeUser);
+            aNutzer.depotList = stonkManager.GetUserDepot(Convert.ToInt32(aNutzer.benutzerID));
         }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
-        public void ShowGraphs()
-        {
-            int x = 10;
-            foreach (Aktie a in stonks)
-            {
-                a.plot.Plot.HideAxesAndGrid();
-                a.plot.Location = new Point(x, 0);
-                a.plot.Plot.Title(a.name);
-                homePanel.Controls.Add(a.plot);
-                x += 160;
-            }
-        }
+ 
         public void ShowKaufPanel(Aktie aktie)
         {
             kaufPanel.Controls.Clear();
@@ -661,6 +723,7 @@ namespace aktiensim
                 Width = 180,
                 Height = 30
             };
+            
             kaufBtn.Click += (s, e) =>
             {
                 DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");

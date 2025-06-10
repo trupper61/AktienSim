@@ -16,6 +16,7 @@ namespace aktiensim
         public string email;
         public string benutzerID;
         public int kontoStand;
+        public List<Depot> depotList;
         public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand)
         {
             this.name = name;
@@ -23,6 +24,8 @@ namespace aktiensim
             this.email = email;
             this.benutzerID = benutzerID;
             this.kontoStand = kontoStand;
+            depotList = new List<Depot>();
+
             GetKontoStand(this);
         }
 

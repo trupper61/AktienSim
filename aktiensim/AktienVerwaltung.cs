@@ -26,7 +26,7 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@typ", typ);
             cmd.Parameters.AddWithValue("@anzahl", anzahl);
             cmd.Parameters.AddWithValue("@einzelpreis", einzelpreis);
-            Depot userDepot = GetUserDepot(Convert.ToInt32(activeUser.benutzerID));
+            Depot userDepot = activeUser.depotList.FirstOrDefault();
             cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
             cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
             activeUser.kontoStand -= Convert.ToInt32(Convert.ToDecimal(anzahl) * einzelpreis);
@@ -44,9 +44,49 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@erstellt", DateTime.Now);
             cmd.ExecuteNonQuery();
         }
-        public Depot GetUserDepot(int benutzerID)
+        public Aktie LoadAktieByID(int aktieID)
         {
-            Depot depot = null;
+            Aktie aktie = null;
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT aktienID, Firma, Name, Wert, letzterschluss FROM aktiendaten WHERE aktienID = @aktieID";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@aktieID", aktieID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string name = reader["Name"].ToString();
+                double wert = Convert.ToDouble(reader["Wert"]);
+                double letzterschluss = Convert.ToDouble(reader["letzterschluss"]);
+                string firma = reader["Firma"].ToString();
+                aktie = new Aktie(name, firma, wert, aktieID, letzterschluss);
+            }
+            return aktie;
+        }
+        public List<Aktie> GetAktienByDepot(int depotID)
+        {
+            var aktienListe = new List<Aktie>();
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT aktie_ID FROM transaktion WHERE depot_ID = @depotID";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@depotID", depotID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string aktieID= reader["aktie_ID"].ToString();
+                Aktie aktie = LoadAktieByID(Convert.ToInt32(aktieID));
+                if (aktie != null)
+                {
+                    aktienListe.Add(aktie);
+                }
+            }
+            return aktienListe;
+        }
+        public List<Depot> GetUserDepot(int benutzerID)
+        {
+            List<Depot> depotList = new List<Depot>();
             MySqlConnection conn = new MySqlConnection(connectionString);
             conn.Open();
             string query = "SELECT id, name, erstellt FROM depot WHERE benutzer_id = @benutzer_id";
@@ -57,9 +97,11 @@ namespace aktiensim
             {
                 string id = reader["id"].ToString();
                 string name = reader["name"].ToString();
-                depot = new Depot(Convert.ToInt32(id), name);
+                Depot depot = new Depot(Convert.ToInt32(id), name);
+                if (depot != null)
+                    depotList.Add(depot);
             }
-            return depot;
+            return depotList;
         }
         public void UpdateAktie(Aktie aktie)
         {
@@ -111,6 +153,35 @@ namespace aktiensim
             } 
             return aktienListe;
         }
+
+        public List<Transaktion> LadeTransaktionenFürDepot(int depotId)
+        {
+            List<Transaktion> transaktionen = new List<Transaktion>();
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = @"SELECT id, aktie_ID, typ, anzahl, einzelpreis, zeitpunkt 
+                            FROM transaktion
+                            WHERE depot_ID = @depotId 
+                            ORDER BY zeitpunkt DESC";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@depotId", depotId);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                int id = reader.GetInt32("id");
+                int aktieId = reader.GetInt32("aktie_ID");
+                string typ = reader.GetString("typ");
+                double anzahl = reader.GetDouble("anzahl");
+                decimal einzelpreis = reader.GetDecimal("einzelpreis");
+                DateTime zeitpunkt = reader.GetDateTime("zeitpunkt");
+
+                Transaktion transaktion = new Transaktion(id, aktieId, anzahl, einzelpreis, typ, zeitpunkt);
+                transaktionen.Add(transaktion);
+            }
+            return transaktionen;
+        }
+
         public void AktieAnlegen(string firma, string name, double startWert)
         {
             MySqlConnection conn = new MySqlConnection(connectionString);

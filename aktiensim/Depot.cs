@@ -16,5 +16,9 @@ namespace aktiensim
             this.ID = id;
             this.name = name;
         }
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

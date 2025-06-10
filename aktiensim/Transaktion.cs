@@ -9,16 +9,20 @@ namespace aktiensim
     public class Transaktion
     {
         public int id { get; private set; }
-        public Aktie aktie;
-        private string typ;
+        public int aktieID;
+        public string typ;
         public double anzahl;
         public decimal einzelpreis;
-        public Transaktion(int id,Aktie aktie, double anzahl, decimal einzelpreis, string typ)
+        public DateTime zeitpunkt;
+
+        public Transaktion(int id, int aktie, double anzahl, decimal einzelpreis, string typ, DateTime zeitpunkt)
         {
-            this.aktie = aktie;
+            this.id = id;
+            this.aktieID = aktie;
             this.anzahl = anzahl;
             this.einzelpreis = einzelpreis;
             this.typ = typ;
+            this.zeitpunkt = zeitpunkt;
         }
     }
 }
