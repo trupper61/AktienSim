@@ -26,12 +26,12 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@typ", typ);
             cmd.Parameters.AddWithValue("@anzahl", anzahl);
             cmd.Parameters.AddWithValue("@einzelpreis", einzelpreis);
-            Depot userDepot = activeUser.depotList.FirstOrDefault();
+            Depot userDepot = GetUserDepot(Convert.ToInt32(activeUser.benutzerID)).FirstOrDefault();
             cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
             cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
             activeUser.kontoStand -= Convert.ToInt32(Convert.ToDecimal(anzahl) * einzelpreis);
             cmd.ExecuteNonQuery();
-
+            conn.Close();
         }
         public void CreateDepot(string name, int benutzerID)
         {
@@ -43,6 +43,7 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@name", name);
             cmd.Parameters.AddWithValue("@erstellt", DateTime.Now);
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
         public void AktualisiereTransaktion(Transaktion t)
         {
@@ -94,7 +95,18 @@ namespace aktiensim
                     aktienListe.Add(aktie);
                 }
             }
+            conn.Close();
             return aktienListe;
+        }
+        public void LöscheTransaktion(int transId)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "DELETE FROM transaktion WHERE id = @transId";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@transId", transId);
+            cmd.ExecuteNonQuery();
+            conn.Close();
         }
         public List<Depot> GetUserDepot(int benutzerID)
         {
@@ -113,6 +125,7 @@ namespace aktiensim
                 if (depot != null)
                     depotList.Add(depot);
             }
+            conn.Close();
             return depotList;
         }
         public void UpdateAktie(Aktie aktie)
@@ -125,6 +138,7 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@letzterschluss", aktie.LastClose);
             cmd.Parameters.AddWithValue("@Firma", aktie.firma);
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
         public Aktie LadeAktie(string firma)
         {
@@ -144,6 +158,7 @@ namespace aktiensim
                 string id = reader["aktienID"].ToString();
                 aktie = new Aktie(name, firma, wert, Convert.ToInt32(id),letzterschluss);
             }
+            conn.Close();
             return aktie;
         }
         public List<Aktie> LadeAlleAktien()
@@ -162,7 +177,8 @@ namespace aktiensim
                 {
                     aktienListe.Add(aktie);
                 }
-            } 
+            }
+            conn.Close();
             return aktienListe;
         }
 
@@ -191,9 +207,28 @@ namespace aktiensim
                 Transaktion transaktion = new Transaktion(id, aktieId, anzahl, einzelpreis, typ, zeitpunkt);
                 transaktionen.Add(transaktion);
             }
+            conn.Close();
             return transaktionen;
         }
+        public string[] GetUpdateAktien(int id)
+        {
+            string[] daten = new string[2];
 
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT Wert, letzterschluss FROM aktiendaten WHERE aktienID = @id";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while(reader.Read())
+            {
+                daten[0] = reader["Wert"].ToString();
+                daten[1] = reader["letzterschluss"].ToString();
+
+            }
+            conn.Close();
+            return daten;
+        }
         public void AktieAnlegen(string firma, string name, double startWert)
         {
             MySqlConnection conn = new MySqlConnection(connectionString);
@@ -205,6 +240,7 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@Wert", startWert);
             cmd.Parameters.AddWithValue("@letzterschluss", startWert);
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
     }
 }

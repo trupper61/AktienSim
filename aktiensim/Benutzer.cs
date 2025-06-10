@@ -57,7 +57,7 @@ namespace aktiensim
             UpdateKontoStand(stand, BID);
         }
 
-        public void UpdateKontoStand(int stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
+        public void UpdateKontoStand(int stand, string BID) 
         {
             //Update den Kontostand in der Datenbank.
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";

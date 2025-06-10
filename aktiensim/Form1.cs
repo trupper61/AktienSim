@@ -1,9 +1,17 @@
-﻿using System;
+﻿using MySql.Data;
+using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Math.EC.Endo;
+using Org.BouncyCastle.Tls;
+using ScottPlot.Hatches;
+using ScottPlot.Rendering.RenderActions;
+using ScottPlot.WinForms;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -11,11 +19,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MySql.Data;
-using MySql.Data.MySqlClient;
-using Org.BouncyCastle.Math.EC.Endo;
-using Org.BouncyCastle.Tls;
-using ScottPlot.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace aktiensim
@@ -36,6 +39,7 @@ namespace aktiensim
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
         public AktienVerwaltung stonkManager = new AktienVerwaltung();
         public Button depotBtn;
+        private Dictionary<int, Aktie> alleAktien = new Dictionary<int, Aktie>();
         public Form1()
         {
             InitializeComponent();
@@ -43,6 +47,13 @@ namespace aktiensim
             InitRegisterUI();
             InitUI();
             stonks = stonkManager.LadeAlleAktien(); // Loads all stonks in Database
+        }
+        public void InitStocks()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                SimuliereNächstenTag();
+            }
         }
         public void InitUI()
         {
@@ -73,6 +84,17 @@ namespace aktiensim
             homeBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
+                Button nextDayBtn = new Button
+                {
+                    Text = "Nächster Tag...",
+                    Location = new Point(10, 10),
+                    Width = 120
+                };
+                homePanel.Controls.Add(nextDayBtn);
+                nextDayBtn.Click += (s2, e2) =>
+                {
+                    SimuliereNächstenTag();
+                };
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -360,6 +382,14 @@ namespace aktiensim
         }
         public void ShowHomePanel()
         {
+            //foreach (var stock in stonks)
+            //{
+            //    string[] update = stonkManager.GetUpdateAktien(stock.id);
+            //    stock.CurrentValue = Convert.ToDouble(update[0]);
+            //    stock.SetLastClose(Convert.ToDouble(update[1]));
+            //}
+
+          
             FlowLayoutPanel flp = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -878,6 +908,94 @@ namespace aktiensim
             verkaufPanel.BringToFront();
         }
 
+        public void SimuliereNächstenTag()
+        {
+            var alleBenutzer = benutzerverwaltung.LadeAlleBenutzer();
+            var aktuellerBenutzer = benutzerverwaltung.ReturnActiveUser(activeUser);
+
+            Dictionary<int, int> nachfrage = new Dictionary<int, int>();
+            Random rand = new Random();
+            foreach(var benutzer in alleBenutzer)
+            {
+                if (benutzer.benutzerID == aktuellerBenutzer.benutzerID)
+                    continue;
+                var depots = stonkManager.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
+                if (depots.Count == 0)
+                {
+                    stonkManager.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
+                    depots = stonkManager.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
+                }
+                foreach(var depot in depots)
+                {
+                    foreach (var aktie in stonks)
+                    {
+                        int choice = rand.Next(0, 3); // 0 = nichts, 1 = kaufen, 2 = verkaufen
+                        switch (choice)
+                        {
+                            case 1:
+                                double mengeKauf = Math.Round(rand.NextDouble() * 5, 2);
+                                decimal kosten = Convert.ToDecimal(mengeKauf * aktie.CurrentValue);
+                                if(benutzer.kontoStand >= kosten)
+                                {
+                                    stonkManager.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
+                                    benutzer.UpdateKontoStand(Convert.ToInt32(kosten), benutzer.benutzerID);
+                                    nachfrage.TryGetValue(aktie.id, out int wert);
+                                    nachfrage[aktie.id] = wert + 1; 
+                                }
+                                break;
+                            case 2:
+                                var transaktion = stonkManager.LadeTransaktionenFürDepot(depot.ID).Where(t => t.aktieID == aktie.id && t.anzahl > 0).ToList();
+                                if (transaktion.Any())
+                                {
+                                    var trans = transaktion[rand.Next(transaktion.Count)];
+                                    double verkaufsMenge = Math.Min(trans.anzahl, Math.Round(rand.NextDouble() * 5, 2));
+                                    if (verkaufsMenge > 0)
+                                    {
+                                        decimal erloes = Convert.ToDecimal(verkaufsMenge * aktie.CurrentValue);
+                                        trans.anzahl -= verkaufsMenge;
+                                        if (trans.anzahl <= 0)
+                                        {
+                                            stonkManager.LöscheTransaktion(trans.id);
+                                        }
+                                        else
+                                        {
+                                            stonkManager.AktualisiereTransaktion(trans);
+                                        }
+                                        benutzer.GeldHinzufuegen((int)erloes);
+                                        nachfrage.TryGetValue(aktie.id, out int wert);
+                                        nachfrage[aktie.id] = wert - 1;
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            foreach(var aktie in stonks)
+            {
+                nachfrage.TryGetValue(aktie.id, out int delta);
+                double prozent = Math.Min(5, Math.Abs(delta) * 0.01);
+                if (delta > 0)
+                {
+                    aktie.CurrentValue *= (double)(1 + prozent);
+                    aktie.SimulateNextStep(aktie.CurrentValue);
+                }
+                else if (delta < 0)
+                {
+                    aktie.CurrentValue *= (double)(1 - prozent);
+                    aktie.SimulateNextStep(aktie.CurrentValue);
+                }
+               else
+                {
+                    aktie.SimulateNextStep();
+                }
+
+
+
+                    stonkManager.UpdateAktie(aktie);
+
+            }
+        }
         public void MouseEnterEffectDaten(object sender, EventArgs e) 
         {
             PictureBox pb = sender as PictureBox;

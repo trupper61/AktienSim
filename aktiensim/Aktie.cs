@@ -12,94 +12,101 @@ namespace aktiensim
 {
     public class Aktie
     {
-        public List<double> timeX;
-        public double CurrentValue { get; private set; }
+        public int id;
         public string name;
         public string firma;
-        public int id;
-        public FormsPlot plot;
+
+        public double CurrentValue { get; set; }
         public double LastClose { get; private set; }
-        public List<double> ValueHistory { get; private set; }
+
+        public List<double> timeX;
+        public List<double> ValueHistory;
+        public FormsPlot plot;
 
         private int counter;
         private static Random rand = new Random();
-        private Timer nextStep;
-        private static Timer nextLastClose;
         private static AktienVerwaltung stocksManager = new AktienVerwaltung();
-        public Aktie(string name, string firma,double startValue, int id,double lastClose = 0)
+
+        public Aktie(string name, string firma, double startValue, int id, double lastClose = 0)
         {
             this.name = name;
             this.firma = firma;
-            this.LastClose = lastClose;
+            this.CurrentValue = startValue;
             this.id = id;
-            CurrentValue = startValue;
+            this.LastClose = lastClose;
+
             timeX = new List<double>();
-            ValueHistory = new List<double> ();
-            ValueHistory.Add(startValue);
+            ValueHistory = new List<double>();
+            counter = 0;
+
             plot = new FormsPlot();
             plot.Dock = DockStyle.Fill;
-            counter = 0;
-            id++;
-            InitializeChartData();
-            nextStep = new Timer();
-            nextStep.Interval = 10000;
-            nextStep.Tick += NextStep_Tick;
-            nextStep.Start();
-            nextLastClose = new Timer();
-            nextLastClose.Interval = 120000;
-            nextLastClose.Tick += NextLastClose_Tick;
-            nextLastClose.Start();
+            plot.Plot.Title(firma);
+            plot.Plot.HideGrid();
+
+            InitHistory(startValue);
         }
-        private void NextLastClose_Tick(object sender, EventArgs e)
+
+        private void InitHistory(double start)
         {
-            SetLastClose(CurrentValue);
-        }
-        private void NextStep_Tick(object sender, EventArgs e)
-        {
-            SimulateNextStep();
-        }
-        public double RandomChange()
-        {
-            double changePercent = rand.NextDouble() * 0.02 - 0.01; // Cahnge either -1% | +1%
-            return ValueHistory.Last() * changePercent;
-        }
-        private void InitializeChartData()
-        {
+            ValueHistory.Add(start);
             for (int i = 0; i < 20; i++)
             {
                 counter++;
                 timeX.Add(counter);
                 ValueHistory.Add(ValueHistory.Last() + RandomChange());
             }
-            SimulateNextStep();
+            PlotChart();
         }
-        public void SimulateNextStep()
+
+        private double RandomChange()
+        {
+            return ValueHistory.Last() * (rand.NextDouble() * 0.02 - 0.01); // ±1%
+        }
+
+        // Diese Methode rufst du von außen auf
+        public void SimulateNextStep(double? overrideNewValue = null)
         {
             counter++;
-            double changePercent = rand.NextDouble() * 0.02 - 0.01; // Change either -1% | +1%
-            CurrentValue *= (1 + changePercent);
+
+            if (overrideNewValue.HasValue)
+                CurrentValue = overrideNewValue.Value;
+            else
+                CurrentValue *= 1 + (rand.NextDouble() * 0.02 - 0.01);
+
             CurrentValue = Math.Round(CurrentValue, 2);
 
             timeX.Add(counter);
             ValueHistory.Add(CurrentValue);
-            
+
             if (timeX.Count > 20)
             {
                 timeX.RemoveAt(0);
                 ValueHistory.RemoveAt(0);
             }
+            if (counter % 10 == 0)
+                SetLastClose(CurrentValue);
+            PlotChart();
+            stocksManager.UpdateAktie(this); // optional
+        }
+
+        private void PlotChart()
+        {
             plot.Plot.Clear();
-            plot.Plot.Add.Scatter(timeX, ValueHistory, ScottPlot.Color.FromColor(Color.Blue));
+            plot.Plot.Add.Scatter(timeX.ToArray(), ValueHistory.ToArray(), ScottPlot.Color.FromColor(Color.Blue));
 
             if (LastClose > 0)
             {
                 var hline = plot.Plot.Add.HorizontalLine(LastClose);
-                hline.Color = CurrentValue >= LastClose ? ScottPlot.Color.FromColor(Color.Green) : ScottPlot.Color.FromColor(Color.Red);
+                hline.Color = CurrentValue >= LastClose
+                    ? ScottPlot.Color.FromColor(Color.Green)
+                    : ScottPlot.Color.FromColor(Color.Red);
             }
+
             plot.Plot.Axes.AutoScale();
             plot.Refresh();
-            stocksManager.UpdateAktie(this);
         }
+
         public void SetLastClose(double value)
         {
             LastClose = value;
