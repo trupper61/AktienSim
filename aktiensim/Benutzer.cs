@@ -15,8 +15,10 @@ namespace aktiensim
         public string vorname;
         public string email;
         public string benutzerID;
-        public int kontoStand;
-        public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand)
+        public double kontoStand;
+        public Kredite.CreditRating rating;
+        public List<Kredite> kredite;
+        public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand, List<Kredite> Kredite, Kredite.CreditRating Rating)
         {
             this.name = name;
             this.vorname = vorname;
@@ -24,9 +26,12 @@ namespace aktiensim
             this.benutzerID = benutzerID;
             this.kontoStand = kontoStand;
             GetKontoStand(this);
+            Kredite = new List<Kredite>();
+            this.kredite = Kredite;
+            this.rating = Rating;
         }
 
-        public void AddKonto(string ID_Benutzer, int Kontostand) 
+        public void AddKonto(string ID_Benutzer, double Kontostand) 
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "INSERT INTO konto(ID_Benutzer, Kontostand) VALUES(@ID_Benutzer, @Kontostand)";
@@ -45,16 +50,16 @@ namespace aktiensim
             }
         }
 
-        public void GeldHinzufuegen(int anzahl) //Die Person erhält Geld für testzwecke.
+        public void GeldHinzufuegen(double anzahl) //Die Person erhält Geld für testzwecke.
         {
             this.kontoStand += anzahl;
 
-            int stand = this.kontoStand;
+            double stand = this.kontoStand;
             string BID = this.benutzerID;
             UpdateKontoStand(stand, BID);
         }
 
-        public void UpdateKontoStand(int stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
+        public void UpdateKontoStand(double stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
         {
             //Update den Kontostand in der Datenbank.
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";

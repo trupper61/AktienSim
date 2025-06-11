@@ -78,7 +78,7 @@ namespace aktiensim
                 cmd.ExecuteNonQuery();
             }
             
-            Benutzer user = new Benutzer(nName, vName, email, BID, 0);
+            Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C);
             user.AddKonto(BID, 0);
 
             string konIdQry = "SELECT KontoID FROM konto WHERE ID_Benutzer = @ID_Benutzer";
@@ -184,7 +184,7 @@ namespace aktiensim
             }
             if (givenEmail == email)
             {
-                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0);
+                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, Kredite.CreditRating.C);
                 return user;
             }
             else

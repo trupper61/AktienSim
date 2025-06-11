@@ -33,6 +33,7 @@ namespace aktiensim
         FormsPlot plot;
         List<Aktie> stonks;
         public Panel kaufPanel;
+        public Panel kreditPanel;
         Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
         
         public Form1()
@@ -74,6 +75,7 @@ namespace aktiensim
             {
                 homePanel.Controls.Clear();
                 ShowHomePanel();
+                kreditPanel.Visible = false;
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -86,6 +88,7 @@ namespace aktiensim
             };
             profileBtn.Click += (s, e) =>
             {
+                kreditPanel.Visible = false;
                 int y = 10;
                 homePanel.Controls.Clear();
 
@@ -141,6 +144,75 @@ namespace aktiensim
                         Text = $"Ihre Schulden: TBD"
                     };
                     homePanel.Controls.Add(schulden);
+
+                    Button kreditverwaltung = new Button
+                    {
+                        AutoSize = true,
+                        Size = new Size(100, 20),
+                        Font = new Font("Arial", 12),
+                        Location = new Point(schulden.Location.X, schulden.Location.Y + 60),
+                        Text = $"Kredite Verwalten"
+                    };
+                    homePanel.Controls.Add(kreditverwaltung);
+
+                    Button umsaetze = new Button
+                    {
+                        AutoSize = true,
+                        Size = new Size(100, 20),
+                        Font = new Font("Arial", 12),
+                        Location = new Point(schulden.Location.X, schulden.Location.Y + 90),
+                        Text = $"Umsätze"
+                    };
+                    homePanel.Controls.Add(umsaetze);
+
+                    kreditverwaltung.Click += (o, i) =>
+                    {
+                        homePanel.Controls.Clear();
+
+                        Label kreditverwaltunglb = new Label()
+                        {
+                            AutoSize = true,
+                            ForeColor = Color.Black,
+                            Font = new Font("Arial", 20),
+                            Location = new Point(0, 0),
+                            Text = $"Kreditverwaltung"
+                        };
+                        homePanel.Controls.Add(kreditverwaltunglb);
+
+                        DataGridView aktiveKredite = new DataGridView
+                        {
+                            Name = "dgvKredite",
+                            Size = new Size(500, 250),
+                            Location = new Point(0, 100),
+                            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
+                            ReadOnly = true,
+                            AllowUserToAddRows = false,
+                            AllowUserToDeleteRows = false,
+                            SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                        };
+                        aktiveKredite.Columns.Add("Betrag", "Kreditbetrag");
+                        aktiveKredite.Columns.Add("Restschuld", "Restschuld");
+                        aktiveKredite.Columns.Add("Zinssatz", "Zinssatz");
+                        aktiveKredite.Columns.Add("Startdatum", "Startdatum");
+                        aktiveKredite.Columns.Add("Laufzeit", "Laufzeit");
+                        homePanel.Controls.Add(aktiveKredite);
+
+                        Button kreditaufnahme = new Button
+                        {
+                            AutoSize = true,
+                            Size = new Size(100, 20),
+                            Font = new Font("Arial", 12),
+                            Location = new Point(kreditverwaltunglb.Location.X, kreditverwaltunglb.Location.Y + 60),
+                            Text = $"Kredit Aufnehmen"
+                        };
+                        kreditaufnahme.Click += (u, t) =>
+                        {
+                            ShowKreditPanel(aktiveKredite);
+                        };
+                        homePanel.Controls.Add(kreditaufnahme);
+
+                        Kredite.RefreshDataGridView(aktiveKredite, benutzerverwaltung.ReturnActiveUser(activeUser));
+                    };
                 };
 
                 PictureBox benutzerdatenBild = new PictureBox()
@@ -311,7 +383,7 @@ namespace aktiensim
             depotBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
-
+                kreditPanel.Visible = false;
                 Label dplabel = new Label()
                 {
                     AutoSize = true,
@@ -351,6 +423,14 @@ namespace aktiensim
                 BorderStyle = BorderStyle.FixedSingle,
                 Visible = false
             };
+            kreditPanel = new Panel
+            {
+                Size = new Size(300, 200),
+                Location = new Point((homePanel.Width - 315) / 2, (homePanel.Height - 300) / 2),
+                BorderStyle = BorderStyle.FixedSingle,
+                Visible = false
+            };
+            this.Controls.Add(kreditPanel);
             this.Controls.Add(kaufPanel);
             Controls.Add(homePanel);
             Controls.Add(flowLayoutPanel);
@@ -770,6 +850,105 @@ namespace aktiensim
                 kaufPanel.Visible = false;
             };
             kaufPanel.Controls.Add(kaufBtn);
+        }
+        public void ShowKreditPanel(DataGridView aktiveKredite)
+        {
+            Kredite kredit = new Kredite(0, 0, 0, 0, benutzerverwaltung.ReturnActiveUser(activeUser));
+            kreditPanel.Controls.Clear();
+            kreditPanel.Visible = true;
+            kreditPanel.BringToFront();
+
+            Label menge = new Label
+            {
+                Text = "Betrag: ",
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add(menge);
+
+            NumericUpDown auswahlMenge = new NumericUpDown
+            {
+                Location = new Point(100, 10),
+                Minimum = 100,
+                Maximum = 10000,
+                Value = 100,
+                Width = 80
+            };
+            kreditPanel.Controls.Add(auswahlMenge);
+
+            NumericUpDown auswahlLaufzeit = new NumericUpDown
+            {
+                Location = new Point(100, 40),
+                Minimum = 4,
+                Maximum = 48,
+                Value = 4,
+                Width = 80
+            };
+            kreditPanel.Controls.Add(auswahlLaufzeit);
+
+            Label zuZahlendeRate = new Label
+            {
+                
+                Text = $"Monatlich Fällig: {Math.Round((auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)) / auswahlLaufzeit.Value, 2)}€",
+                Location = new Point(10, 130),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add(zuZahlendeRate);
+
+            Label schuldig = new Label
+            {
+                Text = $"Zu begleichender Betrag: {auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)}",
+                Location = new Point(10, 100),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add(schuldig);
+
+            auswahlMenge.ValueChanged += (y, x) =>
+            {
+                schuldig.Text = $"Zu begleichender Betrag: {auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)}";
+                zuZahlendeRate.Text = $"Monatlich Fällig: {Math.Round((auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)) / auswahlLaufzeit.Value, 2)}€";
+            };
+
+            auswahlLaufzeit.ValueChanged += (c, v) =>
+            {
+                zuZahlendeRate.Text = $"Monatlich Fällig: {Math.Round((auswahlMenge.Value * (1 + (decimal)kredit.bestimmeZinssatz() / 100)) / auswahlLaufzeit.Value, 2)}€";
+            };
+            
+            Label laufzeit = new Label
+            {
+                Text = "Laufzeit(Monate): ",
+                Location = new Point(10, 40),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add (laufzeit);
+            
+            Label zinssatz = new Label
+            {
+                Text = $"Zinssatz: { kredit.bestimmeZinssatz().ToString() }%",
+                Location = new Point(10, 70),
+                AutoSize = true
+            };
+            kreditPanel.Controls.Add(zinssatz);
+
+            Button kreditAufnehmen = new Button()
+            {
+                Text = $"Kredit Aufnehmen",
+                Location = new Point(10, 160),
+                Width = 180,
+                Height = 30
+            };
+            kreditPanel.Controls.Add(kreditAufnehmen);
+            kreditAufnehmen.Click += (q, w) =>
+            {
+                kredit.Betrag = (double)auswahlMenge.Value;
+                kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
+                kredit.Laufzeit = (int)auswahlLaufzeit.Value;
+                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+
+                kreditPanel.Visible = false;
+            };
+            
+            
         }
         public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
         {
