@@ -107,6 +107,14 @@ namespace aktiensim
                     for (int i = 0; i < 7; i++)
                     {
                         SimuliereNächstenTag();
+                        if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null) 
+                        {
+                            foreach(Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite) 
+                            {
+                                kr.Laufzeit--;
+                                MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                            }
+                        }
                     }
                 };
             };

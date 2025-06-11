@@ -72,6 +72,16 @@ namespace aktiensim
             aktiveKredite.Rows.Add(betrag, restschuld, zinssatz, DateTime.Now, laufzeit);
         }
 
+        public void HoleKrediteAusDatenbank(Benutzer benutzer) 
+        {
+            string kreditAdd = "SELECT Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit FROM kredite WHERE ID_Benutzer = @ID_Benutzer";
+            
+            SqlConnection.ExecuteNonQueryReader(kreditAdd,
+                new MySqlParameter("@ID_Benutzer", benutzer.benutzerID));
+
+            Kredite kredit = new Kredite(0, 0, 0, 0, benutzer);
+        }
+
         public static void RefreshDataGridView(DataGridView aktiveKredite, Benutzer benutzer) 
         {
             foreach(Kredite kred in benutzer.kredite) 
