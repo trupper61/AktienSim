@@ -926,8 +926,7 @@ namespace aktiensim
             benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
             homePanel.Controls.Clear();
             Benutzer aNutzer = benutzerverwaltung.ReturnActiveUser(activeUser);
-            aNutzer.depotList = stonkManager.GetUserDepot(Convert.ToInt32(aNutzer.benutzerID));
-        }
+            }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
  
         public void ShowKaufPanel(Aktie aktie)
@@ -1236,7 +1235,7 @@ namespace aktiensim
                             case 1:
                                 double mengeKauf = Math.Round(rand.NextDouble() * 5, 2);
                                 decimal kosten = Convert.ToDecimal(mengeKauf * aktie.CurrentValue);
-                                if(benutzer.kontoStand >= kosten)
+                                if(benutzer.kontoStand >= (double)kosten)
                                 {
                                     stonkManager.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
                                     benutzer.UpdateKontoStand(Convert.ToInt32(kosten), benutzer.benutzerID);

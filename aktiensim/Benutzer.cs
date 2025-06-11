@@ -25,7 +25,6 @@ namespace aktiensim
             this.email = email;
             this.benutzerID = benutzerID;
             this.kontoStand = kontoStand;
-            depotList = new List<Depot>();
 
             GetKontoStand(this);
             Kredite = new List<Kredite>();
