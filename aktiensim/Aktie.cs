@@ -61,10 +61,9 @@ namespace aktiensim
 
         private double RandomChange()
         {
-            return ValueHistory.Last() * (rand.NextDouble() * 0.02 - 0.01); // ±1%
+            return ValueHistory.Last() * (rand.NextDouble() * 0.02 - 0.01); 
         }
 
-        // Diese Methode rufst du von außen auf
         public void SimulateNextStep(double? overrideNewValue = null)
         {
             counter++;
@@ -87,7 +86,7 @@ namespace aktiensim
             if (counter % 10 == 0)
                 SetLastClose(CurrentValue);
             PlotChart();
-            stocksManager.UpdateAktie(this); // optional
+            stocksManager.UpdateAktie(this);
         }
 
         private void PlotChart()
