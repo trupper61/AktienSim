@@ -16,6 +16,118 @@ namespace aktiensim
         {
             this.connectionString = connectionString;
         }
+        public void AddTransaktion(int aktieId, string typ, double anzahl, decimal einzelpreis, Benutzer activeUser)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "INSERT INTO transaktion (aktie_ID, typ, anzahl, einzelpreis, zeitpunkt, depot_ID) VALUES(@aktie_ID, @typ, @anzahl, @einzelpreis, @zeitpunkt, @depot_ID)";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@aktie_ID", aktieId);
+            cmd.Parameters.AddWithValue("@typ", typ);
+            cmd.Parameters.AddWithValue("@anzahl", anzahl);
+            cmd.Parameters.AddWithValue("@einzelpreis", einzelpreis);
+            Depot userDepot = GetUserDepot(Convert.ToInt32(activeUser.benutzerID)).FirstOrDefault();
+            cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
+            cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
+            activeUser.kontoStand -= Convert.ToInt32(Convert.ToDecimal(anzahl) * einzelpreis);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+        public void CreateDepot(string name, int benutzerID)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "INSERT INTO depot (benutzer_id, name, erstellt) VALUES(@benutzer_id, @name, @erstellt)";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@benutzer_id", benutzerID);
+            cmd.Parameters.AddWithValue("@name", name);
+            cmd.Parameters.AddWithValue("@erstellt", DateTime.Now);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+        public void AktualisiereTransaktion(Transaktion t)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "UPDATE transaktion SET anzahl = @anzahl WHERE id = @id";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@anzahl", t.anzahl);
+            cmd.Parameters.AddWithValue("@id", t.id);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+        public Aktie LoadAktieByID(int aktieID)
+        {
+            Aktie aktie = null;
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT aktienID, Firma, Name, Wert, letzterschluss FROM aktiendaten WHERE aktienID = @aktieID";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@aktieID", aktieID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string name = reader["Name"].ToString();
+                double wert = Convert.ToDouble(reader["Wert"]);
+                double letzterschluss = Convert.ToDouble(reader["letzterschluss"]);
+                string firma = reader["Firma"].ToString();
+                aktie = new Aktie(name, firma, wert, aktieID, letzterschluss);
+            }
+            conn.Close();
+            return aktie;
+        }
+        public List<Aktie> GetAktienByDepot(int depotID)
+        {
+            var aktienListe = new List<Aktie>();
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT aktie_ID FROM transaktion WHERE depot_ID = @depotID";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@depotID", depotID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string aktieID= reader["aktie_ID"].ToString();
+                Aktie aktie = LoadAktieByID(Convert.ToInt32(aktieID));
+                if (aktie != null)
+                {
+                    aktienListe.Add(aktie);
+                }
+            }
+            conn.Close();
+            return aktienListe;
+        }
+        public void LöscheTransaktion(int transId)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "DELETE FROM transaktion WHERE id = @transId";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@transId", transId);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+        public List<Depot> GetUserDepot(int benutzerID)
+        {
+            List<Depot> depotList = new List<Depot>();
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT id, name, erstellt FROM depot WHERE benutzer_id = @benutzer_id";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@benutzer_id", benutzerID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string id = reader["id"].ToString();
+                string name = reader["name"].ToString();
+                Depot depot = new Depot(Convert.ToInt32(id), name);
+                if (depot != null)
+                    depotList.Add(depot);
+            }
+            conn.Close();
+            return depotList;
+        }
         public void UpdateAktie(Aktie aktie)
         {
             MySqlConnection conn = new MySqlConnection(connectionString);
@@ -26,13 +138,14 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@letzterschluss", aktie.LastClose);
             cmd.Parameters.AddWithValue("@Firma", aktie.firma);
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
         public Aktie LadeAktie(string firma)
         {
             Aktie aktie = null;
             MySqlConnection conn = new MySqlConnection(connectionString);
             conn.Open();
-            string query = "SELECT Firma, Name, Wert, letzterschluss FROM aktiendaten WHERE Firma = @Firma";
+            string query = "SELECT aktienID,Firma, Name, Wert, letzterschluss FROM aktiendaten WHERE Firma = @Firma";
             MySqlCommand cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@Firma", firma);
             MySqlDataReader reader = cmd.ExecuteReader();
@@ -42,8 +155,10 @@ namespace aktiensim
                 string name = reader["Name"].ToString();
                 double wert = Convert.ToDouble(reader["Wert"]);
                 double letzterschluss = Convert.ToDouble(reader["letzterschluss"]);
-                aktie = new Aktie(name, firma, wert, letzterschluss);
+                string id = reader["aktienID"].ToString();
+                aktie = new Aktie(name, firma, wert, Convert.ToInt32(id),letzterschluss);
             }
+            conn.Close();
             return aktie;
         }
         public List<Aktie> LadeAlleAktien()
@@ -62,8 +177,57 @@ namespace aktiensim
                 {
                     aktienListe.Add(aktie);
                 }
-            } 
+            }
+            conn.Close();
             return aktienListe;
+        }
+
+        public List<Transaktion> LadeTransaktionenFürDepot(int depotId)
+        {
+            List<Transaktion> transaktionen = new List<Transaktion>();
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = @"SELECT id, aktie_ID, typ, anzahl, einzelpreis, zeitpunkt 
+                            FROM transaktion
+                            WHERE depot_ID = @depotId 
+                            ORDER BY zeitpunkt DESC";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@depotId", depotId);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                int id = reader.GetInt32("id");
+                int aktieId = reader.GetInt32("aktie_ID");
+                string typ = reader.GetString("typ");
+                double anzahl = reader.GetDouble("anzahl");
+                decimal einzelpreis = reader.GetDecimal("einzelpreis");
+                DateTime zeitpunkt = reader.GetDateTime("zeitpunkt");
+
+                Transaktion transaktion = new Transaktion(id, aktieId, anzahl, einzelpreis, typ, zeitpunkt);
+                transaktionen.Add(transaktion);
+            }
+            conn.Close();
+            return transaktionen;
+        }
+        public string[] GetUpdateAktien(int id)
+        {
+            string[] daten = new string[2];
+
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            conn.Open();
+            string query = "SELECT Wert, letzterschluss FROM aktiendaten WHERE aktienID = @id";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while(reader.Read())
+            {
+                daten[0] = reader["Wert"].ToString();
+                daten[1] = reader["letzterschluss"].ToString();
+
+            }
+            conn.Close();
+            return daten;
         }
         public void AktieAnlegen(string firma, string name, double startWert)
         {
@@ -76,6 +240,7 @@ namespace aktiensim
             cmd.Parameters.AddWithValue("@Wert", startWert);
             cmd.Parameters.AddWithValue("@letzterschluss", startWert);
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
     }
 }

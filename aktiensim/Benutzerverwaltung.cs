@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using ScottPlot.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,6 +141,8 @@ namespace aktiensim
                 MessageBox.Show("Login erfolgreich!");
                 loginPanel.Visible = false;
                 flowLayoutPanel.Visible = true;
+                if (homePanel == null)
+                    return;
                 homePanel.Visible = true;
                 Benutzer tmpUser = GetUserByEMail(email);
                 if (tmpUser != null)
@@ -161,7 +164,45 @@ namespace aktiensim
             var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
             return string.Concat(hash.Select(b => b.ToString("x2")));
         }
-
+        public int GetBenutzerKontostand(int kontoID)
+        {
+            int kontostand = 0;
+            MySqlConnection conn = new MySqlConnection("server=localhost;database=aktiensimdb;uid=root;password=\"\"");
+            conn.Open();
+            string query = "SELECT Kontostand FROM konto WHERE KontoID = @kontoID";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@kontoID", kontoID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                kontostand = Convert.ToInt32(reader["Kontostand"]);
+            }
+            conn.Close();
+            return kontostand;
+        }
+        public List<Benutzer> LadeAlleBenutzer()
+        {
+            List<Benutzer> benutzer = new List<Benutzer>();
+            MySqlConnection conn = new MySqlConnection("server=localhost;database=aktiensimdb;uid=root;password=\"\"");
+            conn.Open();
+            string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto FROM benutzer";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string id = reader["BenutzerID"].ToString();
+                string name = reader["Name"].ToString();
+                string vorname = reader["Vorname"].ToString();
+                string email = reader["Email"].ToString();
+                int kontoId = Convert.ToInt32(reader["ID_Konto"]);
+                int kontostand = GetBenutzerKontostand(kontoId);
+                Benutzer user = new Benutzer(name, vorname, email, id, kontostand);
+                if (user != null)
+                    benutzer.Add(user);
+            }
+            conn.Close();
+            return benutzer;
+        }
         public Benutzer GetUserByEMail(string givenEmail)
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
@@ -182,6 +223,7 @@ namespace aktiensim
                     vName = reader["Vorname"].ToString();
                 }
             }
+            conn.Close();
             if (givenEmail == email)
             {
                 Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, Kredite.CreditRating.C);
