@@ -37,8 +37,6 @@ namespace aktiensim
         List<Aktie> stonks;
         public Panel kaufPanel;
         public Panel kreditPanel;
-        Benutzerverwaltung benutzerverwaltung = new Benutzerverwaltung();
-        public AktienVerwaltung stonkManager = new AktienVerwaltung();
         public Button depotBtn;
         private Dictionary<int, Aktie> alleAktien = new Dictionary<int, Aktie>();
         public Form1()
@@ -47,7 +45,7 @@ namespace aktiensim
             InitLoginUi();
             InitRegisterUI();
             InitUI();
-            stonks = stonkManager.LadeAlleAktien(); // Loads all stonks in Database
+            stonks = MySqlManager.AktienVerwaltung.LadeAlleAktien(); // Loads all stonks in Database
         }
         public void InitStocks()
         {
@@ -97,6 +95,20 @@ namespace aktiensim
                 {
                     SimuliereNächstenTag();
                 };
+                Button nextWeekBtn = new Button
+                {
+                    Text = "Nächste Woche...",
+                    Location = new Point(10, 50),
+                    Width = 120
+                };
+                homePanel.Controls.Add(nextWeekBtn);
+                nextWeekBtn.Click += (s2, e2) =>
+                {
+                    for (int i = 0; i < 7; i++)
+                    {
+                        SimuliereNächstenTag();
+                    }
+                };
             };
             flowLayoutPanel.Controls.Add(homeBtn);
             Button profileBtn = new Button
@@ -127,7 +139,7 @@ namespace aktiensim
                     AutoSize = true,
                     Font = new Font("Arial", 12),
                     Location = new Point(profilbild.Location.X - 30, profilbild.Location.Y + 90),
-                    Text = $"Hallo, {benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {benutzerverwaltung.ReturnActiveUser(activeUser).name}"
+                    Text = $"Hallo, {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}"
                 };
                 homePanel.Controls.Add(lb);
 
@@ -151,7 +163,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Ihr Kontostand: {benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
@@ -232,7 +244,7 @@ namespace aktiensim
                         };
                         homePanel.Controls.Add(kreditaufnahme);
 
-                        Kredite.RefreshDataGridView(aktiveKredite, benutzerverwaltung.ReturnActiveUser(activeUser));
+                        Kredite.RefreshDataGridView(aktiveKredite, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
                     };
                 };
 
@@ -258,7 +270,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Vorname: {benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                        Text = $"Vorname: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
                     };
                     homePanel.Controls.Add(vorname);
                     Label nachname = new Label
@@ -268,7 +280,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 20),
-                        Text = $"Name: {benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                        Text = $"Name: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}",
                     };
                     homePanel.Controls.Add (nachname);
                     Label email = new Label
@@ -278,7 +290,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 40),
-                        Text = $"Email: {benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                        Text = $"Email: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).email}",
                     };
                     homePanel.Controls.Add(email);
                     Label benutzerID = new Label
@@ -288,7 +300,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 8),
                         Location = new Point(0, y + 330),
-                        Text = $"BenutzerID: {benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
+                        Text = $"BenutzerID: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
                     };
                     homePanel.Controls.Add(benutzerID);
 
@@ -310,7 +322,7 @@ namespace aktiensim
 
                         TextBox vname = new TextBox
                         {
-                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                            Text = $"{MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
                             Font = new Font("Arial", 12),
                             ForeColor = Color.Black,
                             Location = new Point(0, y),
@@ -320,7 +332,7 @@ namespace aktiensim
 
                         TextBox nname = new TextBox
                         {
-                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                            Text = $"{MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}",
                             Font = new Font("Arial", 12),
                             ForeColor = Color.Black,
                             Location = new Point(0, y + 30),
@@ -330,7 +342,7 @@ namespace aktiensim
 
                         TextBox emailBox = new TextBox
                         {
-                            Text = $"{benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                            Text = $"{MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).email}",
                             Font = new Font("Arial", 12),
                             ForeColor = Color.Black,
                             Location = new Point(0, y + 60),
@@ -350,7 +362,7 @@ namespace aktiensim
                         
                         fertig.Click += (t, z) =>
                         {
-                            benutzerverwaltung.UpdateBenutzerDaten(vname.Text, nname.Text, emailBox.Text, benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
+                            MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(vname.Text, nname.Text, emailBox.Text, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
                             homePanel.Controls.Remove(fertig);
                             homePanel.Controls.Remove(vname);
                             homePanel.Controls.Remove(nname);
@@ -424,7 +436,7 @@ namespace aktiensim
                 };
                 geldBtn.Click += (f, g) =>
                 {
-                    benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
+                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
                     MessageBox.Show("100€ hinzugefügt");
                 };
                 homePanel.Controls.Add(geldBtn);
@@ -452,8 +464,8 @@ namespace aktiensim
                     string name = depotTb.Text.Trim();
                     if (!string.IsNullOrEmpty(name))
                     {
-                        int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
-                        stonkManager.CreateDepot(name, userId);
+                        int userId = Convert.ToInt32(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
+                        MySqlManager.DepotVerwaltung.CreateDepot(name, userId);
                         MessageBox.Show($"Depot '{name}' erstellt");
                         LoadUserDepots();
                     }
@@ -483,8 +495,8 @@ namespace aktiensim
                 void LoadUserDepots()
                 {
                     depotListBox.Items.Clear();
-                    int userId = Convert.ToInt32(benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
-                    var depots = stonkManager.GetUserDepot(userId);
+                    int userId = Convert.ToInt32(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
+                    var depots = MySqlManager.DepotVerwaltung.GetUserDepot(userId);
                     foreach (var depot in depots)
                         depotListBox.Items.Add(depot);
                 }
@@ -499,11 +511,11 @@ namespace aktiensim
                     if (selectedDepot != null)
                     {
                         int yPos = 10;
-                        var transaktionen = stonkManager.LadeTransaktionenFürDepot(selectedDepot.ID);
+                        var transaktionen = MySqlManager.TransaktionVerwaltung.LadeTransaktionenFürDepot(selectedDepot.ID);
 
                         foreach (var transaktion in transaktionen)
                         {
-                            Aktie aktie = stonkManager.LoadAktieByID(transaktion.aktieID);
+                            Aktie aktie = MySqlManager.AktienVerwaltung.LoadAktieByID(transaktion.aktieID);
                             double gesamtwert = transaktion.anzahl * aktie.CurrentValue;
 
                             double veraenderung = ((aktie.CurrentValue - (double)transaktion.einzelpreis) / (double)transaktion.einzelpreis) * 100;
@@ -905,9 +917,9 @@ namespace aktiensim
                 MessageBox.Show("Passwörter stimmen nicht überein!");
                 return;
             }
-            string passHash = benutzerverwaltung.Hash(password);
+            string passHash = MySqlManager.Benutzerverwaltung.Hash(password);
             MessageBox.Show(passHash);
-            benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
+            MySqlManager.Benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
             MessageBox.Show("Bitte, logen Sie sich ein");
             registerPanel.Visible = false;
             loginPanel.Visible = true;
@@ -923,9 +935,9 @@ namespace aktiensim
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
                 return;
             }
-            benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
+            MySqlManager.Benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
             homePanel.Controls.Clear();
-            Benutzer aNutzer = benutzerverwaltung.ReturnActiveUser(activeUser);
+            Benutzer aNutzer = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
             }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
  
@@ -984,7 +996,7 @@ namespace aktiensim
                 DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
                 if (result == DialogResult.OK )
                 {
-                    stonkManager.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), benutzerverwaltung.ReturnActiveUser(activeUser));
+                    MySqlManager.TransaktionVerwaltung.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
                 }
                 kaufPanel.Visible = false;
             };
@@ -992,7 +1004,7 @@ namespace aktiensim
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
-            Kredite kredit = new Kredite(0, 0, 0, 0, benutzerverwaltung.ReturnActiveUser(activeUser));
+            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
             kreditPanel.Controls.Clear();
             kreditPanel.Visible = true;
             kreditPanel.BringToFront();
@@ -1082,7 +1094,7 @@ namespace aktiensim
                 kredit.Betrag = (double)auswahlMenge.Value;
                 kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
                 kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
 
                 kreditPanel.Visible = false;
             };
@@ -1128,7 +1140,7 @@ namespace aktiensim
         }
         public void ShowVerkaufPanel(Transaktion transaktion)
         {
-            Aktie aktie = stonkManager.LoadAktieByID(transaktion.aktieID);
+            Aktie aktie = MySqlManager.AktienVerwaltung.LoadAktieByID(transaktion.aktieID);
             Panel verkaufPanel = new Panel
             {
                 Size = new Size(300, 200),
@@ -1188,10 +1200,10 @@ namespace aktiensim
                     double erloes = menge * aktie.CurrentValue;
 
                     // Geld gutschreiben
-                    benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(Convert.ToInt32(erloes));
+                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(Convert.ToInt32(erloes));
 
                     transaktion.anzahl -= menge;
-                    stonkManager.AktualisiereTransaktion(transaktion);
+                    MySqlManager.TransaktionVerwaltung.AktualisiereTransaktion(transaktion);
 
                     MessageBox.Show($"Du hast {menge} Anteile für {erloes:F2}€ verkauft.");
                     homePanel.Controls.Remove(verkaufPanel);
@@ -1210,8 +1222,8 @@ namespace aktiensim
 
         public void SimuliereNächstenTag()
         {
-            var alleBenutzer = benutzerverwaltung.LadeAlleBenutzer();
-            var aktuellerBenutzer = benutzerverwaltung.ReturnActiveUser(activeUser);
+            var alleBenutzer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer();
+            var aktuellerBenutzer = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
 
             Dictionary<int, int> nachfrage = new Dictionary<int, int>();
             Random rand = new Random();
@@ -1219,11 +1231,11 @@ namespace aktiensim
             {
                 if (benutzer.benutzerID == aktuellerBenutzer.benutzerID)
                     continue;
-                var depots = stonkManager.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
+                var depots = MySqlManager.DepotVerwaltung.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
                 if (depots.Count == 0)
                 {
-                    stonkManager.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
-                    depots = stonkManager.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
+                    MySqlManager.DepotVerwaltung.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
+                    depots = MySqlManager.DepotVerwaltung.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
                 }
                 foreach(var depot in depots)
                 {
@@ -1237,14 +1249,14 @@ namespace aktiensim
                                 decimal kosten = Convert.ToDecimal(mengeKauf * aktie.CurrentValue);
                                 if(benutzer.kontoStand >= (double)kosten)
                                 {
-                                    stonkManager.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
+                                    MySqlManager.TransaktionVerwaltung.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
                                     benutzer.UpdateKontoStand(Convert.ToInt32(kosten), benutzer.benutzerID);
                                     nachfrage.TryGetValue(aktie.id, out int wert);
                                     nachfrage[aktie.id] = wert + 1; 
                                 }
                                 break;
                             case 2:
-                                var transaktion = stonkManager.LadeTransaktionenFürDepot(depot.ID).Where(t => t.aktieID == aktie.id && t.anzahl > 0).ToList();
+                                var transaktion = MySqlManager.TransaktionVerwaltung.LadeTransaktionenFürDepot(depot.ID).Where(t => t.aktieID == aktie.id && t.anzahl > 0).ToList();
                                 if (transaktion.Any())
                                 {
                                     var trans = transaktion[rand.Next(transaktion.Count)];
@@ -1255,11 +1267,11 @@ namespace aktiensim
                                         trans.anzahl -= verkaufsMenge;
                                         if (trans.anzahl <= 0)
                                         {
-                                            stonkManager.LöscheTransaktion(trans.id);
+                                            MySqlManager.TransaktionVerwaltung.LöscheTransaktion(trans.id);
                                         }
                                         else
                                         {
-                                            stonkManager.AktualisiereTransaktion(trans);
+                                            MySqlManager.TransaktionVerwaltung.AktualisiereTransaktion(trans);
                                         }
                                         benutzer.GeldHinzufuegen((int)erloes);
                                         nachfrage.TryGetValue(aktie.id, out int wert);
@@ -1292,7 +1304,7 @@ namespace aktiensim
 
 
 
-                    stonkManager.UpdateAktie(aktie);
+                    MySqlManager.AktienVerwaltung.UpdateAktie(aktie);
 
             }
         }

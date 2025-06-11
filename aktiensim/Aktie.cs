@@ -25,7 +25,6 @@ namespace aktiensim
 
         private int counter;
         private static Random rand = new Random();
-        private static AktienVerwaltung stocksManager = new AktienVerwaltung();
 
         public Aktie(string name, string firma, double startValue, int id, double lastClose = 0)
         {
@@ -86,7 +85,7 @@ namespace aktiensim
             if (counter % 10 == 0)
                 SetLastClose(CurrentValue);
             PlotChart();
-            stocksManager.UpdateAktie(this);
+            MySqlManager.AktienVerwaltung.UpdateAktie(this);
         }
 
         private void PlotChart()
@@ -97,7 +96,7 @@ namespace aktiensim
             if (LastClose > 0)
             {
                 var hline = plot.Plot.Add.HorizontalLine(LastClose);
-                hline.Color = CurrentValue >= LastClose
+                hline.Color = ValueHistory.Last() >= LastClose
                     ? ScottPlot.Color.FromColor(Color.Green)
                     : ScottPlot.Color.FromColor(Color.Red);
             }
