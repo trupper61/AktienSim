@@ -445,6 +445,30 @@ namespace aktiensim
                 conn.Close();
                 return benutzer;
             }
+            public static Benutzer GetUserByInput(string input)
+            {
+                MySqlConnection conn = new MySqlConnection(connectionString);
+                conn.Open();
+                string query = @"
+                    SELECT BenutzerID, Name, Vorname, Email 
+                    FROM benutzer 
+                    WHERE Email = @input 
+                       OR Name = @input 
+                       OR Vorname = @input
+                    LIMIT 1";
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@input", input);
+                MySqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string id = reader["BenutzerID"].ToString();
+                    string name = reader["Name"].ToString();
+                    string vorname = reader["Vorname"].ToString();
+                    string email = reader["Email"].ToString();
+                    return new Benutzer(name, vorname, email, id, 0, null, Kredite.CreditRating.C);
+                }
+                return null;
+            }
             public static Benutzer GetUserByEMail(string givenEmail)
             {
                 MySqlConnection conn2 = new MySqlConnection(connectionString);

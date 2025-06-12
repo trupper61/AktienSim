@@ -608,38 +608,83 @@ namespace aktiensim
         }
         public void ShowUeberweisungPanel()
         {
-            Label lblEmpfaenger = new Label { Text = "Empfänger (Name oder ID):", Dock = DockStyle.Top };
-            homePanel.Controls.Add(lblEmpfaenger);
-            TextBox txtEmpfaenger = new TextBox { Dock = DockStyle.Top };
-            homePanel.Controls.Add(txtEmpfaenger);
-
-            Label lblBetrag = new Label { Text = "Betrag (€):", Dock = DockStyle.Top };
-            homePanel.Controls.Add(lblBetrag);
-            TextBox txtBetrag = new TextBox { Dock = DockStyle.Top };
-            homePanel.Controls.Add(txtBetrag);
-            Button btnSenden = new Button { Text = "Überweisen", Dock = DockStyle.Top };
-            homePanel.Controls.Add(btnSenden);
-            Label lblStatus = new Label { Text = "", ForeColor = Color.Red, Dock = DockStyle.Top };
-            homePanel.Controls.Add(lblStatus);
-
-            btnSenden.Click += (s, e) =>
+            Label empfaengerLb = new Label { Text = "Empfänger (Name oder ID):", Dock = DockStyle.Top };
+            homePanel.Controls.Add(empfaengerLb);
+            TextBox empfaengerTxt = new TextBox { Dock = DockStyle.Top };
+            homePanel.Controls.Add(empfaengerTxt);
+            ListBox vorschlaegeLst = new ListBox
             {
-                string empfaengerInput = txtEmpfaenger.Text.Trim();
-                if (!double.TryParse(txtBetrag.Text.Trim(), out double betrag) || betrag <= 0)
+                Height = 100,
+                Dock = DockStyle.Top,
+                Visible = false // wird nur bei passenden Treffern angezeigt
+            };
+            homePanel.Controls.Add(vorschlaegeLst);
+            empfaengerTxt.TextChanged += (s, e) =>
+            {
+                string eingabe = empfaengerTxt.Text.Trim();
+                if (eingabe.Length < 2)
                 {
-                    lblStatus.Text = "Ungültiger Betrag";
+                    vorschlaegeLst.Visible = false;
                     return;
                 }
-                Benutzer empfaenger = MySqlManager.Benutzerverwaltung.GetUserByEMail(empfaengerInput);
+                var treffer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe) || b.vorname.ToLower().Contains(eingabe));
+                if (treffer.Count() == 0)
+                {
+                    vorschlaegeLst.Visible = false;
+                    return;
+                }
+                vorschlaegeLst.Items.Clear();
+                foreach (var b in treffer)
+                {
+                    vorschlaegeLst.Items.Add($"{b.name}, {b.vorname}: {b.email}");
+                }
+                vorschlaegeLst.Visible = true;
+            };
+            vorschlaegeLst.SelectedIndexChanged += (s, e) =>
+            {
+                if (vorschlaegeLst.SelectedItem != null)
+                {
+                    string selectedText = vorschlaegeLst.SelectedItem.ToString();
+                    var parts = selectedText.Split(new string[] { ": "}, StringSplitOptions.None);
+                    if(parts.Length == 2)
+                    {
+                        empfaengerTxt.Text = parts[1];
+                    }
+                    else
+                    {
+                        empfaengerTxt.Text = selectedText;
+                    }
+                    vorschlaegeLst.Visible = false;
+                }
+            };
+
+            Label betragLb = new Label { Text = "Betrag (€):", Dock = DockStyle.Top };
+            homePanel.Controls.Add(betragLb);
+            TextBox betragTxt = new TextBox { Dock = DockStyle.Top };
+            homePanel.Controls.Add(betragTxt);
+            Button sendenBtn = new Button { Text = "Überweisen", Dock = DockStyle.Top };
+            homePanel.Controls.Add(sendenBtn);
+            Label statusLb = new Label { Text = "", ForeColor = Color.Red, Dock = DockStyle.Top };
+            homePanel.Controls.Add(statusLb);
+
+            sendenBtn.Click += (s, e) =>
+            {
+                string empfaengerInput = empfaengerTxt.Text.Trim();
+                if (!double.TryParse(betragTxt.Text.Trim(), out double betrag) || betrag <= 0)
+                {
+                    statusLb.Text = "Ungültiger Betrag";
+                    return;
+                }
+                Benutzer empfaenger = MySqlManager.Benutzerverwaltung.GetUserByInput(empfaengerInput);
                 if (empfaenger == null)
                 {
-                    lblStatus.Text = "Benutzer nicht gefunden.";
+                    statusLb.Text = "Benutzer nicht gefunden.";
                     return;
                 }
                 activeUser = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
                 if (activeUser.kontoStand < betrag)
                 {
-                    lblStatus.Text = "Nicht genügend Guthaben.";
+                    statusLb.Text = "Nicht genügend Guthaben.";
                     return;
                 }
                 activeUser.GeldAbziehen(betrag);
@@ -647,8 +692,8 @@ namespace aktiensim
 
                 MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(activeUser.vorname, activeUser.name, activeUser.email, activeUser.benutzerID);
                 MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(empfaenger.vorname, empfaenger.name, empfaenger.email, empfaenger.benutzerID);
-                lblStatus.ForeColor = Color.Green;
-                lblStatus.Text = $"Überweisung erfolgreich an {empfaenger.name}, {empfaenger.vorname}";
+                statusLb.ForeColor = Color.Green;
+                statusLb.Text = $"Überweisung erfolgreich an {empfaenger.name}, {empfaenger.vorname}";
             };
         }
         public void ShowHomePanel()
