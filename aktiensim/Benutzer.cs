@@ -73,7 +73,7 @@ namespace aktiensim
         {
             //Update den Kontostand in der Datenbank.
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            string qry = "UPDATE Konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer";
+            string qry = "UPDATE konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer";
 
             MySqlConnection conn = new MySqlConnection(connString);
             conn.Open();

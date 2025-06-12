@@ -39,6 +39,7 @@ namespace aktiensim
         public Panel kreditPanel;
         public Button depotBtn;
         private Dictionary<int, Aktie> alleAktien = new Dictionary<int, Aktie>();
+        public bool activeUserLoginFlag = false;
         public Form1()
         {
             InitializeComponent();
@@ -107,15 +108,19 @@ namespace aktiensim
                     for (int i = 0; i < 7; i++)
                     {
                         SimuliereNächstenTag();
-                        if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null) 
+                        if(i == 6) 
                         {
-                            foreach(Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite) 
+                            if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null)
                             {
-                                kr.Laufzeit--;
-                                MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                                foreach (Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite)
+                                {
+                                    kr.Laufzeit--;
+                                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                                }
                             }
                         }
                     }
+                    
                 };
             };
             flowLayoutPanel.Controls.Add(homeBtn);
@@ -251,7 +256,6 @@ namespace aktiensim
                             ShowKreditPanel(aktiveKredite);
                         };
                         homePanel.Controls.Add(kreditaufnahme);
-
                         Kredite.RefreshDataGridView(aktiveKredite, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
                     };
                 };
@@ -405,6 +409,7 @@ namespace aktiensim
                 {
                     InitLoginUi();
                     activeUser = null;
+                    
                     loginPanel.Visible = true;
                     flowLayoutPanel.Visible = false;
                     homePanel.Visible = false;
@@ -944,6 +949,10 @@ namespace aktiensim
                 return;
             }
             MySqlManager.Benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
+            if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser) != null) 
+            {
+                Kredite.HoleKrediteAusDatenbank(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+            }
             homePanel.Controls.Clear();
             Benutzer aNutzer = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
             }
