@@ -608,7 +608,7 @@ namespace aktiensim
         }
         public void ShowUeberweisungPanel()
         {
-            Label empfaengerLb = new Label { Text = "Empfänger (Name oder ID):", Dock = DockStyle.Top };
+            Label empfaengerLb = new Label { Text = "Empfänger (Name, Vorname oder E-Mail):", Dock = DockStyle.Top };
             homePanel.Controls.Add(empfaengerLb);
             TextBox empfaengerTxt = new TextBox { Dock = DockStyle.Top };
             homePanel.Controls.Add(empfaengerTxt);
@@ -616,7 +616,7 @@ namespace aktiensim
             {
                 Height = 100,
                 Dock = DockStyle.Top,
-                Visible = false // wird nur bei passenden Treffern angezeigt
+                Visible = false
             };
             homePanel.Controls.Add(vorschlaegeLst);
             empfaengerTxt.TextChanged += (s, e) =>
