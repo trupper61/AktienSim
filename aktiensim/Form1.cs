@@ -38,7 +38,6 @@ namespace aktiensim
         public Panel kaufPanel;
         public Panel kreditPanel;
         public Button depotBtn;
-        private Dictionary<int, Aktie> alleAktien = new Dictionary<int, Aktie>();
         public Form1()
         {
             InitializeComponent();
@@ -557,6 +556,20 @@ namespace aktiensim
                 ShowHomePanel();
             };
             flowLayoutPanel.Controls.Add(aktienBtn);
+            Button ueberweisungBtn = new Button
+            {
+                Text = "Überweisung",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            ueberweisungBtn.Click += (s2, e2) =>
+            {
+                homePanel.Controls.Clear();
+                ShowUeberweisungPanel();
+            };
+            flowLayoutPanel.Controls.Add(ueberweisungBtn);
             homePanel = new Panel
             {
                 Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
@@ -592,6 +605,51 @@ namespace aktiensim
                 InitRegisterUI();
             else if (loginPanel.Visible)
                 InitLoginUi();
+        }
+        public void ShowUeberweisungPanel()
+        {
+            Label lblEmpfaenger = new Label { Text = "Empfänger (Name oder ID):", Dock = DockStyle.Top };
+            homePanel.Controls.Add(lblEmpfaenger);
+            TextBox txtEmpfaenger = new TextBox { Dock = DockStyle.Top };
+            homePanel.Controls.Add(txtEmpfaenger);
+
+            Label lblBetrag = new Label { Text = "Betrag (€):", Dock = DockStyle.Top };
+            homePanel.Controls.Add(lblBetrag);
+            TextBox txtBetrag = new TextBox { Dock = DockStyle.Top };
+            homePanel.Controls.Add(txtBetrag);
+            Button btnSenden = new Button { Text = "Überweisen", Dock = DockStyle.Top };
+            homePanel.Controls.Add(btnSenden);
+            Label lblStatus = new Label { Text = "", ForeColor = Color.Red, Dock = DockStyle.Top };
+            homePanel.Controls.Add(lblStatus);
+
+            btnSenden.Click += (s, e) =>
+            {
+                string empfaengerInput = txtEmpfaenger.Text.Trim();
+                if (!double.TryParse(txtBetrag.Text.Trim(), out double betrag) || betrag <= 0)
+                {
+                    lblStatus.Text = "Ungültiger Betrag";
+                    return;
+                }
+                Benutzer empfaenger = MySqlManager.Benutzerverwaltung.GetUserByEMail(empfaengerInput);
+                if (empfaenger == null)
+                {
+                    lblStatus.Text = "Benutzer nicht gefunden.";
+                    return;
+                }
+                activeUser = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
+                if (activeUser.kontoStand < betrag)
+                {
+                    lblStatus.Text = "Nicht genügend Guthaben.";
+                    return;
+                }
+                activeUser.GeldAbziehen(betrag);
+                empfaenger.GeldHinzufuegen(betrag);
+
+                MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(activeUser.vorname, activeUser.name, activeUser.email, activeUser.benutzerID);
+                MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(empfaenger.vorname, empfaenger.name, empfaenger.email, empfaenger.benutzerID);
+                lblStatus.ForeColor = Color.Green;
+                lblStatus.Text = $"Überweisung erfolgreich an {empfaenger.name}, {empfaenger.vorname}";
+            };
         }
         public void ShowHomePanel()
         {
