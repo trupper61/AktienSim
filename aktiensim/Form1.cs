@@ -511,10 +511,10 @@ namespace aktiensim
                     {
                         int yPos = 10;
                         var transaktionen = MySqlManager.TransaktionVerwaltung.LadeTransaktionenFürDepot(selectedDepot.ID);
-
                         foreach (var transaktion in transaktionen)
                         {
                             Aktie aktie = MySqlManager.AktienVerwaltung.LoadAktieByID(transaktion.aktieID);
+
                             double gesamtwert = transaktion.anzahl * aktie.CurrentValue;
 
                             double veraenderung = ((aktie.CurrentValue - (double)transaktion.einzelpreis) / (double)transaktion.einzelpreis) * 100;
@@ -532,7 +532,6 @@ namespace aktiensim
                             aktienLabel.Click += (s2, e2) =>
                             {
                                 if (depotListBox.SelectedItems.Count == 0) return;
-                                MessageBox.Show("Hello");
                                 ShowVerkaufPanel(transaktion);
                             };
                             aktienImDepotPanel.Controls.Add(aktienLabel);
@@ -627,7 +626,7 @@ namespace aktiensim
                     vorschlaegeLst.Visible = false;
                     return;
                 }
-                var treffer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe) || b.vorname.ToLower().Contains(eingabe));
+                var treffer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe.ToLower()) || b.vorname.ToLower().Contains(eingabe.ToLower()));
                 if (treffer.Count() == 0)
                 {
                     vorschlaegeLst.Visible = false;
@@ -1203,43 +1202,6 @@ namespace aktiensim
             };
             
             
-        }
-        public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
-        {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            string chckqry = "SELECT Firma FROM aktiendaten WHERE Firma = @Firma";
-            string qry = "INSERT INTO aktiendaten(Firma, Name, Wert) VALUES(@Firma, @Name, @Wert)";
-
-            string chkFirma; string chkName; string chkWert;
-
-            using (MySqlCommand cmdCheck = new MySqlCommand(chckqry, conn)) 
-            {
-                cmdCheck.Parameters.AddWithValue("Firma", Firma);
-                //cmdCheck.ExecuteNonQuery();
-                MySqlDataReader reader = cmdCheck.ExecuteReader();
-
-                if(reader.Read()) 
-                {
-                    chkFirma = reader["Firma"].ToString();
-
-                    if (chkFirma == Firma)
-                    {
-                        return;
-                    }
-                }
-            }
-            conn.Close();
-            conn.Open();
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
-            {
-                cmd.Parameters.AddWithValue("Firma", Firma);
-                cmd.Parameters.AddWithValue("Name", Name);
-                cmd.Parameters.AddWithValue("Wert", Wert);
-                cmd.ExecuteNonQuery();
-            }
         }
         public void ShowVerkaufPanel(Transaktion transaktion)
         {
