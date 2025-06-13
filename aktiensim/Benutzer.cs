@@ -59,6 +59,13 @@ namespace aktiensim
             string BID = this.benutzerID;
             UpdateKontoStand(stand, BID);
         }
+        public void GeldAbziehen(double anzahl)
+        {
+            this.kontoStand -= anzahl;
+            double stand = this.kontoStand;
+            string BID = this.benutzerID;
+            UpdateKontoStand(stand, BID);
+        }
 
         public void GeldAbziehen(double anzahl) 
         {

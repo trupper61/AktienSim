@@ -525,10 +525,10 @@ namespace aktiensim
                     {
                         int yPos = 10;
                         var transaktionen = MySqlManager.TransaktionVerwaltung.LadeTransaktionenFürDepot(selectedDepot.ID);
-
                         foreach (var transaktion in transaktionen)
                         {
                             Aktie aktie = MySqlManager.AktienVerwaltung.LoadAktieByID(transaktion.aktieID);
+
                             double gesamtwert = transaktion.anzahl * aktie.CurrentValue;
 
                             double veraenderung = ((aktie.CurrentValue - (double)transaktion.einzelpreis) / (double)transaktion.einzelpreis) * 100;
@@ -546,7 +546,6 @@ namespace aktiensim
                             aktienLabel.Click += (s2, e2) =>
                             {
                                 if (depotListBox.SelectedItems.Count == 0) return;
-                                MessageBox.Show("Hello");
                                 ShowVerkaufPanel(transaktion);
                             };
                             aktienImDepotPanel.Controls.Add(aktienLabel);
@@ -570,6 +569,20 @@ namespace aktiensim
                 ShowHomePanel();
             };
             flowLayoutPanel.Controls.Add(aktienBtn);
+            Button ueberweisungBtn = new Button
+            {
+                Text = "Überweisung",
+                Size = new Size(80, 40),
+                BackColor = Color.DarkBlue,
+                ForeColor = Color.White,
+                Font = new Font("Sans-Serif", 10)
+            };
+            ueberweisungBtn.Click += (s2, e2) =>
+            {
+                homePanel.Controls.Clear();
+                ShowUeberweisungPanel();
+            };
+            flowLayoutPanel.Controls.Add(ueberweisungBtn);
             homePanel = new Panel
             {
                 Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
@@ -605,6 +618,96 @@ namespace aktiensim
                 InitRegisterUI();
             else if (loginPanel.Visible)
                 InitLoginUi();
+        }
+        public void ShowUeberweisungPanel()
+        {
+            Label empfaengerLb = new Label { Text = "Empfänger (Name, Vorname oder E-Mail):", Dock = DockStyle.Top };
+            homePanel.Controls.Add(empfaengerLb);
+            TextBox empfaengerTxt = new TextBox { Dock = DockStyle.Top };
+            homePanel.Controls.Add(empfaengerTxt);
+            ListBox vorschlaegeLst = new ListBox
+            {
+                Height = 100,
+                Dock = DockStyle.Top,
+                Visible = false
+            };
+            homePanel.Controls.Add(vorschlaegeLst);
+            empfaengerTxt.TextChanged += (s, e) =>
+            {
+                string eingabe = empfaengerTxt.Text.Trim();
+                if (eingabe.Length < 2)
+                {
+                    vorschlaegeLst.Visible = false;
+                    return;
+                }
+                var treffer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe.ToLower()) || b.vorname.ToLower().Contains(eingabe.ToLower()));
+                if (treffer.Count() == 0)
+                {
+                    vorschlaegeLst.Visible = false;
+                    return;
+                }
+                vorschlaegeLst.Items.Clear();
+                foreach (var b in treffer)
+                {
+                    vorschlaegeLst.Items.Add($"{b.name}, {b.vorname}: {b.email}");
+                }
+                vorschlaegeLst.Visible = true;
+            };
+            vorschlaegeLst.SelectedIndexChanged += (s, e) =>
+            {
+                if (vorschlaegeLst.SelectedItem != null)
+                {
+                    string selectedText = vorschlaegeLst.SelectedItem.ToString();
+                    var parts = selectedText.Split(new string[] { ": "}, StringSplitOptions.None);
+                    if(parts.Length == 2)
+                    {
+                        empfaengerTxt.Text = parts[1];
+                    }
+                    else
+                    {
+                        empfaengerTxt.Text = selectedText;
+                    }
+                    vorschlaegeLst.Visible = false;
+                }
+            };
+
+            Label betragLb = new Label { Text = "Betrag (€):", Dock = DockStyle.Top };
+            homePanel.Controls.Add(betragLb);
+            TextBox betragTxt = new TextBox { Dock = DockStyle.Top };
+            homePanel.Controls.Add(betragTxt);
+            Button sendenBtn = new Button { Text = "Überweisen", Dock = DockStyle.Top };
+            homePanel.Controls.Add(sendenBtn);
+            Label statusLb = new Label { Text = "", ForeColor = Color.Red, Dock = DockStyle.Top };
+            homePanel.Controls.Add(statusLb);
+
+            sendenBtn.Click += (s, e) =>
+            {
+                string empfaengerInput = empfaengerTxt.Text.Trim();
+                if (!double.TryParse(betragTxt.Text.Trim(), out double betrag) || betrag <= 0)
+                {
+                    statusLb.Text = "Ungültiger Betrag";
+                    return;
+                }
+                Benutzer empfaenger = MySqlManager.Benutzerverwaltung.GetUserByInput(empfaengerInput);
+                if (empfaenger == null)
+                {
+                    statusLb.Text = "Benutzer nicht gefunden.";
+                    return;
+                }
+                activeUser = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
+                if (activeUser.kontoStand < betrag)
+                {
+                    statusLb.Text = "Nicht genügend Guthaben.";
+                    return;
+                }
+                activeUser.GeldAbziehen(betrag);
+                empfaenger.GeldHinzufuegen(betrag);
+
+                MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(activeUser.vorname, activeUser.name, activeUser.email, activeUser.benutzerID);
+                MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(empfaenger.vorname, empfaenger.name, empfaenger.email, empfaenger.benutzerID);
+                statusLb.ForeColor = Color.Green;
+                statusLb.Text = $"Überweisung erfolgreich an {empfaenger.name}, {empfaenger.vorname}";
+            };
         }
         public void ShowHomePanel()
         {
@@ -1117,43 +1220,6 @@ namespace aktiensim
             };
             
             
-        }
-        public void addAktienGesellschaft(string Firma, string Name, string Wert) // Fügt die beliebiege Aktie zur Datenbank hinzu
-        {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            string chckqry = "SELECT Firma FROM aktiendaten WHERE Firma = @Firma";
-            string qry = "INSERT INTO aktiendaten(Firma, Name, Wert) VALUES(@Firma, @Name, @Wert)";
-
-            string chkFirma; string chkName; string chkWert;
-
-            using (MySqlCommand cmdCheck = new MySqlCommand(chckqry, conn)) 
-            {
-                cmdCheck.Parameters.AddWithValue("Firma", Firma);
-                //cmdCheck.ExecuteNonQuery();
-                MySqlDataReader reader = cmdCheck.ExecuteReader();
-
-                if(reader.Read()) 
-                {
-                    chkFirma = reader["Firma"].ToString();
-
-                    if (chkFirma == Firma)
-                    {
-                        return;
-                    }
-                }
-            }
-            conn.Close();
-            conn.Open();
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
-            {
-                cmd.Parameters.AddWithValue("Firma", Firma);
-                cmd.Parameters.AddWithValue("Name", Name);
-                cmd.Parameters.AddWithValue("Wert", Wert);
-                cmd.ExecuteNonQuery();
-            }
         }
         public void ShowVerkaufPanel(Transaktion transaktion)
         {
