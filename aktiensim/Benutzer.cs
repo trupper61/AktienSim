@@ -26,7 +26,7 @@ namespace aktiensim
             this.benutzerID = benutzerID;
             this.kontoStand = kontoStand;
 
-            GetKontoStand(this);
+            GetKontoStand();
             Kredite = new List<Kredite>();
             this.kredite = Kredite;
             this.rating = Rating;
@@ -84,7 +84,7 @@ namespace aktiensim
                 cmd.ExecuteNonQuery();
             }
         }
-        public void GetKontoStand(Benutzer benutzer) 
+        public double GetKontoStand() 
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "SELECT Kontostand FROM Konto WHERE ID_Benutzer = @ID_Benutzer";
@@ -94,13 +94,14 @@ namespace aktiensim
 
             using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
             {
-                cmd.Parameters.AddWithValue("ID_Benutzer", benutzer.benutzerID);
+                cmd.Parameters.AddWithValue("ID_Benutzer", this.benutzerID);
                 MySqlDataReader reader = cmd.ExecuteReader();
 
                 if(reader.Read())
                 {
                     this.kontoStand = Convert.ToInt32(reader["Kontostand"]);
                 }
+                return this.kontoStand;
             }
         }
     }
