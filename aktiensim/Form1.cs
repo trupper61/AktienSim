@@ -180,7 +180,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Ihr Kontostand: {activeUser.GetKontoStand(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser)}",
+                        Text = $"Ihr Kontostand: {activeUser.GetKontoStand(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand)}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
