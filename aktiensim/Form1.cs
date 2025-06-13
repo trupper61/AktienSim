@@ -117,7 +117,9 @@ namespace aktiensim
                                     foreach (Kredite kr in benutzer.kredite)
                                     {
                                         kr.Laufzeit--;
+                                        kr.Restschuld -= kr.zuZahlendeRate;
                                         benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                        kr.UpdateKreditStatus(kr);
                                     }
                                 }
                                 
@@ -1128,7 +1130,7 @@ namespace aktiensim
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
-            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), 0);
             kreditPanel.Controls.Clear();
             kreditPanel.Visible = true;
             kreditPanel.BringToFront();

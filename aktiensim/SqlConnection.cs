@@ -37,9 +37,29 @@ namespace aktiensim
             myconnection.Open();
             using (MySqlCommand cmds = new MySqlCommand(sql, myconnection)) 
             {
-                cmds.Parameters.AddRange(parameters);
+                if(parameters != null) 
+                {
+                    cmds.Parameters.AddRange(parameters);
+                }
                 MySqlDataReader reader = cmds.ExecuteReader();
                 return reader;
+            }
+        }
+        public static int ExecuteInsertWithId(string sql, params MySqlParameter[] parameters)
+        {
+            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
+            using (MySqlConnection conn = new MySqlConnection(connString))
+            {
+                conn.Open();
+                using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                {
+                    if (parameters != null) 
+                    {
+                        cmd.Parameters.AddRange(parameters);
+                    }
+                    object result = cmd.ExecuteScalar();
+                    return Convert.ToInt32(result);
+                }
             }
         }
     }
