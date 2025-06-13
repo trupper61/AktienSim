@@ -65,6 +65,7 @@ namespace aktiensim
             double stand = this.kontoStand;
             string BID = this.benutzerID;
             UpdateKontoStand(stand, BID);
+            
         }
 
         public void UpdateKontoStand(double stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.

@@ -537,6 +537,7 @@ namespace aktiensim
                                 int kontoId = Convert.ToInt32(reader["ID_Konto"]);
                                 int kontostand = GetBenutzerKontostand(kontoId);
                                 Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, Kredite.CreditRating.C);
+                                Kredite.HoleKrediteAusDatenbank(user);
                                 if (user != null)
                                     benutzer.Add(user);
                             }

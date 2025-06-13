@@ -112,11 +112,15 @@ namespace aktiensim
                         {
                             if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null)
                             {
-                                foreach (Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite)
+                                foreach(Benutzer benutzer in MySqlManager.Benutzerverwaltung.LadeAlleBenutzer()) 
                                 {
-                                    kr.Laufzeit--;
-                                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                                    foreach (Kredite kr in benutzer.kredite)
+                                    {
+                                        kr.Laufzeit--;
+                                        benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                    }
                                 }
+                                
                             }
                         }
                     }
@@ -176,7 +180,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                        Text = $"Ihr Kontostand: {activeUser.GetKontoStand(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser)}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
