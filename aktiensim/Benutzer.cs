@@ -60,11 +60,20 @@ namespace aktiensim
             UpdateKontoStand(stand, BID);
         }
 
+        public void GeldAbziehen(double anzahl) 
+        {
+            this.kontoStand -= anzahl;
+
+            double stand = this.kontoStand;
+            string BID = this.benutzerID;
+            UpdateKontoStand(stand, BID);
+        }
+
         public void UpdateKontoStand(double stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
         {
             //Update den Kontostand in der Datenbank.
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-            string qry = "UPDATE Konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer";
+            string qry = "UPDATE konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer";
 
             MySqlConnection conn = new MySqlConnection(connString);
             conn.Open();

@@ -253,6 +253,7 @@ namespace aktiensim
         public static class Benutzerverwaltung
         {
             static Benutzer user;
+            
             public static void BenutzerAnlegen(string email, string vName, string nName, string password, string BID, string loginID, Benutzer activeUser)
             {
                 MySqlConnection conn = new MySqlConnection(connectionString);

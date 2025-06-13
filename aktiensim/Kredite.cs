@@ -67,9 +67,33 @@ namespace aktiensim
                 new MySqlParameter("@restschuld", restschuld),
                 new MySqlParameter("@laufzeit", laufzeit));
             benutzer.GeldHinzufuegen(betrag);
+            kredit.zuZahlendeRate = kredit.Restschuld / kredit.Laufzeit;
             benutzer.kredite.Add(kredit);
 
             aktiveKredite.Rows.Add(betrag, restschuld, zinssatz, DateTime.Now, laufzeit);
+        }
+
+        public static void HoleKrediteAusDatenbank(Benutzer benutzer) 
+        {
+            string kreditAdd = "SELECT Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit FROM kredite WHERE ID_Benutzer = @ID_Benutzer";
+
+            List<Kredite> kredite = new List<Kredite>();
+
+            MySqlDataReader reader = SqlConnection.ExecuteNonQueryReader(kreditAdd,
+                new MySqlParameter("@ID_Benutzer", benutzer.benutzerID));
+
+            while (reader.Read())
+            {
+                Kredite kredit = new Kredite(0, 0, 0, 0, benutzer);
+                kredit.Betrag = Convert.ToDouble(reader["Betrag"]);
+                kredit.Zinssatz = Convert.ToInt32(reader["Zinssatz"]);
+                kredit.Restschuld = Convert.ToDouble(reader["Restschuld"]);
+                kredit.Laufzeit = Convert.ToInt32(reader["Laufzeit"]);
+                kredit.zuZahlendeRate = kredit.Restschuld / kredit.Laufzeit;
+                kredite.Add(kredit);
+            }
+            benutzer.kredite = kredite;
+            
         }
 
         public static void RefreshDataGridView(DataGridView aktiveKredite, Benutzer benutzer) 
