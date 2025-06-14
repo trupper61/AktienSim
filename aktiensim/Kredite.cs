@@ -63,16 +63,19 @@ namespace aktiensim
 
         public void KreditHinzufuegen(double betrag, int zinssatz, double restschuld, int laufzeit, Benutzer benutzer, DataGridView aktiveKredite, Kredite kredit) 
         {
-            string kreditAdd = "INSERT INTO kredite(Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit) VALUES (@betrag, @ID_Benutzer, @zinssatz, @restschuld, @laufzeit); SELECT LAST_INSERT_ID();";
+            string kreditAdd = "INSERT INTO kredite(Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit, Rate) VALUES (@betrag, @ID_Benutzer, @zinssatz, @restschuld, @laufzeit, @Rate); SELECT LAST_INSERT_ID();";
+
+            kredit.zuZahlendeRate = kredit.Restschuld / kredit.Laufzeit;
 
             int neueId = SqlConnection.ExecuteInsertWithId(kreditAdd,
                 new MySqlParameter("@ID_Benutzer", benutzer.benutzerID),
                 new MySqlParameter("@betrag", betrag),
                 new MySqlParameter("@zinssatz", zinssatz),
                 new MySqlParameter("@restschuld", restschuld),
-                new MySqlParameter("@laufzeit", laufzeit));
+                new MySqlParameter("@laufzeit", laufzeit),
+                new MySqlParameter("@rate", kredit.zuZahlendeRate));
             benutzer.GeldHinzufuegen(betrag);
-            kredit.zuZahlendeRate = kredit.Restschuld / kredit.Laufzeit;
+            
 
             kredit.KreditID = neueId;
 
@@ -83,7 +86,7 @@ namespace aktiensim
 
         public static void HoleKrediteAusDatenbank(Benutzer benutzer) 
         {
-            string kreditAdd = "SELECT KreditID, Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit FROM kredite WHERE ID_Benutzer = @ID_Benutzer";
+            string kreditAdd = "SELECT KreditID, Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit, Rate FROM kredite WHERE ID_Benutzer = @ID_Benutzer";
 
             List<Kredite> kredite = new List<Kredite>();
 
@@ -97,7 +100,7 @@ namespace aktiensim
                 kredit.Zinssatz = Convert.ToInt32(reader["Zinssatz"]);
                 kredit.Restschuld = Convert.ToDouble(reader["Restschuld"]);
                 kredit.Laufzeit = Convert.ToInt32(reader["Laufzeit"]);
-                kredit.zuZahlendeRate = kredit.Restschuld / kredit.Laufzeit;
+                kredit.zuZahlendeRate = Convert.ToInt32(reader["Rate"]);
                 kredit.KreditID = Convert.ToInt32(reader["KreditID"]);
                 kredite.Add(kredit);
             }
