@@ -1153,6 +1153,10 @@ namespace aktiensim
                 Value = 100,
                 Width = 80
             };
+            if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D) 
+            {
+                auswahlMenge.Maximum = 2000;
+            }
             kreditPanel.Controls.Add(auswahlMenge);
 
             NumericUpDown auswahlLaufzeit = new NumericUpDown
@@ -1219,11 +1223,18 @@ namespace aktiensim
             kreditPanel.Controls.Add(kreditAufnehmen);
             kreditAufnehmen.Click += (q, w) =>
             {
-                kredit.Betrag = (double)auswahlMenge.Value;
-                kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
-                kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
-
+                if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D && MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null) 
+                {
+                    MessageBox.Show("Du darfst aufgrund deines Credit-Ratings nicht mehr als 1 Kredit aufnehmen!");
+                    kreditPanel.Visible = false;
+                }
+                else 
+                {
+                    kredit.Betrag = (double)auswahlMenge.Value;
+                    kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
+                    kredit.Laufzeit = (int)auswahlLaufzeit.Value;
+                    kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+                }
                 kreditPanel.Visible = false;
             };
             

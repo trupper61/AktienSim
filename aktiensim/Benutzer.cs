@@ -122,12 +122,16 @@ namespace aktiensim
             {
                 return this.score -= 10;
             }
+            if (this.kontoStand > 0 && this.kredite == null)
+            {
+                return this.score += 10;
+            }
             return this.score;
         }
 
         public string CheckCreditRating() 
         {
-            if(this.score < 50) 
+            if(this.score < 50 && this.kontoStand < -2000) 
             {
                 this.rating = Kredite.CreditRating.D;
                 return this.rating.ToString();
