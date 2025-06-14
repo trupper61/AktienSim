@@ -119,6 +119,13 @@ namespace aktiensim
                 new MySqlParameter("@KreditID", kredit.KreditID));
         }
 
+        public void KreditLoeschen() 
+        {
+            string kreditDelete = "DELETE FROM kredite WHERE Laufzeit = 0;";
+
+            SqlConnection.ExecuteNonQuery(kreditDelete, null);
+        }
+
         public static void RefreshDataGridView(DataGridView aktiveKredite, Benutzer benutzer) 
         {
             foreach(Kredite kred in benutzer.kredite) 

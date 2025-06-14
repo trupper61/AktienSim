@@ -114,17 +114,29 @@ namespace aktiensim
                             {
                                 foreach(Benutzer benutzer in MySqlManager.Benutzerverwaltung.LadeAlleBenutzer()) 
                                 {
+                                    List<Kredite> geloeschteKredite = new List<Kredite>();
+
                                     foreach (Kredite kr in benutzer.kredite)
                                     {
                                         kr.Laufzeit--;
                                         kr.Restschuld -= kr.zuZahlendeRate;
                                         benutzer.GeldAbziehen(kr.zuZahlendeRate);
                                         kr.UpdateKreditStatus(kr);
+                                        if(kr.Laufzeit > 0) 
+                                        {
+                                            geloeschteKredite.Add(kr);
+                                        }
+                                        else 
+                                        {
+                                            kr.KreditLoeschen();
+                                        }
                                     }
                                     if(benutzer.kredite.Count == 0) 
                                     {
                                         benutzer.GeldAbziehen(0);
                                     }
+                                    benutzer.kredite = geloeschteKredite;
+                                    
                                 }
                                 
                             }

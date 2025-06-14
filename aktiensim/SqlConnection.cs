@@ -24,7 +24,10 @@ namespace aktiensim
             {
                 myconnection.Open();
                 MySqlCommand cmds = new MySqlCommand(sql, myconnection);
-                cmds.Parameters.AddRange(parameters);
+                if (parameters != null)
+                {
+                    cmds.Parameters.AddRange(parameters);
+                }
                 return cmds.ExecuteNonQuery();
             }
         }
