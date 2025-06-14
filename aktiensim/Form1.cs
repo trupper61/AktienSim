@@ -112,11 +112,33 @@ namespace aktiensim
                         {
                             if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null)
                             {
-                                foreach (Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite)
+                                foreach(Benutzer benutzer in MySqlManager.Benutzerverwaltung.LadeAlleBenutzer()) 
                                 {
-                                    kr.Laufzeit--;
-                                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                                    List<Kredite> geloeschteKredite = new List<Kredite>();
+
+                                    foreach (Kredite kr in benutzer.kredite)
+                                    {
+                                        kr.Laufzeit--;
+                                        kr.Restschuld -= kr.zuZahlendeRate;
+                                        benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                        kr.UpdateKreditStatus(kr);
+                                        if(kr.Laufzeit > 0) 
+                                        {
+                                            geloeschteKredite.Add(kr);
+                                        }
+                                        else 
+                                        {
+                                            kr.KreditLoeschen();
+                                        }
+                                    }
+                                    if(benutzer.kredite.Count == 0) 
+                                    {
+                                        benutzer.GeldAbziehen(0);
+                                    }
+                                    benutzer.kredite = geloeschteKredite;
+                                    
                                 }
+                                
                             }
                         }
                     }
@@ -176,7 +198,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GetKontoStand()}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
@@ -256,7 +278,9 @@ namespace aktiensim
                             ShowKreditPanel(aktiveKredite);
                         };
                         homePanel.Controls.Add(kreditaufnahme);
+                        Kredite.HoleKrediteAusDatenbank(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
                         Kredite.RefreshDataGridView(aktiveKredite, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+                        
                     };
                 };
 
@@ -1124,7 +1148,7 @@ namespace aktiensim
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
-            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), 0);
             kreditPanel.Controls.Clear();
             kreditPanel.Visible = true;
             kreditPanel.BringToFront();
@@ -1145,6 +1169,7 @@ namespace aktiensim
                 Value = 100,
                 Width = 80
             };
+            
             kreditPanel.Controls.Add(auswahlMenge);
 
             NumericUpDown auswahlLaufzeit = new NumericUpDown
@@ -1156,6 +1181,27 @@ namespace aktiensim
                 Width = 80
             };
             kreditPanel.Controls.Add(auswahlLaufzeit);
+
+            if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D)
+            {
+                auswahlMenge.Maximum = 2000;
+                auswahlLaufzeit.Maximum = 6;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.C)
+            {
+                auswahlMenge.Maximum = 5000;
+                auswahlLaufzeit.Maximum = 18;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.B)
+            {
+                auswahlMenge.Maximum = 7500;
+                auswahlLaufzeit.Maximum = 24;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.A)
+            {
+                auswahlMenge.Maximum = 10000;
+                auswahlLaufzeit.Maximum = 48;
+            }
 
             Label zuZahlendeRate = new Label
             {
@@ -1211,11 +1257,18 @@ namespace aktiensim
             kreditPanel.Controls.Add(kreditAufnehmen);
             kreditAufnehmen.Click += (q, w) =>
             {
-                kredit.Betrag = (double)auswahlMenge.Value;
-                kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
-                kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
-
+                if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D && MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null) 
+                {
+                    MessageBox.Show("Du darfst aufgrund deines Credit-Ratings nicht mehr als 1 Kredit aufnehmen!");
+                    kreditPanel.Visible = false;
+                }
+                else 
+                {
+                    kredit.Betrag = (double)auswahlMenge.Value;
+                    kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
+                    kredit.Laufzeit = (int)auswahlLaufzeit.Value;
+                    kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+                }
                 kreditPanel.Visible = false;
             };
             
