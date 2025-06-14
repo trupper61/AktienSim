@@ -136,11 +136,11 @@ namespace aktiensim
                 this.rating = Kredite.CreditRating.D;
                 return this.rating.ToString();
             }
-            else if(this.score > 50) 
+            else if(this.score > 50 && this.score < 70) 
             {
                 this.rating = Kredite.CreditRating.C;
             }
-            else if (this.score > 70)
+            else if (this.score > 70 && this.score < 90)
             {
                 this.rating = Kredite.CreditRating.B;
             }

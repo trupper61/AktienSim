@@ -38,15 +38,16 @@ namespace aktiensim
             switch(Benutzer.rating) 
             {
                 case CreditRating.A:
-                    this.Zinssatz = 3;
+                    this.Zinssatz = 8;
                     return this.Zinssatz;
                 case CreditRating.B:
-                    this.Zinssatz = 5;
+                    this.Zinssatz = 15;
                     return this.Zinssatz;
                 case CreditRating.C:
-                    this.Zinssatz = 10;
+                    this.Zinssatz = 25;
                     return this.Zinssatz;
                 case CreditRating.D:
+                    this.Zinssatz = 50;
                     break;
                 default:
                     MessageBox.Show("Fehler!");

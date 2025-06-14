@@ -1157,10 +1157,7 @@ namespace aktiensim
                 Value = 100,
                 Width = 80
             };
-            if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D) 
-            {
-                auswahlMenge.Maximum = 2000;
-            }
+            
             kreditPanel.Controls.Add(auswahlMenge);
 
             NumericUpDown auswahlLaufzeit = new NumericUpDown
@@ -1172,6 +1169,27 @@ namespace aktiensim
                 Width = 80
             };
             kreditPanel.Controls.Add(auswahlLaufzeit);
+
+            if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D)
+            {
+                auswahlMenge.Maximum = 2000;
+                auswahlLaufzeit.Maximum = 6;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.C)
+            {
+                auswahlMenge.Maximum = 5000;
+                auswahlLaufzeit.Maximum = 18;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.B)
+            {
+                auswahlMenge.Maximum = 7500;
+                auswahlLaufzeit.Maximum = 24;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.A)
+            {
+                auswahlMenge.Maximum = 10000;
+                auswahlLaufzeit.Maximum = 48;
+            }
 
             Label zuZahlendeRate = new Label
             {
