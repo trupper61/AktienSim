@@ -121,6 +121,10 @@ namespace aktiensim
                                         benutzer.GeldAbziehen(kr.zuZahlendeRate);
                                         kr.UpdateKreditStatus(kr);
                                     }
+                                    if(benutzer.kredite.Count == 0) 
+                                    {
+                                        benutzer.GeldAbziehen(0);
+                                    }
                                 }
                                 
                             }

@@ -122,7 +122,7 @@ namespace aktiensim
             {
                 return this.score -= 10;
             }
-            if (this.kontoStand > 0 && this.kredite == null)
+            if (this.kontoStand > 0 && this.kredite.Count == 0)
             {
                 return this.score += 10;
             }
