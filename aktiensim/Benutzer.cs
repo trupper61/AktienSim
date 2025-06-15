@@ -19,7 +19,7 @@ namespace aktiensim
         public Kredite.CreditRating rating; //Vertrauenswürdigkeit des Kreditnehmers - Wird in Tabelle "Konto" gespeichert
         public int score;
         public List<Kredite> kredite;
-        public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand, List<Kredite> Kredite, Kredite.CreditRating Rating, int Score)
+        public Benutzer (string name, string vorname, string email, string benutzerID, double kontoStand, List<Kredite> Kredite, Kredite.CreditRating Rating, int Score)
         {
             this.name = name;
             this.vorname = vorname;
@@ -39,7 +39,7 @@ namespace aktiensim
             string qry = "INSERT INTO konto(ID_Benutzer, Kontostand, KreditRating, KreditScore) VALUES(@ID_Benutzer, @Kontostand, @rating, @score)";
 
             ID_Benutzer = this.benutzerID;
-            Kontostand = this.kontoStand;
+            Kontostand = Math.Round(this.kontoStand, 2);
 
             using (var myMan = new MySqlManager())
             {
@@ -84,7 +84,7 @@ namespace aktiensim
             {
                 using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
                 {
-                    cmd.Parameters.AddWithValue("Kontostand", stand);
+                    cmd.Parameters.AddWithValue("Kontostand", Math.Round(stand, 2));
                     cmd.Parameters.AddWithValue("ID_Benutzer", BID);
                     cmd.Parameters.AddWithValue("score", score);
                     cmd.Parameters.AddWithValue("rating", rating);

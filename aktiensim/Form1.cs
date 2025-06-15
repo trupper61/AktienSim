@@ -209,7 +209,7 @@ namespace aktiensim
                         Image = Properties.Resources.kontostand,
                         Font = new Font("Arial", 16, FontStyle.Bold),
                         Location = new Point(homePanel.Location.X + 35, y),
-                        Text = $"Ihr Kontostand: {activeUser.kontoStand}",
+                        Text = $"Ihr Kontostand: {activeUser.kontoStand:F2}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
@@ -1254,13 +1254,13 @@ namespace aktiensim
             
             kaufBtn.Click += (s, e) =>
             {
-                DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
+                DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {aktie.CurrentValue * Convert.ToDouble(anteilNum.Value):f2}€");
                 if (result == DialogResult.OK )
                 {
                     LoadActiveUser();
                     using (var myMan = new MySqlManager())
                     {
-                        myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), activeUser);
+                        myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), aktie.CurrentValue, activeUser);
                     }
                 }
                 kaufPanel.Visible = false;
@@ -1465,7 +1465,7 @@ namespace aktiensim
 
                     // Geld gutschreiben
                     LoadActiveUser();
-                    activeUser.GeldHinzufuegen(Convert.ToInt32(erloes));
+                    activeUser.GeldHinzufuegen(erloes);
 
                     transaktion.anzahl -= menge;
                     using (var myMan = new MySqlManager())
@@ -1515,11 +1515,11 @@ namespace aktiensim
                         {
                             case 1:
                                 double mengeKauf = Math.Round(rand.NextDouble() * 5, 2);
-                                decimal kosten = Convert.ToDecimal(mengeKauf * aktie.CurrentValue);
-                                if(benutzer.kontoStand >= (double)kosten)
+                                double kosten = mengeKauf * aktie.CurrentValue;
+                                if(benutzer.kontoStand >= kosten)
                                 {
-                                    myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
-                                    benutzer.UpdateKontoStand(Convert.ToInt32(kosten), benutzer.benutzerID);
+                                    myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", mengeKauf, aktie.CurrentValue, benutzer);
+                                    benutzer.UpdateKontoStand(kosten, benutzer.benutzerID);
                                     nachfrage.TryGetValue(aktie.id, out int wert);
                                     nachfrage[aktie.id] = wert + 1; 
                                 }
@@ -1532,7 +1532,7 @@ namespace aktiensim
                                     double verkaufsMenge = Math.Min(trans.anzahl, Math.Round(rand.NextDouble() * 5, 2));
                                     if (verkaufsMenge > 0)
                                     {
-                                        decimal erloes = Convert.ToDecimal(verkaufsMenge * aktie.CurrentValue);
+                                        double erloes = verkaufsMenge * aktie.CurrentValue;
                                         trans.anzahl -= verkaufsMenge;
                                         if (trans.anzahl <= 0)
                                         {

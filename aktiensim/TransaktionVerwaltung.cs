@@ -15,7 +15,7 @@ namespace aktiensim
             this.connection = connection;
         }
 
-        public void AddTransaktion(int aktieId, string typ, double anzahl, decimal einzelpreis, Benutzer activeUser)
+        public void AddTransaktion(int aktieId, string typ, double anzahl, double einzelpreis, Benutzer activeUser)
         {
             string query = "INSERT INTO transaktion (aktie_ID, typ, anzahl, einzelpreis, zeitpunkt, depot_ID) VALUES(@aktie_ID, @typ, @anzahl, @einzelpreis, @zeitpunkt, @depot_ID)";
             using (MySqlCommand cmd = new MySqlCommand(query, connection))
@@ -28,7 +28,7 @@ namespace aktiensim
                 Depot userDepot = dv.GetUserDepot(Convert.ToInt32(activeUser.benutzerID)).FirstOrDefault();
                 cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
                 cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
-                activeUser.kontoStand -= Convert.ToInt32(Convert.ToDecimal(anzahl) * einzelpreis);
+                activeUser.kontoStand -= anzahl * einzelpreis;
                 cmd.ExecuteNonQuery();
             }
         }
