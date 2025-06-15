@@ -470,6 +470,7 @@ namespace aktiensim
             depotBtn.Click += (s, e) =>
             {
                 homePanel.Controls.Clear();
+                homePanel.BackgroundImage = null;
                 kreditPanel.Visible = false;
                 Label dplabel = new Label()
                 {
