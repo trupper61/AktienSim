@@ -89,7 +89,35 @@ namespace aktiensim
                 homePanel.BackgroundImage = Properties.Resources.backround;
                 homePanel.Controls.Clear();
                 kreditPanel.Visible = false;
-                
+
+                PictureBox Logo = new PictureBox
+                {
+                    BackgroundImage = Properties.Resources.logo,
+                    Size = new Size(364, 128),
+                    Location = new Point(homePanel.Location.X / 2, homePanel.Location.Y / 2),
+                    BackColor = Color.Transparent,
+                    BackgroundImageLayout = ImageLayout.Stretch
+                };
+                homePanel.Controls.Add(Logo);
+
+                Button buttonLogout = new Button
+                {
+                    Size = new Size(50, 50),
+                    Location = new Point(440, 0),
+                    BackgroundImage = Properties.Resources.Logout
+                };
+                homePanel.Controls.Add(buttonLogout);
+                buttonLogout.Click += (l, p) =>
+                {
+                    InitLoginUi();
+                    activeUser = null;
+
+                    loginPanel.Visible = true;
+                    flowLayoutPanel.Visible = false;
+                    homePanel.Visible = false;
+                };
+                buttonLogout.BringToFront();
+
             };
             flowLayoutPanel.Controls.Add(homeBtn);
 
@@ -148,8 +176,8 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Image = Properties.Resources.kontostand,
                         Font = new Font("Arial", 16, FontStyle.Bold),
-                        Location = new Point(homePanel.Location.X + 35, y),
-                        Text = $"Ihr Kontostand: {activeUser.kontoStand:F2}",
+                        Location = new Point(0, y),
+                        Text = $"Ihr Kontostand: {activeUser.kontoStand}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
@@ -159,7 +187,7 @@ namespace aktiensim
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 60),
+                        Location = new Point(kontostand.Location.X, kontostand.Location.Y + 50),
                         Text = $"Kredite Verwalten"
                     };
                     homePanel.Controls.Add(kreditverwaltung);
@@ -169,7 +197,7 @@ namespace aktiensim
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 90),
+                        Location = new Point(kontostand.Location.X, kontostand.Location.Y + 80),
                         Text = $"Umsätze"
                     };
                     umsaetze.Click += (s2, e2) =>
@@ -408,24 +436,6 @@ namespace aktiensim
                 };
                 homePanel.Controls.Add(backroundImage);
                 backroundImage.SendToBack();
-
-                Button buttonLogout = new Button
-                {
-                    Size = new Size(50, 50),
-                    Location = new Point(lb.Location.X + 280, lb.Location.Y - 130),
-                    BackgroundImage = Properties.Resources.Logout
-                };
-                homePanel.Controls.Add(buttonLogout);
-                buttonLogout.Click += (l, p) =>
-                {
-                    InitLoginUi();
-                    activeUser = null;
-                    
-                    loginPanel.Visible = true;
-                    flowLayoutPanel.Visible = false;
-                    homePanel.Visible = false;
-                };
-                buttonLogout.BringToFront();
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
@@ -1215,6 +1225,34 @@ namespace aktiensim
                 Kredite.HoleKrediteAusDatenbank(activeUser);
             }
             homePanel.Controls.Clear();
+            PictureBox Logo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(364, 128),
+                Location = new Point(homePanel.Location.X / 2, homePanel.Location.Y / 2),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            homePanel.Controls.Add(Logo);
+
+            Button buttonLogout = new Button
+            {
+                Size = new Size(50, 50),
+                Location = new Point(440, 0),
+                BackgroundImage = Properties.Resources.Logout
+            };
+            homePanel.Controls.Add(buttonLogout);
+            buttonLogout.Click += (l, p) =>
+            {
+                InitLoginUi();
+                activeUser = null;
+
+                loginPanel.Visible = true;
+                flowLayoutPanel.Visible = false;
+                homePanel.Visible = false;
+            };
+            buttonLogout.BringToFront();
+
             Benutzer aNutzer = activeUser;
             }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp

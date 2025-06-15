@@ -25,6 +25,20 @@ namespace aktiensim
             string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
             string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
             string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
+            using (MySqlCommand cmd = new MySqlCommand(qryRd, connection))
+            {
+                cmd.Parameters.AddWithValue("email", email);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        if (reader["email"].ToString() == email) 
+                        {
+                            MessageBox.Show("Benutzer existiert bereits!");
+                        }
+                    }
+                }
+            }
             using (MySqlCommand cmd = new MySqlCommand(qry, connection)) //Benutzer erstellen mit allen essenziellen Daten
             {
                 cmd.Parameters.AddWithValue("nName", nName);
