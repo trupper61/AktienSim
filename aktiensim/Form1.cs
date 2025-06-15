@@ -1706,9 +1706,9 @@ namespace aktiensim
                 var lokaleEvents = myMan.Ereignis.LadeAktiveEreignisse("lokal");
                 Random rand = new Random();
                 List<Ereigniss> ereignisse = new List<Ereigniss>();
-                if (rand.NextDouble() < 0.1 && globaleEvents.Any())
-                    ereignisse.Add(globaleEvents[rand.Next(globaleEvents.Count)]);
-                if (rand.NextDouble() < 0.25 && lokaleEvents.Any())
+                if (rand.NextDouble() < 0.005 && globaleEvents.Any()); // 0.5 % für globale 
+                    ereignisse.Add(globaleEvents[rand.Next(globaleEvents.Count)]); 
+                if (rand.NextDouble() < 0.01 && lokaleEvents.Any()) // 0.1 % für lokale
                     ereignisse.Add(lokaleEvents[rand.Next(lokaleEvents.Count)]);
                 foreach (Ereigniss e in ereignisse)
                 {
