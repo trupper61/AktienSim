@@ -1430,8 +1430,14 @@ namespace aktiensim
                     {
                         LoadActiveUser();
                         myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), aktie.CurrentValue, activeUser);
+                        activeUser.GeldAbziehen(aktie.CurrentValue * Convert.ToDouble(anteilNum.Value));
+                        MessageBox.Show("Kauf erfolgreich durchgeführt.");
                     }
-                    MessageBox.Show("Kauf erfolgreich durchgeführt.");
+                    else 
+                    {
+                        MessageBox.Show("Kauf abgebrochen");
+                    }
+                    
                     kaufPanel.Visible = false;
                 };
                 kaufPanel.Controls.Add(kaufBtn);
