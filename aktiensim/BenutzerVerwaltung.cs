@@ -71,8 +71,8 @@ namespace aktiensim
                 cmd.ExecuteNonQuery();
             }
 
-            Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C, 1);
-            user.AddKonto(BID, 0, Kredite.CreditRating.C, 1);
+            Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C, 50);
+            user.AddKonto(BID, 0, Kredite.CreditRating.C, 50);
 
             string konIdQry = "SELECT KontoID FROM konto WHERE ID_Benutzer = @ID_Benutzer";
             string konIdUpdateQry = "UPDATE benutzer SET ID_Konto = @ID_Konto WHERE BenutzerID = @ID_Benutzer";
@@ -185,27 +185,31 @@ namespace aktiensim
         {
             List<Benutzer> benutzer = new List<Benutzer>();
             string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto, KreditRating, KreditScore FROM benutzer, konto";
-            using (MySqlCommand cmd = new MySqlCommand(query, connection))
+            using (var MyMan = new MySqlManager()) 
             {
-                using (MySqlDataReader reader = cmd.ExecuteReader())
+                using (MySqlCommand cmd = new MySqlCommand(query, MyMan.Connection))
                 {
-                    while (reader.Read())
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        string id = reader["BenutzerID"].ToString();
-                        string name = reader["Name"].ToString();
-                        string vorname = reader["Vorname"].ToString();
-                        string email = reader["Email"].ToString();
-                        int kontoId = Convert.ToInt32(reader["ID_Konto"]);
-                        int kontostand = GetBenutzerKontostand(kontoId);
-                        Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
-                        int score = Convert.ToInt32(reader["KreditScore"]);
-                        Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, rating, score);
-                        if (user != null)
-                            benutzer.Add(user);
+                        while (reader.Read())
+                        {
+                            string id = reader["BenutzerID"].ToString();
+                            string name = reader["Name"].ToString();
+                            string vorname = reader["Vorname"].ToString();
+                            string email = reader["Email"].ToString();
+                            int kontoId = Convert.ToInt32(reader["ID_Konto"]);
+                            int kontostand = GetBenutzerKontostand(kontoId);
+                            Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                            int score = Convert.ToInt32(reader["KreditScore"]);
+                            Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, rating, score);
+                            Kredite.HoleKrediteAusDatenbank(user);
+                            if (user != null)
+                                benutzer.Add(user);
+                        }
                     }
                 }
+                return benutzer;
             }
-            return benutzer;
         }
         public Benutzer GetUserByInput(string input)
         {

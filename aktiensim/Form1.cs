@@ -89,69 +89,9 @@ namespace aktiensim
                 homePanel.BackgroundImage = Properties.Resources.backround;
                 homePanel.Controls.Clear();
                 kreditPanel.Visible = false;
-                Button nextDayBtn = new Button
-                {
-                    Text = "Nächster Tag...",
-                    Location = new Point(10, 10),
-                    Width = 120
-                };
-                homePanel.Controls.Add(nextDayBtn);
-                nextDayBtn.Click += (s2, e2) =>
-                {
-                    SimuliereNächstenTag();
-                };
-                Button nextWeekBtn = new Button
-                {
-                    Text = "Nächste Woche...",
-                    Location = new Point(10, 50),
-                    Width = 120
-                };
-                homePanel.Controls.Add(nextWeekBtn);
-                nextWeekBtn.Click += (s2, e2) =>
-                {
-                    for (int i = 0; i < 7; i++)
-                    {
-                        SimuliereNächstenTag();
-                        if(i == 6) 
-                        {
-                            using (var myMan = new MySqlManager())
-                            {
-                                foreach(Benutzer benutzer in myMan.Benutzer.LadeAlleBenutzer()) 
-                                {
-                                    List<Kredite> geloeschteKredite = new List<Kredite>();
-
-                                    foreach (Kredite kr in benutzer.kredite)
-                                    {
-                                        kr.Laufzeit--;
-                                        kr.Restschuld -= kr.zuZahlendeRate;
-                                        benutzer.GeldAbziehen(kr.zuZahlendeRate);
-                                        kr.UpdateKreditStatus(kr);
-                                        if(kr.Laufzeit > 0) 
-                                        {
-                                            geloeschteKredite.Add(kr);
-                                        }
-                                        else 
-                                        {
-                                            kr.KreditLoeschen();
-                                        }
-                                    }
-                                    if(benutzer.kredite.Count == 0) 
-                                    {
-                                        benutzer.GeldAbziehen(0);
-                                    }
-                                    benutzer.kredite = geloeschteKredite;
-                                    
-                                }
-                                
-                            }
-                        }
-                    }
-                    
-                };
+                
             };
             flowLayoutPanel.Controls.Add(homeBtn);
-
-            
 
             Button profileBtn = new Button
             {
@@ -671,6 +611,74 @@ namespace aktiensim
                 ShowUeberweisungPanel();
             };
             flowLayoutPanel.Controls.Add(ueberweisungBtn);
+
+            Button nextDayBtn = new Button
+            {
+                //Text = "Nächster Tag...",
+                //Location = new Point(10, 10),
+                Width = 45,
+                Height = 45,
+                BackgroundImage = Properties.Resources.nxtButton1,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            flowLayoutPanel.Controls.Add(nextDayBtn);
+            nextDayBtn.Click += (s2, e2) =>
+            {
+                SimuliereNächstenTag();
+            };
+            Button nextWeekBtn = new Button
+            {
+                //Text = "Nächste Woche...",
+                //Location = new Point(10, 50),
+                Width = 45,
+                Height = 45,
+                BackgroundImage = Properties.Resources.nxtButton2,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            flowLayoutPanel.Controls.Add(nextWeekBtn);
+
+            nextWeekBtn.Click += (s2, e2) =>
+            {
+                for (int i = 0; i < 7; i++)
+                {
+                    SimuliereNächstenTag();
+                    if (i == 6)
+                    {
+                        using (var myMan = new MySqlManager())
+                        {
+                            foreach (Benutzer benutzer in myMan.Benutzer.LadeAlleBenutzer())
+                            {
+                                List<Kredite> geloeschteKredite = new List<Kredite>();
+
+                                foreach (Kredite kr in benutzer.kredite)
+                                {
+                                    kr.Laufzeit--;
+                                    kr.Restschuld -= kr.zuZahlendeRate;
+                                    benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                    kr.UpdateKreditStatus(kr);
+                                    if (kr.Laufzeit > 0)
+                                    {
+                                        geloeschteKredite.Add(kr);
+                                    }
+                                    else
+                                    {
+                                        kr.KreditLoeschen();
+                                    }
+                                    
+                                }
+                                if (benutzer.kredite.Count == 0)
+                                {
+                                    benutzer.GeldAbziehen(0);
+                                }
+                                benutzer.kredite = geloeschteKredite;
+                            }
+
+                        }
+                    }
+                }
+
+            };
+
             homePanel = new Panel
             {
                 Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
@@ -1470,7 +1478,7 @@ namespace aktiensim
             kreditAufnehmen.Click += (q, w) =>
             {
                 LoadActiveUser();
-                if(activeUser.rating == Kredite.CreditRating.D && activeUser.kredite != null) 
+                if(activeUser.rating == Kredite.CreditRating.D && activeUser.kredite.Count != 0) 
                 {
                     MessageBox.Show("Du darfst aufgrund deines Credit-Ratings nicht mehr als 1 Kredit aufnehmen!");
                     kreditPanel.Visible = false;
@@ -1738,6 +1746,8 @@ namespace aktiensim
             using (var myMan = new MySqlManager())
             {
                 activeUser = myMan.Benutzer.ReturnActiveUser(activeUser);
+                activeUser.kontoStand = activeUser.GetKontoStand();
+                Kredite.HoleKrediteAusDatenbank(activeUser);
             }
         }
     }
