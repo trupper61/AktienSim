@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace aktiensim
 {
@@ -326,15 +327,7 @@ namespace aktiensim
                 string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
                 string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
                 string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
-                if(!email.Contains("@")) 
-                {
-                    MessageBox.Show("Keine gültige Email!");
-                    return;
-                }
-                if(nName.Any(char.IsDigit) || vName.Any(char.IsDigit)) 
-                {
-                    MessageBox.Show("Ungültiger Name!");
-                }
+                
                 using (MySqlConnection connection = new MySqlConnection(connectionString)) //Überprüfen, ob Email doppelt ist
                 {
                     connection.Open();
@@ -662,6 +655,18 @@ namespace aktiensim
             public static void UpdateBenutzerDaten(string Vorname, string Nachname, string Email, string benutzerID)
             {
                 string qry = "UPDATE benutzer SET Vorname = @Vorname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Name = @Nachname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Email = @Email WHERE BenutzerID = @benutzerID; UPDATE logininfo SET Email = @Email WHERE ID_Benutzer = @benutzerID";
+
+                if (!Email.Contains("@") || !Email.Contains(".com"))
+                {
+                    MessageBox.Show("Keine gültige Email!");
+                    return;
+                }
+                if (Nachname.Any(char.IsDigit) || Vorname.Any(char.IsDigit))
+                {
+                    MessageBox.Show("Ungültiger Name!");
+                    return;
+                }
+
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 { 
                     conn.Open();

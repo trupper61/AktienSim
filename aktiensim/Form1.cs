@@ -1089,7 +1089,16 @@ namespace aktiensim
                 return;
             }
             string passHash = MySqlManager.Benutzerverwaltung.Hash(password);
-            MessageBox.Show(passHash);
+            if (!email.Contains("@") || !email.Contains(".com"))
+            {
+                MessageBox.Show("Keine gültige Email!");
+                return;
+            }
+            if (nName.Any(char.IsDigit) || vName.Any(char.IsDigit))
+            {
+                MessageBox.Show("Ungültiger Name!");
+                return;
+            }
             MySqlManager.Benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
             MessageBox.Show("Bitte, logen Sie sich ein");
             registerPanel.Visible = false;
