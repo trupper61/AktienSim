@@ -42,10 +42,7 @@ namespace aktiensim
             ID_Benutzer = this.benutzerID;
             Kontostand = this.kontoStand;
 
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            using (var myMan = new MySqlManager())
             {
                 cmd.Parameters.AddWithValue("ID_Benutzer", ID_Benutzer);
                 cmd.Parameters.AddWithValue("Kontostand", Kontostand);
@@ -81,16 +78,16 @@ namespace aktiensim
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "UPDATE konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer; UPDATE konto SET KreditRating = @rating WHERE ID_Benutzer = @ID_Benutzer; UPDATE konto SET KreditScore = @score WHERE ID_Benutzer = @ID_Benutzer;";
 
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("Kontostand", stand);
-                cmd.Parameters.AddWithValue("ID_Benutzer", BID);
-                cmd.Parameters.AddWithValue("score", score);
-                cmd.Parameters.AddWithValue("rating", rating);
-                cmd.ExecuteNonQuery();
+                using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
+                {
+                    cmd.Parameters.AddWithValue("Kontostand", stand);
+                    cmd.Parameters.AddWithValue("ID_Benutzer", BID);
+                    cmd.Parameters.AddWithValue("score", score);
+                    cmd.Parameters.AddWithValue("rating", rating);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
         public double GetKontoStand() //Holt aktuellen Wert des Kontos
@@ -98,19 +95,17 @@ namespace aktiensim
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "SELECT Kontostand, KreditRating, KreditScore FROM Konto WHERE ID_Benutzer = @ID_Benutzer";
 
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            using (var myMan = new MySqlManager())
             {
                 cmd.Parameters.AddWithValue("ID_Benutzer", this.benutzerID);
                 MySqlDataReader reader = cmd.ExecuteReader();
 
-                if(reader.Read())
+                using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
                 {
                     this.kontoStand = Convert.ToInt32(reader["Kontostand"]);
                     this.rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
                     this.score = Convert.ToInt32(reader["KreditScore"]);
+                    cmd.Parameters.AddWithValue("ID_Benutzer", benutzer.benutzerID);
                 }
                 return this.kontoStand;
             }
