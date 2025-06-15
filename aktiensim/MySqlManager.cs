@@ -326,6 +326,15 @@ namespace aktiensim
                 string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
                 string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
                 string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
+                if(!email.Contains("@")) 
+                {
+                    MessageBox.Show("Keine gültige Email!");
+                    return;
+                }
+                if(nName.Any(char.IsDigit) || vName.Any(char.IsDigit)) 
+                {
+                    MessageBox.Show("Ungültiger Name!");
+                }
                 using (MySqlConnection connection = new MySqlConnection(connectionString)) //Überprüfen, ob Email doppelt ist
                 {
                     connection.Open();
