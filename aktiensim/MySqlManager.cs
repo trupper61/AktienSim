@@ -326,6 +326,28 @@ namespace aktiensim
                 string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
                 string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
                 string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
+                using (MySqlConnection connection = new MySqlConnection(connectionString)) //Überprüfen, ob Email doppelt ist
+                {
+                    connection.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(qryRd, connection))
+                    {
+                        cmd.Parameters.AddWithValue("email", email);
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            int value = 0;
+                            while (reader.Read())
+                            {
+                                value++;
+                                if(value == 1) 
+                                {
+                                    MessageBox.Show("Benutzer existiert schon!");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    connection.Dispose();
+                }
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
@@ -459,7 +481,7 @@ namespace aktiensim
                             string passHash = Hash(password);
                             if (passwordRead == null)
                             {
-                                MessageBox.Show("Please Register!");
+                                MessageBox.Show("Bitte Registrieren!");
                                 return;
                             }
                             if (inputEmail == email && passHash == passwordRead)
