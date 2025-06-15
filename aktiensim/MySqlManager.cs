@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace aktiensim
 {
@@ -326,6 +327,29 @@ namespace aktiensim
                 string qryInfo = "INSERT INTO logininfo(Email, ID_Benutzer, passwort) VALUES(@email, @benutzerid, @passwort)";
                 string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
                 string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
+                
+                using (MySqlConnection connection = new MySqlConnection(connectionString)) //Überprüfen, ob Email schon existiert
+                {
+                    connection.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(qryRd, connection))
+                    {
+                        cmd.Parameters.AddWithValue("email", email);
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            int value = 0;
+                            while (reader.Read())
+                            {
+                                value++;
+                                if(value == 1) 
+                                {
+                                    MessageBox.Show("Benutzer existiert schon!");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    connection.Dispose();
+                }
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
@@ -387,15 +411,15 @@ namespace aktiensim
                     }
                     connection.Close();
                     connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(qryLogUpdate, connection)) //Loginid updaten
+                    using (MySqlCommand cmd = new MySqlCommand(qryLogUpdate, connection)) //Loginid aktualisieren
                     {
                         cmd.Parameters.AddWithValue("email", email);
                         cmd.Parameters.AddWithValue("loginID", loginID);
                         cmd.ExecuteNonQuery();
                     }
 
-                    Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C);
-                    user.AddKonto(BID, 0);
+                    Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C, 50);
+                    user.AddKonto(BID, 0, Kredite.CreditRating.C, 50);
 
                     string konIdQry = "SELECT KontoID FROM konto WHERE ID_Benutzer = @ID_Benutzer";
                     string konIdUpdateQry = "UPDATE benutzer SET ID_Konto = @ID_Konto WHERE BenutzerID = @ID_Benutzer";
@@ -437,7 +461,7 @@ namespace aktiensim
 
                     string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
 
-
+                    //Eingabe mit Werten aus der Datenbank vergleichen
                     using (MySqlCommand cmd = new MySqlCommand(qryRd, conn))
                     {
                         cmd.Parameters.AddWithValue("email", email);
@@ -459,7 +483,7 @@ namespace aktiensim
                             string passHash = Hash(password);
                             if (passwordRead == null)
                             {
-                                MessageBox.Show("Please Register!");
+                                MessageBox.Show("Bitte Registrieren!");
                                 return;
                             }
                             if (inputEmail == email && passHash == passwordRead)
@@ -485,7 +509,6 @@ namespace aktiensim
                     }
                     conn.Dispose();
                 }
-                //Eingabe des Nutzers sollen geholt werden
 
             }
 
@@ -523,7 +546,7 @@ namespace aktiensim
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
-                    string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto FROM benutzer";
+                    string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto, KreditRating, KreditScore FROM benutzer, konto";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -536,7 +559,11 @@ namespace aktiensim
                                 string email = reader["Email"].ToString();
                                 int kontoId = Convert.ToInt32(reader["ID_Konto"]);
                                 int kontostand = GetBenutzerKontostand(kontoId);
-                                Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, Kredite.CreditRating.C);
+                                Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                                int score = Convert.ToInt32(reader["KreditScore"]);
+
+                                Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, rating, score);
+                                Kredite.HoleKrediteAusDatenbank(user);
                                 if (user != null)
                                     benutzer.Add(user);
                             }
@@ -552,8 +579,8 @@ namespace aktiensim
                 {
                     conn.Open();
                     string query = @"
-                    SELECT BenutzerID, Name, Vorname, Email 
-                    FROM benutzer 
+                    SELECT BenutzerID, Name, Vorname, Email, KreditRating, KreditScore 
+                    FROM benutzer, konto 
                     WHERE Email = @input 
                        OR Name = @input 
                        OR Vorname = @input
@@ -569,7 +596,10 @@ namespace aktiensim
                                 string name = reader["Name"].ToString();
                                 string vorname = reader["Vorname"].ToString();
                                 string email = reader["Email"].ToString();
-                                return new Benutzer(name, vorname, email, id, 0, null, Kredite.CreditRating.C);
+                                Kredite.CreditRating rating = (Kredite.CreditRating)reader["KreditRating"];
+                                int score = Convert.ToInt32(reader["KreditScore"]);
+
+                                return new Benutzer(name, vorname, email, id, 0, null, rating, score);
                             }
                         }
                     }
@@ -580,10 +610,12 @@ namespace aktiensim
             public static Benutzer GetUserByEMail(string givenEmail)
             {
                 string email = null, benutzerID = null, name = null, vName = null;
+                Kredite.CreditRating rating = Kredite.CreditRating.C;
+                int score = 0;
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
-                    string sql = $"SELECT BenutzerID, Name, Vorname, Email FROM benutzer WHERE Email = @email";
+                    string sql = $"SELECT BenutzerID, Name, Vorname, Email, KreditRating, KreditScore FROM benutzer, konto WHERE Email = @email";
 
                     using (MySqlCommand cmds = new MySqlCommand(sql, conn))
                     {
@@ -596,6 +628,8 @@ namespace aktiensim
                                 benutzerID = reader["BenutzerID"].ToString();
                                 name = reader["Name"].ToString();
                                 vName = reader["Vorname"].ToString();
+                                rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                                score = Convert.ToInt32(reader["KreditScore"]);
                             }
                         }
                     }
@@ -603,7 +637,7 @@ namespace aktiensim
                 }
                 if (email != null && givenEmail == email)
                 {
-                    Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, Kredite.CreditRating.C);
+                    Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, rating, score);
                     return user;
                 }
                 else
@@ -612,7 +646,7 @@ namespace aktiensim
                 }
             }
 
-            public static Benutzer ReturnActiveUser(Benutzer activeUser)
+            public static Benutzer ReturnActiveUser(Benutzer activeUser) //Gibt das momentane Objekt (Den angesprochenen Benutzer) zurück.
             {
                 activeUser = user;
                 return activeUser;
@@ -620,7 +654,19 @@ namespace aktiensim
 
             public static void UpdateBenutzerDaten(string Vorname, string Nachname, string Email, string benutzerID)
             {
-                string qry = "UPDATE benutzer SET Vorname = @Vorname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Name = @Nachname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Email = @Email WHERE BenutzerID = @benutzerID";
+                string qry = "UPDATE benutzer SET Vorname = @Vorname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Name = @Nachname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Email = @Email WHERE BenutzerID = @benutzerID; UPDATE logininfo SET Email = @Email WHERE ID_Benutzer = @benutzerID";
+
+                if (!Email.Contains("@") || !Email.Contains(".com"))
+                {
+                    MessageBox.Show("Keine gültige Email!");
+                    return;
+                }
+                if (Nachname.Any(char.IsDigit) || Vorname.Any(char.IsDigit))
+                {
+                    MessageBox.Show("Ungültiger Name!");
+                    return;
+                }
+
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 { 
                     conn.Open();

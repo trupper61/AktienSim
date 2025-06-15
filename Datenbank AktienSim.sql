@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 11. Jun 2025 um 17:00
--- Server-Version: 10.4.32-MariaDB
--- PHP-Version: 8.2.12
+-- Generation Time: Jun 14, 2025 at 08:51 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Datenbank: `aktiensimdb`
+-- Database: `aktiensimdb`
 --
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `aktiendaten`
+-- Table structure for table `aktiendaten`
 --
 
 CREATE TABLE `aktiendaten` (
@@ -36,20 +36,20 @@ CREATE TABLE `aktiendaten` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `aktiendaten`
+-- Dumping data for table `aktiendaten`
 --
 
 INSERT INTO `aktiendaten` (`aktienID`, `Firma`, `Name`, `Wert`, `letzterschluss`) VALUES
-(1, 'DAX', 'Deutscher Aktienindex', 18118.99, 17849.35),
-(2, 'DHL', 'Deutsche Post DHL Group', 41.50, 42.90),
-(3, 'LHA', 'Lufthansa AG', 5.56, 5.53),
-(4, 'SAP', 'SAP SE', 106.64, 107.49),
-(5, 'BMW', 'Bayerische Motoren Werke AG', 100.51, 97.06);
+(1, 'DAX', 'Deutscher Aktienindex', 16348.12, 16435.05),
+(2, 'DHL', 'Deutsche Post DHL Group', 38.08, 38.10),
+(3, 'LHA', 'Lufthansa AG', 4.64, 4.73),
+(4, 'SAP', 'SAP SE', 111.83, 110.95),
+(5, 'BMW', 'Bayerische Motoren Werke AG', 102.80, 103.22);
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `benutzer`
+-- Table structure for table `benutzer`
 --
 
 CREATE TABLE `benutzer` (
@@ -63,19 +63,17 @@ CREATE TABLE `benutzer` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `benutzer`
+-- Dumping data for table `benutzer`
 --
 
 INSERT INTO `benutzer` (`BenutzerID`, `ID_Konto`, `ID_Login`, `Name`, `Vorname`, `Email`, `MitgliedSeit`) VALUES
-(1, 1, 1, 'Bozkurt', 'Denis', 'deniboz11@gmail.com', '2025-05-26'),
-(2, 2, 2, 'Herwardt', 'Thomas', 'her@gmail.com', '2025-05-26'),
-(3, 3, 3, 'Mustermann', 'Max', '0@0', '2025-05-30'),
-(4, 4, 4, 'Müllermann', 'Maxime', '1@1', '2025-06-11');
+(15, 13, 15, '1', '1', '1', '2025-06-14'),
+(16, 14, 16, '2', '2', '2', '2025-06-14');
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `depot`
+-- Table structure for table `depot`
 --
 
 CREATE TABLE `depot` (
@@ -86,19 +84,16 @@ CREATE TABLE `depot` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `depot`
+-- Dumping data for table `depot`
 --
 
 INSERT INTO `depot` (`id`, `benutzer_id`, `name`, `erstellt`) VALUES
-(1, 1, 'Standarddepot', '2025-06-11 05:50:09'),
-(2, 2, 'Standarddepot', '2025-06-11 05:50:09'),
-(3, 3, 'tolles Depot', '2025-06-11 05:51:08'),
-(4, 4, 'My Depot', '2025-06-11 12:38:35');
+(6, 16, 'Standarddepot', '2025-06-14 20:40:11');
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `ereignisse`
+-- Table structure for table `ereignisse`
 --
 
 CREATE TABLE `ereignisse` (
@@ -111,53 +106,53 @@ CREATE TABLE `ereignisse` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `konto`
+-- Table structure for table `konto`
 --
 
 CREATE TABLE `konto` (
   `KontoID` int(30) NOT NULL,
   `ID_Benutzer` int(30) NOT NULL,
-  `Kontostand` int(50) NOT NULL
+  `Kontostand` int(50) NOT NULL,
+  `KreditRating` varchar(11) NOT NULL,
+  `KreditScore` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `konto`
+-- Dumping data for table `konto`
 --
 
-INSERT INTO `konto` (`KontoID`, `ID_Benutzer`, `Kontostand`) VALUES
-(1, 1, 0),
-(2, 2, 5),
-(3, 3, 1),
-(4, 4, 10249);
+INSERT INTO `konto` (`KontoID`, `ID_Benutzer`, `Kontostand`, `KreditRating`, `KreditScore`) VALUES
+(13, 15, 10080, 'C', 40),
+(14, 16, -735, 'C', 30);
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `kredite`
+-- Table structure for table `kredite`
 --
 
 CREATE TABLE `kredite` (
   `KreditID` int(30) NOT NULL,
-  `ID_Benutzer` int(11) NOT NULL,
-  `Betrag` double(30,2) NOT NULL,
-  `Zinssatz` int(30) NOT NULL,
-  `Restschuld` double(30,2) NOT NULL,
-  `Laufzeit` int(11) NOT NULL
+  `ID_Benutzer` int(30) NOT NULL,
+  `Betrag` double(50,2) NOT NULL,
+  `Zinssatz` int(10) NOT NULL,
+  `Restschuld` double(50,2) NOT NULL,
+  `Laufzeit` int(10) NOT NULL,
+  `Rate` double(30,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `kredite`
+-- Dumping data for table `kredite`
 --
 
-INSERT INTO `kredite` (`KreditID`, `ID_Benutzer`, `Betrag`, `Zinssatz`, `Restschuld`, `Laufzeit`) VALUES
-(22, 8, 100.00, 10, 110.00, 4),
-(0, 3, 201.00, 10, 221.10, 4),
-(0, 4, 10000.00, 10, 11000.00, 4);
+INSERT INTO `kredite` (`KreditID`, `ID_Benutzer`, `Betrag`, `Zinssatz`, `Restschuld`, `Laufzeit`, `Rate`) VALUES
+(18, 15, 100.00, 3, 91.00, 42, 2.15),
+(19, 16, 5000.00, 25, 4862.00, 14, 347.22);
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `logininfo`
+-- Table structure for table `logininfo`
 --
 
 CREATE TABLE `logininfo` (
@@ -168,19 +163,17 @@ CREATE TABLE `logininfo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `logininfo`
+-- Dumping data for table `logininfo`
 --
 
 INSERT INTO `logininfo` (`Email`, `ID_Benutzer`, `LoginID`, `passwort`) VALUES
-('deniboz11@gmail.com', 1, 1, '7110eda4d09e062aa5e4a390b0a572ac0d2c0220'),
-('her@gmail.com', 2, 2, '7110eda4d09e062aa5e4a390b0a572ac0d2c0220'),
-('0@0', 3, 3, '298b5d2a0e8f1ce32457989a54298a0dd9c07682'),
-('1@1', 4, 4, '03c22ee7364e9f286d4d4b042f755f0bca38227d');
+('1', 15, 15, '356a192b7913b04c54574d18c28d46e6395428ab'),
+('2', 16, 16, 'da4b9237bacccdf19c0760cab7aec4a8359010b0');
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `transaktion`
+-- Table structure for table `transaktion`
 --
 
 CREATE TABLE `transaktion` (
@@ -194,21 +187,24 @@ CREATE TABLE `transaktion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `transaktion`
+-- Dumping data for table `transaktion`
 --
 
 INSERT INTO `transaktion` (`id`, `aktie_ID`, `typ`, `anzahl`, `einzelpreis`, `zeitpunkt`, `depot_ID`) VALUES
-(1, 2, 'Kauf', 2.9499999999999997, 43, '2025-06-11 05:51:18', 3),
 (2, 2, 'Kauf', 0, 43, '2025-06-11 12:38:42', 4),
-(4, 4, 'Kauf', 0.59, 106, '2025-06-11 12:49:38', 3),
-(5, 3, 'Kauf', 0.83, 5, '2025-06-11 12:49:39', 2),
-(6, 3, 'Kauf', 1.64, 5, '2025-06-11 12:49:39', 3),
-(7, 4, 'Kauf', 0.01, 106, '2025-06-11 12:49:39', 3);
+(20, 3, 'Kauf', 2.12, 6, '2025-06-14 16:51:28', 2),
+(31, 3, 'Kauf', 0.8900000000000001, 6, '2025-06-14 16:58:43', 5),
+(39, 3, 'Kauf', 3.8099999999999996, 6, '2025-06-14 17:10:40', 5),
+(40, 3, 'Kauf', 0.5699999999999998, 5, '2025-06-14 17:10:40', 5),
+(42, 3, 'Kauf', 2.63, 5, '2025-06-14 17:10:41', 5),
+(43, 3, 'Kauf', 3.47, 5, '2025-06-14 17:11:27', 3),
+(44, 3, 'Kauf', 1.22, 5, '2025-06-14 17:11:27', 3),
+(45, 3, 'Kauf', 0.67, 5, '2025-06-14 17:11:27', 5);
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `transaktionshistorie`
+-- Table structure for table `transaktionshistorie`
 --
 
 CREATE TABLE `transaktionshistorie` (
@@ -220,93 +216,105 @@ CREATE TABLE `transaktionshistorie` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Indizes der exportierten Tabellen
+-- Indexes for dumped tables
 --
 
 --
--- Indizes für die Tabelle `aktiendaten`
+-- Indexes for table `aktiendaten`
 --
 ALTER TABLE `aktiendaten`
   ADD PRIMARY KEY (`aktienID`);
 
 --
--- Indizes für die Tabelle `benutzer`
+-- Indexes for table `benutzer`
 --
 ALTER TABLE `benutzer`
   ADD PRIMARY KEY (`BenutzerID`);
 
 --
--- Indizes für die Tabelle `depot`
+-- Indexes for table `depot`
 --
 ALTER TABLE `depot`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indizes für die Tabelle `konto`
+-- Indexes for table `konto`
 --
 ALTER TABLE `konto`
   ADD PRIMARY KEY (`KontoID`);
 
 --
--- Indizes für die Tabelle `logininfo`
+-- Indexes for table `kredite`
+--
+ALTER TABLE `kredite`
+  ADD PRIMARY KEY (`KreditID`);
+
+--
+-- Indexes for table `logininfo`
 --
 ALTER TABLE `logininfo`
   ADD PRIMARY KEY (`LoginID`,`Email`);
 
 --
--- Indizes für die Tabelle `transaktion`
+-- Indexes for table `transaktion`
 --
 ALTER TABLE `transaktion`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indizes für die Tabelle `transaktionshistorie`
+-- Indexes for table `transaktionshistorie`
 --
 ALTER TABLE `transaktionshistorie`
   ADD PRIMARY KEY (`transaktionID`);
 
 --
--- AUTO_INCREMENT für exportierte Tabellen
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT für Tabelle `aktiendaten`
+-- AUTO_INCREMENT for table `aktiendaten`
 --
 ALTER TABLE `aktiendaten`
   MODIFY `aktienID` int(25) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT für Tabelle `benutzer`
+-- AUTO_INCREMENT for table `benutzer`
 --
 ALTER TABLE `benutzer`
-  MODIFY `BenutzerID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `BenutzerID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT für Tabelle `depot`
+-- AUTO_INCREMENT for table `depot`
 --
 ALTER TABLE `depot`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT für Tabelle `konto`
+-- AUTO_INCREMENT for table `konto`
 --
 ALTER TABLE `konto`
-  MODIFY `KontoID` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `KontoID` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT für Tabelle `logininfo`
+-- AUTO_INCREMENT for table `kredite`
+--
+ALTER TABLE `kredite`
+  MODIFY `KreditID` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `logininfo`
 --
 ALTER TABLE `logininfo`
-  MODIFY `LoginID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `LoginID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT für Tabelle `transaktion`
+-- AUTO_INCREMENT for table `transaktion`
 --
 ALTER TABLE `transaktion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
--- AUTO_INCREMENT für Tabelle `transaktionshistorie`
+-- AUTO_INCREMENT for table `transaktionshistorie`
 --
 ALTER TABLE `transaktionshistorie`
   MODIFY `transaktionID` int(30) NOT NULL AUTO_INCREMENT;

@@ -83,6 +83,7 @@ namespace aktiensim
             };
             homeBtn.Click += (s, e) =>
             {
+                homePanel.BackgroundImage = Properties.Resources.backround;
                 homePanel.Controls.Clear();
                 kreditPanel.Visible = false;
                 Button nextDayBtn = new Button
@@ -112,11 +113,33 @@ namespace aktiensim
                         {
                             if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null)
                             {
-                                foreach (Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite)
+                                foreach(Benutzer benutzer in MySqlManager.Benutzerverwaltung.LadeAlleBenutzer()) 
                                 {
-                                    kr.Laufzeit--;
-                                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                                    List<Kredite> geloeschteKredite = new List<Kredite>();
+
+                                    foreach (Kredite kr in benutzer.kredite)
+                                    {
+                                        kr.Laufzeit--;
+                                        kr.Restschuld -= kr.zuZahlendeRate;
+                                        benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                        kr.UpdateKreditStatus(kr);
+                                        if(kr.Laufzeit > 0) 
+                                        {
+                                            geloeschteKredite.Add(kr);
+                                        }
+                                        else 
+                                        {
+                                            kr.KreditLoeschen();
+                                        }
+                                    }
+                                    if(benutzer.kredite.Count == 0) 
+                                    {
+                                        benutzer.GeldAbziehen(0);
+                                    }
+                                    benutzer.kredite = geloeschteKredite;
+                                    
                                 }
+                                
                             }
                         }
                     }
@@ -124,6 +147,9 @@ namespace aktiensim
                 };
             };
             flowLayoutPanel.Controls.Add(homeBtn);
+
+            
+
             Button profileBtn = new Button
             {
                 Text = "Profile",
@@ -137,7 +163,7 @@ namespace aktiensim
                 kreditPanel.Visible = false;
                 int y = 10;
                 homePanel.Controls.Clear();
-
+                homePanel.BackgroundImage = null;
                 PictureBox profilbild = new PictureBox()
                 {
                     Size = new Size(80, 80),
@@ -168,35 +194,27 @@ namespace aktiensim
                 kontostandBild.MouseLeave += MouseEnterEffectKontoLeave;
                 kontostandBild.MouseClick += (p, l) => 
                 {
+                    homePanel.BackgroundImage = Properties.Resources.backround;
                     homePanel.Controls.Clear();
                     Label kontostand = new Label
                     {
                         AutoSize = true,
                         ForeColor = Color.Green,
                         BackColor = Color.Transparent,
-                        Font = new Font("Arial", 12),
-                        Location = new Point(0, y),
-                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                        Image = Properties.Resources.kontostand,
+                        Font = new Font("Arial", 16, FontStyle.Bold),
+                        Location = new Point(homePanel.Location.X + 35, y),
+                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GetKontoStand()}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
-
-                    Label schulden = new Label
-                    {
-                        AutoSize = true,
-                        ForeColor = Color.Red,
-                        Font = new Font("Arial", 12),
-                        Location = new Point(kontostand.Location.X, y + 30),
-                        Text = $"Ihre Schulden: TBD"
-                    };
-                    homePanel.Controls.Add(schulden);
 
                     Button kreditverwaltung = new Button
                     {
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(schulden.Location.X, schulden.Location.Y + 60),
+                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 60),
                         Text = $"Kredite Verwalten"
                     };
                     homePanel.Controls.Add(kreditverwaltung);
@@ -206,13 +224,14 @@ namespace aktiensim
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(schulden.Location.X, schulden.Location.Y + 90),
+                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 90),
                         Text = $"Umsätze"
                     };
                     homePanel.Controls.Add(umsaetze);
 
                     kreditverwaltung.Click += (o, i) =>
                     {
+                        homePanel.BackgroundImage = Properties.Resources.backround;
                         homePanel.Controls.Clear();
 
                         Label kreditverwaltunglb = new Label()
@@ -256,7 +275,9 @@ namespace aktiensim
                             ShowKreditPanel(aktiveKredite);
                         };
                         homePanel.Controls.Add(kreditaufnahme);
+                        Kredite.HoleKrediteAusDatenbank(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
                         Kredite.RefreshDataGridView(aktiveKredite, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+                        
                     };
                 };
 
@@ -274,12 +295,12 @@ namespace aktiensim
                 benutzerdatenBild.MouseClick += (p, l) =>
                 {
                     homePanel.Controls.Clear();
-
+                    homePanel.BackgroundImage = Properties.Resources.backround;
                     Label vorname = new Label
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
                         Text = $"Vorname: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
@@ -289,7 +310,7 @@ namespace aktiensim
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 20),
                         Text = $"Name: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}",
@@ -299,7 +320,7 @@ namespace aktiensim
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 40),
                         Text = $"Email: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).email}",
@@ -309,7 +330,7 @@ namespace aktiensim
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 8),
                         Location = new Point(0, y + 330),
                         Text = $"BenutzerID: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
@@ -588,8 +609,19 @@ namespace aktiensim
                 Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
                 Location = new Point(flowLayoutPanel.Right, 0),
                 BackColor = Color.LightCyan,
-                Visible = false
+                Visible = false,
+                BackgroundImage = Properties.Resources.backround,
+                BackgroundImageLayout = ImageLayout.Stretch
             };
+            PictureBox registerLogo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(182, 64),
+                Location = new Point(0, 0),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            homePanel.Controls.Add(registerLogo);
             kaufPanel = new Panel
             {
                 Size = new Size(300, 200),
@@ -762,8 +794,19 @@ namespace aktiensim
             {
                 Size = this.ClientSize,
                 Location = new Point(0, 0),
-                BackColor = Color.LightBlue
+                BackColor = Color.LightBlue,
+                BackgroundImage = Properties.Resources.backround,
+                BackgroundImageLayout = ImageLayout.Stretch
             };
+            PictureBox registerLogo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(182, 64),
+                Location = new Point(400, 10),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            loginPanel.Controls.Add(registerLogo);
             Label loginLb = new Label
             {
                 Text = "Login",
@@ -854,8 +897,20 @@ namespace aktiensim
                 Size = this.ClientSize,
                 Location = new Point(0, 0),
                 BackColor = Color.LightGreen,
-                Visible = false
+                Visible = false,
+                BackgroundImage = Properties.Resources.backround,
+                BackgroundImageLayout = ImageLayout.Stretch
             };
+            PictureBox registerLogo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(182, 64),
+                Location = new Point(400, 10),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            registerPanel.Controls.Add(registerLogo);
+
             Label registerLabel = new Label
             {
                 Text = "Registrieren",
@@ -1034,7 +1089,16 @@ namespace aktiensim
                 return;
             }
             string passHash = MySqlManager.Benutzerverwaltung.Hash(password);
-            MessageBox.Show(passHash);
+            if (!email.Contains("@") || !email.Contains(".com"))
+            {
+                MessageBox.Show("Keine gültige Email!");
+                return;
+            }
+            if (nName.Any(char.IsDigit) || vName.Any(char.IsDigit))
+            {
+                MessageBox.Show("Ungültiger Name!");
+                return;
+            }
             MySqlManager.Benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
             MessageBox.Show("Bitte, logen Sie sich ein");
             registerPanel.Visible = false;
@@ -1124,7 +1188,7 @@ namespace aktiensim
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
-            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), 0);
             kreditPanel.Controls.Clear();
             kreditPanel.Visible = true;
             kreditPanel.BringToFront();
@@ -1145,6 +1209,7 @@ namespace aktiensim
                 Value = 100,
                 Width = 80
             };
+            
             kreditPanel.Controls.Add(auswahlMenge);
 
             NumericUpDown auswahlLaufzeit = new NumericUpDown
@@ -1156,6 +1221,27 @@ namespace aktiensim
                 Width = 80
             };
             kreditPanel.Controls.Add(auswahlLaufzeit);
+
+            if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D)
+            {
+                auswahlMenge.Maximum = 2000;
+                auswahlLaufzeit.Maximum = 6;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.C)
+            {
+                auswahlMenge.Maximum = 5000;
+                auswahlLaufzeit.Maximum = 18;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.B)
+            {
+                auswahlMenge.Maximum = 7500;
+                auswahlLaufzeit.Maximum = 24;
+            }
+            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.A)
+            {
+                auswahlMenge.Maximum = 10000;
+                auswahlLaufzeit.Maximum = 48;
+            }
 
             Label zuZahlendeRate = new Label
             {
@@ -1211,11 +1297,18 @@ namespace aktiensim
             kreditPanel.Controls.Add(kreditAufnehmen);
             kreditAufnehmen.Click += (q, w) =>
             {
-                kredit.Betrag = (double)auswahlMenge.Value;
-                kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
-                kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
-
+                if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D && MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null) 
+                {
+                    MessageBox.Show("Du darfst aufgrund deines Credit-Ratings nicht mehr als 1 Kredit aufnehmen!");
+                    kreditPanel.Visible = false;
+                }
+                else 
+                {
+                    kredit.Betrag = (double)auswahlMenge.Value;
+                    kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
+                    kredit.Laufzeit = (int)auswahlLaufzeit.Value;
+                    kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+                }
                 kreditPanel.Visible = false;
             };
             

@@ -63,6 +63,16 @@ namespace aktiensim.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap backround {
+            get {
+                object obj = ResourceManager.GetObject("backround", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap benutzerdaten {
             get {
                 object obj = ResourceManager.GetObject("benutzerdaten", resourceCulture);
@@ -106,6 +116,16 @@ namespace aktiensim.Properties {
         internal static System.Drawing.Bitmap kontostand2Glow {
             get {
                 object obj = ResourceManager.GetObject("kontostand2Glow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap logo {
+            get {
+                object obj = ResourceManager.GetObject("logo", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
