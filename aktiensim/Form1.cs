@@ -480,21 +480,6 @@ namespace aktiensim
                 };
                 homePanel.Controls.Add(dplabel);
 
-                Button geldBtn = new Button()
-                {
-                    AutoSize = true,
-                    Size = new Size(100, 20),
-                    Font = new Font("Arial", 12),
-                    Location = new Point(dplabel.Location.X + 160, 10),
-                    Text = $"Geld Hinzufügen (Test)"
-                };
-                geldBtn.Click += (f, g) =>
-                {
-                    LoadActiveUser();
-                    activeUser.GeldHinzufuegen(100);
-                };
-                homePanel.Controls.Add(geldBtn);
-
                 TextBox depotTb = new TextBox()
                 {
                     Location = new Point(15, 60)
