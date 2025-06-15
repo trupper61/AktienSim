@@ -148,7 +148,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Image = Properties.Resources.kontostand,
                         Font = new Font("Arial", 16, FontStyle.Bold),
-                        Location = new Point(homePanel.Location.X + 35, y),
+                        Location = new Point(0, y),
                         Text = $"Ihr Kontostand: {activeUser.kontoStand}",
                     };
                     homePanel.Controls.Add(kontostand);
@@ -159,7 +159,7 @@ namespace aktiensim
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 60),
+                        Location = new Point(kontostand.Location.X, kontostand.Location.Y + 50),
                         Text = $"Kredite Verwalten"
                     };
                     homePanel.Controls.Add(kreditverwaltung);
@@ -169,7 +169,7 @@ namespace aktiensim
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 90),
+                        Location = new Point(kontostand.Location.X, kontostand.Location.Y + 80),
                         Text = $"Umsätze"
                     };
                     umsaetze.Click += (s2, e2) =>
