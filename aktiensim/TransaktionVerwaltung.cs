@@ -15,21 +15,24 @@ namespace aktiensim
             this.connection = connection;
         }
 
-        public void AddTransaktion(int aktieId, string typ, double anzahl, decimal einzelpreis, Benutzer activeUser)
+        public void AddTransaktion(int aktieId, string typ, double anzahl, double einzelpreis, Benutzer activeUser)
         {
             string query = "INSERT INTO transaktion (aktie_ID, typ, anzahl, einzelpreis, zeitpunkt, depot_ID) VALUES(@aktie_ID, @typ, @anzahl, @einzelpreis, @zeitpunkt, @depot_ID)";
-            using (MySqlCommand cmd = new MySqlCommand(query, connection))
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("@aktie_ID", aktieId);
-                cmd.Parameters.AddWithValue("@typ", typ);
-                cmd.Parameters.AddWithValue("@anzahl", anzahl);
-                cmd.Parameters.AddWithValue("@einzelpreis", einzelpreis);
-                DepotVerwaltung dv = new DepotVerwaltung(connection);
-                Depot userDepot = dv.GetUserDepot(Convert.ToInt32(activeUser.benutzerID)).FirstOrDefault();
-                cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
-                cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
-                activeUser.kontoStand -= Convert.ToInt32(Convert.ToDecimal(anzahl) * einzelpreis);
-                cmd.ExecuteNonQuery();
+                using (MySqlCommand cmd = new MySqlCommand(query, myMan.Connection))
+                {
+                    cmd.Parameters.AddWithValue("@aktie_ID", aktieId);
+                    cmd.Parameters.AddWithValue("@typ", typ);
+                    cmd.Parameters.AddWithValue("@anzahl", anzahl);
+                    cmd.Parameters.AddWithValue("@einzelpreis", einzelpreis);
+                    DepotVerwaltung dv = new DepotVerwaltung(connection);
+                    Depot userDepot = dv.GetUserDepot(Convert.ToInt32(activeUser.benutzerID)).FirstOrDefault();
+                    cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
+                    cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
+                    activeUser.kontoStand -= anzahl * einzelpreis;
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
         public void AddÜberweisung(Benutzer send, Benutzer get, double betrag)

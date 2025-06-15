@@ -31,18 +31,21 @@ namespace aktiensim
             List<Depot> depotList = new List<Depot>();
 
             string query = "SELECT id, name, erstellt FROM depot WHERE benutzer_id = @benutzer_id";
-            using (MySqlCommand cmd = new MySqlCommand(query, connection))
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("@benutzer_id", benutzerID);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
+                using (MySqlCommand cmd = new MySqlCommand(query, myMan.Connection))
                 {
-                    while (reader.Read())
+                    cmd.Parameters.AddWithValue("@benutzer_id", benutzerID);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        string id = reader["id"].ToString();
-                        string name = reader["name"].ToString();
-                        Depot depot = new Depot(Convert.ToInt32(id), name);
-                        if (depot != null)
-                            depotList.Add(depot);
+                        while (reader.Read())
+                        {
+                            string id = reader["id"].ToString();
+                            string name = reader["name"].ToString();
+                            Depot depot = new Depot(Convert.ToInt32(id), name);
+                            if (depot != null)
+                                depotList.Add(depot);
+                        }
                     }
                 }
             }

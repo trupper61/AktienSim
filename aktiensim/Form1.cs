@@ -477,7 +477,7 @@ namespace aktiensim
 
                 TextBox depotTb = new TextBox()
                 {
-                    Location = new Point(200, 60)
+                    Location = new Point(15, 60)
                 };
                 homePanel.Controls.Add(depotTb);
 
@@ -491,7 +491,8 @@ namespace aktiensim
                 {
                     Size = new Size(80, 25),
                     Location = new Point(depotTb.Right + 15, 60),
-                    Text = "Depot erstellen"
+                    Text = "Depot erstellen",
+                    AutoSize = true
                 };
                 createDepot.Click += (h, i) =>
                 {
@@ -523,9 +524,13 @@ namespace aktiensim
                     BorderStyle = BorderStyle.FixedSingle
                 };
 
-                aktienImDepotPanel.Resize += (f, g) =>
+                homePanel.Resize += (f, g) =>
                 {
-                    aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+                    if (aktienImDepotPanel != null)
+                    {
+                        depotListBox.Size = new Size(homePanel.Width - depotListBox.Width, homePanel.Height - 120);
+                        aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+                    }
                 };
 
                 homePanel.Controls.Add(aktienImDepotPanel);
@@ -704,7 +709,7 @@ namespace aktiensim
             homePanel.Controls.Add(registerLogo);
             kaufPanel = new Panel
             {
-                Size = new Size(300, 200),
+                Size = new Size(350, 300),
                 Location = new Point((homePanel.Width - 300) / 2, (homePanel.Height - 300) / 2),
                 BorderStyle = BorderStyle.FixedSingle,
                 Visible = false
@@ -730,6 +735,10 @@ namespace aktiensim
                 InitRegisterUI();
             else if (loginPanel.Visible)
                 InitLoginUi();
+            if (kaufPanel != null && homePanel != null)
+            {
+                kaufPanel.Location = new Point((homePanel.Width - kaufPanel.Width) / 2, (homePanel.Height - kaufPanel.Height) / 2);
+            }
         }
         public void ShowUeberweisungPanel()
         {
@@ -1253,65 +1262,145 @@ namespace aktiensim
             kaufPanel.Controls.Clear();
             kaufPanel.Visible = true;
             kaufPanel.BringToFront();
-            Label nameLb = new Label
+
+            LoadActiveUser();
+            using (var myMan = new MySqlManager())
             {
-                Text = $"Name: {aktie.firma}",
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-            kaufPanel.Controls.Add(nameLb);
-            Label firmaLb = new Label
-            {
-                Text = $"Firma: {aktie.name}",
-                Location = new Point(10, 40),
-                AutoSize = true
-            };
-            kaufPanel.Controls.Add(firmaLb);
-            Label preisLb = new Label
-            {
-                Text = $"Aktueller Preis {aktie.CurrentValue:f2}€",
-                Location = new Point(10, 70),
-                AutoSize = true
-            };
-            kaufPanel.Controls.Add(preisLb);
-            Label anteilLb = new Label
-            {
-                Text = "Anzahl kaufen:",
-                Location = new Point(10, 100),
-                AutoSize = true
-            };
-            kaufPanel.Controls.Add(anteilLb);
-            NumericUpDown anteilNum = new NumericUpDown
-            {
-                Location = new Point(110, 100),
-                Minimum = 1,
-                Maximum = 10000,
-                Value = 1,
-                Width = 80
-            };
-            kaufPanel.Controls.Add(anteilNum);
-            Button kaufBtn = new Button
-            {
-                Text = "Kaufen",
-                Location = new Point(10, 140),
-                Width = 180,
-                Height = 30
-            };
-            
-            kaufBtn.Click += (s, e) =>
-            {
-                DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
-                if (result == DialogResult.OK )
+                var depots = myMan.Depot.GetUserDepot(Convert.ToInt32(activeUser.benutzerID));
+                if (depots.Count == 0)
                 {
-                    LoadActiveUser();
-                    using (var myMan = new MySqlManager())
+                    Label info = new Label
                     {
-                        myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), activeUser);
-                    }
+                        Text = "Du hast noch kein Depot. Bitte benenne dein neues Depot:",
+                        Location = new Point(10, 10),
+                        AutoSize = true
+                    };
+                    kaufPanel.Controls.Add(info);
+                    TextBox depotNameTxt = new TextBox
+                    {
+                        Location = new Point(10, 40),
+                        Width = 200
+                    };
+                    kaufPanel.Controls.Add(depotNameTxt);
+                    Button createDepotBtn = new Button
+                    {
+                        Text = "Depot erstellen",
+                        Location = new Point(10, 70),
+                        Width = 120
+                    };
+                    kaufPanel.Controls.Add(createDepotBtn);
+                    createDepotBtn.Click += (s, e) =>
+                    {
+                        string depotName = depotNameTxt.Text.Trim();
+                        if (string.IsNullOrEmpty(depotName))
+                        {
+                            MessageBox.Show("Bitte gib einen gültigen Namen ein.");
+                            return;
+                        }
+                        myMan.Depot.CreateDepot(depotName, Convert.ToInt32(activeUser.benutzerID));
+                        ShowKaufPanel(aktie);
+
+                    };
+                    Button abbrechBtn = new Button
+                    {
+                        Text = "Abbrechen",
+                        Location = new Point(140, 70),
+                        Width = 80
+                    };
+                    abbrechBtn.Click += (s, e) => kaufPanel.Visible = false;
+                    kaufPanel.Controls.Add(abbrechBtn);
+                    return;
                 }
-                kaufPanel.Visible = false;
-            };
-            kaufPanel.Controls.Add(kaufBtn);
+
+                Label nameLb = new Label
+                {
+                    Text = $"Name: {aktie.firma}",
+                    Location = new Point(10, 10),
+                    AutoSize = true
+                };
+                kaufPanel.Controls.Add(nameLb);
+                Label firmaLb = new Label
+                {
+                    Text = $"Firma: {aktie.name}",
+                    Location = new Point(10, 40),
+                    AutoSize = true
+                };
+                kaufPanel.Controls.Add(firmaLb);
+                Label preisLb = new Label
+                {
+                    Text = $"Aktueller Preis {aktie.CurrentValue:f2}€",
+                    Location = new Point(10, 70),
+                    AutoSize = true
+                };
+                kaufPanel.Controls.Add(preisLb);
+                Label anteilLb = new Label
+                {
+                    Text = "Anzahl kaufen:",
+                    Location = new Point(10, 100),
+                    AutoSize = true
+                };
+                kaufPanel.Controls.Add(anteilLb);
+                NumericUpDown anteilNum = new NumericUpDown
+                {
+                    Location = new Point(110, 100),
+                    Minimum = 1,
+                    Maximum = 10000,
+                    Value = 1,
+                    Width = 80
+                };
+                kaufPanel.Controls.Add(anteilNum);
+
+                Label depotLb = new Label
+                {
+                    Text = "Depot wählen:",
+                    Location = new Point(110, 130),
+                    AutoSize = true
+                };
+                kaufPanel.Controls.Add(depotLb);
+                ComboBox depotBox = new ComboBox
+                {
+                    Location = new Point(110, 160),
+                    Width = 180,
+                    DropDownStyle = ComboBoxStyle.DropDownList
+                };
+                foreach (var depot in depots)
+                {
+                    depotBox.Items.Add(new { depot.ID, depot.name });
+                }
+                depotBox.DisplayMember = "name";
+                depotBox.SelectedIndex = 0;
+                kaufPanel.Controls.Add(depotBox);
+
+                Button kaufBtn = new Button
+                {
+                    Text = "Kaufen",
+                    Location = new Point(10, 200),
+                    Width = 120,
+                    Height = 30
+                };
+                Button closeBtn = new Button
+                {
+                    Text = "Abbrechen",
+                    Location = new Point(220, 200),
+                    Width = 120,
+                    Height = 30
+                };
+                closeBtn.Click += (s, e) => kaufPanel.Visible = false;
+                kaufPanel.Controls.Add(closeBtn);
+                kaufBtn.Click += (s, e) =>
+                {
+                    if (depotBox.SelectedItem == null) return;
+                    DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}.\nGesamtpreis: {aktie.CurrentValue * Convert.ToDouble(anteilNum.Value):f2}€", "Kauf bestätigen", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+                    if (result == DialogResult.OK)
+                    {
+                        LoadActiveUser();
+                        myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), aktie.CurrentValue, activeUser);
+                    }
+                    MessageBox.Show("Kauf erfolgreich durchgeführt.");
+                    kaufPanel.Visible = false;
+                };
+                kaufPanel.Controls.Add(kaufBtn);
+            }
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
@@ -1453,11 +1542,11 @@ namespace aktiensim
             }
             Panel verkaufPanel = new Panel
             {
-                Size = new Size(300, 200),
-                Location = new Point(550, 100),
+                Size = new Size(350, 240),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White
             };
+            verkaufPanel.Location = new Point((homePanel.Width - verkaufPanel.Width) / 2,(homePanel.Height - verkaufPanel.Height) / 2);
 
             Label info = new Label
             {
@@ -1466,7 +1555,8 @@ namespace aktiensim
                        $"Kaufpreis: {transaktion.einzelpreis:F2}€\n" +
                        $"Aktuell: {aktie.CurrentValue:F2}€",
                 AutoSize = true,
-                Location = new Point(10, 10)
+                Location = new Point(10, 10),
+                Font = new Font("Arial", 10)
             };
             verkaufPanel.Controls.Add(info);
 
@@ -1478,21 +1568,21 @@ namespace aktiensim
                 Text = $"Veränderung: {diffPercent:F2}%",
                 ForeColor = diff >= 0 ? Color.Green : Color.Red,
                 AutoSize = true,
-                Location = new Point(10, 60)
+                Location = new Point(10, 80)
             };
             verkaufPanel.Controls.Add(diffLabel);
 
             Label mengeLabel = new Label
             {
                 Text = "Menge:",
-                Location = new Point(10, 90),
+                Location = new Point(10, 115),
                 AutoSize = true
             };
             verkaufPanel.Controls.Add(mengeLabel);
 
             TextBox mengeTb = new TextBox
             {
-                Location = new Point(70, 90),
+                Location = new Point(70, 112),
                 Width = 50
             };
             verkaufPanel.Controls.Add(mengeTb);
@@ -1500,8 +1590,10 @@ namespace aktiensim
             Button verkaufenBtn = new Button
             {
                 Text = "Verkaufen",
-                Location = new Point(10, 130),
-                Width = 100
+                Location = new Point(10, 160),
+                Width = 100,
+                Height = 30,
+                BackColor = Color.LightGreen
             };
             verkaufenBtn.Click += (s, e) =>
             {
@@ -1511,7 +1603,7 @@ namespace aktiensim
 
                     // Geld gutschreiben
                     LoadActiveUser();
-                    activeUser.GeldHinzufuegen(Convert.ToInt32(erloes));
+                    activeUser.GeldHinzufuegen(erloes);
 
                     transaktion.anzahl -= menge;
                     using (var myMan = new MySqlManager())
@@ -1528,9 +1620,28 @@ namespace aktiensim
                 }
             };
             verkaufPanel.Controls.Add(verkaufenBtn);
-
+            Button abbrechenBtn = new Button
+            {
+                Text = "Abbrechen",
+                Location = new Point(170, 160),
+                Width = 140,
+                Height = 30,
+                BackColor = Color.LightGray
+            };
+            abbrechenBtn.Click += (s, e) =>
+            {
+                homePanel.Controls.Remove(verkaufPanel);
+            };
+            verkaufPanel.Controls.Add(abbrechenBtn);
             homePanel.Controls.Add(verkaufPanel);
             verkaufPanel.BringToFront();
+            homePanel.Resize += (s, e) =>
+            {
+                if (verkaufPanel != null)
+                {
+                    verkaufPanel.Location = new Point((homePanel.Width - verkaufPanel.Width) / 2, (homePanel.Height - verkaufPanel.Height) / 2);
+                }
+            };
         }
 
         public void SimuliereNächstenTag()
@@ -1561,11 +1672,11 @@ namespace aktiensim
                         {
                             case 1:
                                 double mengeKauf = Math.Round(rand.NextDouble() * 5, 2);
-                                decimal kosten = Convert.ToDecimal(mengeKauf * aktie.CurrentValue);
-                                if(benutzer.kontoStand >= (double)kosten)
+                                double kosten = mengeKauf * aktie.CurrentValue;
+                                if(benutzer.kontoStand >= kosten)
                                 {
-                                    myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
-                                    benutzer.UpdateKontoStand(Convert.ToInt32(kosten), benutzer.benutzerID);
+                                    myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", mengeKauf, aktie.CurrentValue, benutzer);
+                                    benutzer.UpdateKontoStand(kosten, benutzer.benutzerID);
                                     nachfrage.TryGetValue(aktie.id, out int wert);
                                     nachfrage[aktie.id] = wert + 1; 
                                 }
@@ -1578,7 +1689,7 @@ namespace aktiensim
                                     double verkaufsMenge = Math.Min(trans.anzahl, Math.Round(rand.NextDouble() * 5, 2));
                                     if (verkaufsMenge > 0)
                                     {
-                                        decimal erloes = Convert.ToDecimal(verkaufsMenge * aktie.CurrentValue);
+                                        double erloes = verkaufsMenge * aktie.CurrentValue;
                                         trans.anzahl -= verkaufsMenge;
                                         if (trans.anzahl <= 0)
                                         {
