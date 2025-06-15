@@ -1426,16 +1426,20 @@ namespace aktiensim
                 {
                     if (depotBox.SelectedItem == null) return;
                     DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}.\nGesamtpreis: {aktie.CurrentValue * Convert.ToDouble(anteilNum.Value):f2}€", "Kauf bestätigen", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
-                    if (result == DialogResult.OK)
+                    if (result == DialogResult.OK && activeUser.kontoStand > aktie.CurrentValue * Convert.ToDouble(anteilNum.Value))
                     {
                         LoadActiveUser();
                         myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), aktie.CurrentValue, activeUser);
                         //activeUser.GeldAbziehen(aktie.CurrentValue * Convert.ToDouble(anteilNum.Value));
                         MessageBox.Show("Kauf erfolgreich durchgeführt.");
                     }
-                    else 
+                    else if(result != DialogResult.OK)
                     {
                         MessageBox.Show("Kauf abgebrochen");
+                    }
+                    else 
+                    {
+                        MessageBox.Show("Kein Geld!");
                     }
                     
                     kaufPanel.Visible = false;
