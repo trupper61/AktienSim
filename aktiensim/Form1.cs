@@ -46,8 +46,28 @@ namespace aktiensim
             InitLoginUi();
             InitRegisterUI();
             InitUI();
+            List<Aktie> neueAktien = new List<Aktie>
+{
+    new Aktie("SAP", "SAP SE", 125.45, 1),
+    new Aktie("BMW", "Bayerische Motoren Werke AG", 98.30, 2),
+    new Aktie("BASFn", "BASF SE", 51.90, 3),
+    new Aktie("Volkswagen", "Volkswagen AG", 118.70, 4),
+    new Aktie("DeutscheBank", "Deutsche Bank AG", 118.70, 5),
+    new Aktie ("Siemens", "Siemens AG", 143.10, 6),
+    new Aktie("Allianz", "Allianz SE", 242.80, 7),
+    new Aktie("Adidas", "Adidas AG", 170.25, 8),
+    new Aktie("DeutschePost", "Deutsche Post AG", 42.60, 9),
+    new Aktie("Merck", "Merck KGaA", 158.40, 10),
+    new Aktie("Apple", "Apple Inc.", 192.25, 11),
+    new Aktie("Microsoft", "Microsoft Corporation", 328.10, 12),
+    new Aktie("Samsung", "Samsung Electronics", 65.10, 13)
+};
             using (var myMan = new MySqlManager())
             {
+                //foreach (Aktie a in neueAktien)
+                //{
+                //    myMan.Aktien.AktieAnlegen(a.firma, a.name, a.CurrentValue);
+                //}
                 stonks = myMan.Aktien.LadeAlleAktien();
             }
         }
@@ -1709,8 +1729,6 @@ namespace aktiensim
                     }
                 }
             }
-                var globaleEvents = myMan.Ereignis.LadeAktiveEreignisse("global");
-                var lokaleEvents = myMan.Ereignis.LadeAktiveEreignisse("lokal");
                 foreach (var aktie in stonks)
                 {
                     nachfrage.TryGetValue(aktie.id, out int delta);
@@ -1744,7 +1762,7 @@ namespace aktiensim
                 var lokaleEvents = myMan.Ereignis.LadeAktiveEreignisse("lokal");
                 Random rand = new Random();
                 List<Ereigniss> ereignisse = new List<Ereigniss>();
-                if (rand.NextDouble() < 0.005 && globaleEvents.Any()); // 0.5 % für globale 
+                if (rand.NextDouble() < 0.005 && globaleEvents.Any()) // 0.5 % für globale 
                     ereignisse.Add(globaleEvents[rand.Next(globaleEvents.Count)]); 
                 if (rand.NextDouble() < 0.01 && lokaleEvents.Any()) // 0.1 % für lokale
                     ereignisse.Add(lokaleEvents[rand.Next(lokaleEvents.Count)]);

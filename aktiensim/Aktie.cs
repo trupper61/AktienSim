@@ -99,7 +99,7 @@ namespace aktiensim
             if (LastClose > 0)
             {
                 var hline = plot.Plot.Add.HorizontalLine(LastClose);
-                hline.Color = ValueHistory.Last() >= LastClose
+                hline.Color = CurrentValue >= LastClose
                     ? ScottPlot.Color.FromColor(Color.Green)
                     : ScottPlot.Color.FromColor(Color.Red);
             }
