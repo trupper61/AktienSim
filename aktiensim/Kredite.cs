@@ -94,6 +94,7 @@ namespace aktiensim
             MySqlDataReader reader = SqlConnection.ExecuteNonQueryReader(kreditAdd,
                 new MySqlParameter("@ID_Benutzer", benutzer.benutzerID));
 
+            //Reader liest alle Zeilen der Tabelle und weist die Eigenschaften von Kredit die jeweiligen Werte zu.
             while (reader.Read())
             {
                 Kredite kredit = new Kredite(0, 0, 0, 0, benutzer, 0);
@@ -109,7 +110,7 @@ namespace aktiensim
             
         }
 
-        public void UpdateKreditStatus(Kredite kredit) 
+        public void UpdateKreditStatus(Kredite kredit) //Für die Simulierung einer Woche
         {
             string kreditUpdate = "UPDATE kredite SET laufzeit = @laufzeit WHERE KreditID = @KreditID; UPDATE kredite SET Restschuld = @RestschuldNeu WHERE KreditID = @KreditID";
 
@@ -119,7 +120,7 @@ namespace aktiensim
                 new MySqlParameter("@KreditID", kredit.KreditID));
         }
 
-        public void KreditLoeschen() 
+        public void KreditLoeschen() //Kredit kann abbezahlt werden
         {
             string kreditDelete = "DELETE FROM kredite WHERE Laufzeit = 0;";
 

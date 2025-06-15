@@ -16,7 +16,7 @@ namespace aktiensim
         public string email;
         public string benutzerID;
         public double kontoStand;
-        public Kredite.CreditRating rating;
+        public Kredite.CreditRating rating; //Vertrauenswürdigkeit des Kreditnehmers - Wird in Tabelle "Konto" gespeichert
         public int score;
         public List<Kredite> kredite;
         public Benutzer (string name, string vorname, string email, string benutzerID, int kontoStand, List<Kredite> Kredite, Kredite.CreditRating Rating, int Score)
@@ -34,7 +34,7 @@ namespace aktiensim
             this.score = Score;
         }
 
-        public void AddKonto(string ID_Benutzer, double Kontostand, Kredite.CreditRating rating, int score) 
+        public void AddKonto(string ID_Benutzer, double Kontostand, Kredite.CreditRating rating, int score) //Nach Registrierung des Benutzers erhält der Benutzer ein Konto
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "INSERT INTO konto(ID_Benutzer, Kontostand, KreditRating, KreditScore) VALUES(@ID_Benutzer, @Kontostand, @rating, @score)";
@@ -77,7 +77,7 @@ namespace aktiensim
         {
             int score = CheckZahlungsfaehigkeit();
             string rating = CheckCreditRating();
-            //Update den Kontostand in der Datenbank.
+
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "UPDATE konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer; UPDATE konto SET KreditRating = @rating WHERE ID_Benutzer = @ID_Benutzer; UPDATE konto SET KreditScore = @score WHERE ID_Benutzer = @ID_Benutzer;";
 
@@ -93,7 +93,7 @@ namespace aktiensim
                 cmd.ExecuteNonQuery();
             }
         }
-        public double GetKontoStand() 
+        public double GetKontoStand() //Holt aktuellen Wert des Kontos
         {
             string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "SELECT Kontostand, KreditRating, KreditScore FROM Konto WHERE ID_Benutzer = @ID_Benutzer";

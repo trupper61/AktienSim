@@ -387,7 +387,7 @@ namespace aktiensim
                     }
                     connection.Close();
                     connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(qryLogUpdate, connection)) //Loginid updaten
+                    using (MySqlCommand cmd = new MySqlCommand(qryLogUpdate, connection)) //Loginid aktualisieren
                     {
                         cmd.Parameters.AddWithValue("email", email);
                         cmd.Parameters.AddWithValue("loginID", loginID);
@@ -437,7 +437,7 @@ namespace aktiensim
 
                     string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
 
-
+                    //Eingabe mit Werten aus der Datenbank vergleichen
                     using (MySqlCommand cmd = new MySqlCommand(qryRd, conn))
                     {
                         cmd.Parameters.AddWithValue("email", email);
@@ -485,7 +485,6 @@ namespace aktiensim
                     }
                     conn.Dispose();
                 }
-                //Eingabe des Nutzers sollen geholt werden
 
             }
 
@@ -623,7 +622,7 @@ namespace aktiensim
                 }
             }
 
-            public static Benutzer ReturnActiveUser(Benutzer activeUser)
+            public static Benutzer ReturnActiveUser(Benutzer activeUser) //Gibt das momentane Objekt (Den angesprochenen Benutzer) zurück.
             {
                 activeUser = user;
                 return activeUser;
