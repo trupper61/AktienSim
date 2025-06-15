@@ -34,20 +34,19 @@ namespace aktiensim
 
         public void AddKonto(string ID_Benutzer, double Kontostand) 
         {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "INSERT INTO konto(ID_Benutzer, Kontostand) VALUES(@ID_Benutzer, @Kontostand)";
 
             ID_Benutzer = this.benutzerID;
             Kontostand = this.kontoStand;
 
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("ID_Benutzer", ID_Benutzer);
-                cmd.Parameters.AddWithValue("Kontostand", Kontostand);
-                cmd.ExecuteNonQuery();
+                using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
+                {
+                    cmd.Parameters.AddWithValue("ID_Benutzer", ID_Benutzer);
+                    cmd.Parameters.AddWithValue("Kontostand", Kontostand);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
@@ -70,35 +69,35 @@ namespace aktiensim
         public void UpdateKontoStand(double stand, string BID) //Wenn der Kontostand des Nutzers verändert wird, soll sich dieser ebenfalls in der Datenbank anpassen.
         {
             //Update den Kontostand in der Datenbank.
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "UPDATE konto SET Kontostand = @Kontostand WHERE ID_Benutzer = @ID_Benutzer";
 
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("Kontostand", stand);
-                cmd.Parameters.AddWithValue("ID_Benutzer", BID);
-                cmd.ExecuteNonQuery();
+
+                using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
+                {
+                    cmd.Parameters.AddWithValue("Kontostand", stand);
+                    cmd.Parameters.AddWithValue("ID_Benutzer", BID);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
         public void GetKontoStand(Benutzer benutzer) 
         {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "SELECT Kontostand FROM Konto WHERE ID_Benutzer = @ID_Benutzer";
 
-            MySqlConnection conn = new MySqlConnection(connString);
-            conn.Open();
-
-            using(MySqlCommand cmd = new MySqlCommand(qry, conn)) 
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("ID_Benutzer", benutzer.benutzerID);
-                MySqlDataReader reader = cmd.ExecuteReader();
 
-                if(reader.Read())
+                using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
                 {
-                    this.kontoStand = Convert.ToInt32(reader["Kontostand"]);
+                    cmd.Parameters.AddWithValue("ID_Benutzer", benutzer.benutzerID);
+                    MySqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        this.kontoStand = Convert.ToInt32(reader["Kontostand"]);
+                    }
                 }
             }
         }

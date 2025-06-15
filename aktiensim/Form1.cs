@@ -46,7 +46,10 @@ namespace aktiensim
             InitLoginUi();
             InitRegisterUI();
             InitUI();
-            stonks = MySqlManager.AktienVerwaltung.LadeAlleAktien(); // Loads all stonks in Database
+            using (var myMan = new MySqlManager())
+            {
+                stonks = myMan.Aktien.LadeAlleAktien();
+            }
         }
         public void InitStocks()
         {
@@ -110,12 +113,16 @@ namespace aktiensim
                         SimuliereNächstenTag();
                         if(i == 6) 
                         {
-                            if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null)
+                            using (var myMan = new MySqlManager())
                             {
-                                foreach (Kredite kr in MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite)
+                                var aktiverBenutzer = myMan.Benutzer.ReturnActiveUser(activeUser);
+                                if (aktiverBenutzer.kredite != null)
                                 {
-                                    kr.Laufzeit--;
-                                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldAbziehen(kr.zuZahlendeRate);
+                                    foreach (Kredite kr in aktiverBenutzer.kredite)
+                                    {
+                                        kr.Laufzeit--;
+                                        aktiverBenutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                    }
                                 }
                             }
                         }
@@ -146,13 +153,13 @@ namespace aktiensim
                     SizeMode = PictureBoxSizeMode.StretchImage
                 };
                 homePanel.Controls.Add(profilbild);
-
+                LoadActiveUser();
                 Label lb = new Label
                 {
                     AutoSize = true,
                     Font = new Font("Arial", 12),
                     Location = new Point(profilbild.Location.X - 30, profilbild.Location.Y + 90),
-                    Text = $"Hallo, {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname} {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}"
+                    Text = $"Hallo, {activeUser.vorname} {activeUser.name}"
                 };
                 homePanel.Controls.Add(lb);
 
@@ -169,6 +176,7 @@ namespace aktiensim
                 kontostandBild.MouseClick += (p, l) => 
                 {
                     homePanel.Controls.Clear();
+                    LoadActiveUser();
                     Label kontostand = new Label
                     {
                         AutoSize = true,
@@ -176,7 +184,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kontoStand}",
+                        Text = $"Ihr Kontostand: {activeUser.kontoStand}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
@@ -208,6 +216,45 @@ namespace aktiensim
                         Font = new Font("Arial", 12),
                         Location = new Point(schulden.Location.X, schulden.Location.Y + 90),
                         Text = $"Umsätze"
+                    };
+                    umsaetze.Click += (s2, e2) =>
+                    {
+                        homePanel.Controls.Clear();
+                        Label titel = new Label
+                        {
+                            Text = "Alle Überweisungen",
+                            Font = new Font("Arial", 14, FontStyle.Bold),
+                            Location = new Point(10, 10),
+                            Size = new Size(400, 30)
+                        };
+                        homePanel.Controls.Add(titel);
+
+                        ListBox listBox = new ListBox
+                        {
+                            Location = new Point(10, 50),
+                            Size = new Size(500, 300),
+                            Font = new Font("Arial", 10)
+                        };
+                        using (var myMan = new MySqlManager())
+                        {
+                            LoadActiveUser();
+                            var ueberweisungen = myMan.Transaktion.LadeUeberweisungenFürBenutzer(Convert.ToInt32(activeUser.benutzerID));
+
+                            foreach (var ue in ueberweisungen)
+                            {
+                                string typ = ue.AbsenderID == Convert.ToInt32(activeUser.benutzerID) ? "Gesendet an" : "Empfangen von";
+                                int andereID = ue.AbsenderID == Convert.ToInt32(activeUser.benutzerID) ? ue.EmpfaengerID : ue.AbsenderID;
+                                var anderePerson = myMan.Benutzer.GetBenutzerById(andereID);
+                                string name = $"{anderePerson.vorname} {anderePerson.name}";
+                                string zeile = $"{typ} {name}: {ue.Betrag:F2}€ am {ue.DateTime:g}";
+
+                                listBox.Items.Add(zeile);
+                            }
+                            if (listBox.Items.Count == 0)
+                                listBox.Items.Add("Keine Überweisungen gefunden.");
+                        }
+                        homePanel.Controls.Add(listBox);
+
                     };
                     homePanel.Controls.Add(umsaetze);
 
@@ -256,7 +303,8 @@ namespace aktiensim
                             ShowKreditPanel(aktiveKredite);
                         };
                         homePanel.Controls.Add(kreditaufnahme);
-                        Kredite.RefreshDataGridView(aktiveKredite, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+                        LoadActiveUser();
+                        Kredite.RefreshDataGridView(aktiveKredite, activeUser);
                     };
                 };
 
@@ -274,7 +322,7 @@ namespace aktiensim
                 benutzerdatenBild.MouseClick += (p, l) =>
                 {
                     homePanel.Controls.Clear();
-
+                    LoadActiveUser();
                     Label vorname = new Label
                     {
                         AutoSize = true,
@@ -282,7 +330,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
-                        Text = $"Vorname: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                        Text = $"Vorname: {activeUser.vorname}",
                     };
                     homePanel.Controls.Add(vorname);
                     Label nachname = new Label
@@ -292,7 +340,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 20),
-                        Text = $"Name: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                        Text = $"Name: {activeUser.name}",
                     };
                     homePanel.Controls.Add (nachname);
                     Label email = new Label
@@ -302,7 +350,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 40),
-                        Text = $"Email: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                        Text = $"Email: {activeUser.email}",
                     };
                     homePanel.Controls.Add(email);
                     Label benutzerID = new Label
@@ -312,7 +360,7 @@ namespace aktiensim
                         BackColor = Color.Transparent,
                         Font = new Font("Arial", 8),
                         Location = new Point(0, y + 330),
-                        Text = $"BenutzerID: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
+                        Text = $"BenutzerID: {activeUser.benutzerID}",
                     };
                     homePanel.Controls.Add(benutzerID);
 
@@ -331,10 +379,10 @@ namespace aktiensim
                         vorname.Hide();
                         nachname.Hide();
                         email.Hide();
-
+                        LoadActiveUser();
                         TextBox vname = new TextBox
                         {
-                            Text = $"{MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
+                            Text = $"{activeUser.vorname}",
                             Font = new Font("Arial", 12),
                             ForeColor = Color.Black,
                             Location = new Point(0, y),
@@ -344,7 +392,7 @@ namespace aktiensim
 
                         TextBox nname = new TextBox
                         {
-                            Text = $"{MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}",
+                            Text = $"{activeUser.name}",
                             Font = new Font("Arial", 12),
                             ForeColor = Color.Black,
                             Location = new Point(0, y + 30),
@@ -354,7 +402,7 @@ namespace aktiensim
 
                         TextBox emailBox = new TextBox
                         {
-                            Text = $"{MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).email}",
+                            Text = $"{activeUser.email}",
                             Font = new Font("Arial", 12),
                             ForeColor = Color.Black,
                             Location = new Point(0, y + 60),
@@ -374,16 +422,20 @@ namespace aktiensim
                         
                         fertig.Click += (t, z) =>
                         {
-                            MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(vname.Text, nname.Text, emailBox.Text, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
-                            homePanel.Controls.Remove(fertig);
-                            homePanel.Controls.Remove(vname);
-                            homePanel.Controls.Remove(nname);
-                            homePanel.Controls.Remove(emailBox);
-                            button.Show();
-                            vorname.Show();
-                            nachname.Show();
-                            email.Show();
-                            MessageBox.Show("Loggen sie sich erneut ein, damit die Änderungen wirksam werden!");
+                            LoadActiveUser();
+                            using (var myMan = new MySqlManager())
+                            {
+                                myMan.Benutzer.UpdateBenutzerDaten(vname.Text, nname.Text, emailBox.Text, activeUser.benutzerID);
+                                homePanel.Controls.Remove(fertig);
+                                homePanel.Controls.Remove(vname);
+                                homePanel.Controls.Remove(nname);
+                                homePanel.Controls.Remove(emailBox);
+                                button.Show();
+                                vorname.Show();
+                                nachname.Show();
+                                email.Show();
+                                MessageBox.Show("Loggen sie sich erneut ein, damit die Änderungen wirksam werden!");
+                            }
                         };
                     };
                 };
@@ -449,8 +501,8 @@ namespace aktiensim
                 };
                 geldBtn.Click += (f, g) =>
                 {
-                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(100);
-                    MessageBox.Show("100€ hinzugefügt");
+                    LoadActiveUser();
+                    activeUser.GeldHinzufuegen(100);
                 };
                 homePanel.Controls.Add(geldBtn);
 
@@ -475,11 +527,15 @@ namespace aktiensim
                 createDepot.Click += (h, i) =>
                 {
                     string name = depotTb.Text.Trim();
+                    LoadActiveUser();
                     if (!string.IsNullOrEmpty(name))
                     {
-                        int userId = Convert.ToInt32(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
-                        MySqlManager.DepotVerwaltung.CreateDepot(name, userId);
-                        MessageBox.Show($"Depot '{name}' erstellt");
+                        int userId = Convert.ToInt32(activeUser.benutzerID);
+                        using (var myMan = new MySqlManager())
+                        {
+                            myMan.Depot.CreateDepot(name, userId);
+                            MessageBox.Show($"Depot '{name}' erstellt");
+                        }
                         LoadUserDepots();
                     }
                     else
@@ -508,10 +564,14 @@ namespace aktiensim
                 void LoadUserDepots()
                 {
                     depotListBox.Items.Clear();
-                    int userId = Convert.ToInt32(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID);
-                    var depots = MySqlManager.DepotVerwaltung.GetUserDepot(userId);
-                    foreach (var depot in depots)
-                        depotListBox.Items.Add(depot);
+                    LoadActiveUser();
+                    int userId = Convert.ToInt32(activeUser.benutzerID);
+                    using (var myMan = new MySqlManager())
+                    {
+                        var depots = myMan.Depot.GetUserDepot(userId);
+                        foreach (var depot in depots)
+                            depotListBox.Items.Add(depot);
+                    }
                 }
                 LoadUserDepots();
 
@@ -524,32 +584,35 @@ namespace aktiensim
                     if (selectedDepot != null)
                     {
                         int yPos = 10;
-                        var transaktionen = MySqlManager.TransaktionVerwaltung.LadeTransaktionenFürDepot(selectedDepot.ID);
-                        foreach (var transaktion in transaktionen)
+                        using (var myMan = new MySqlManager())
                         {
-                            Aktie aktie = MySqlManager.AktienVerwaltung.LoadAktieByID(transaktion.aktieID);
-
-                            double gesamtwert = transaktion.anzahl * aktie.CurrentValue;
-
-                            double veraenderung = ((aktie.CurrentValue - (double)transaktion.einzelpreis) / (double)transaktion.einzelpreis) * 100;
-                            string veraenderungStr = veraenderung >= 0 ? $"+{veraenderung:F2}%" : $"{veraenderung:F2}%";
-
-                            Label aktienLabel = new Label()
+                            var transaktionen = myMan.Transaktion.LadeTransaktionenFürDepot(selectedDepot.ID);
+                            foreach (var transaktion in transaktionen)
                             {
-                                Text = $"{aktie.name} ({aktie.firma}) - Anteile: {transaktion.anzahl} - Gesamtwert: {gesamtwert:F2}€ – Veränderung: {veraenderungStr}",
-                                Location = new Point(10, yPos),
-                                AutoSize = true,
-                                Font = new Font("Arial", 10),
-                                ForeColor = veraenderung >= 0 ? Color.Green : Color.Red,
-                                Tag = transaktion
-                            };
-                            aktienLabel.Click += (s2, e2) =>
-                            {
-                                if (depotListBox.SelectedItems.Count == 0) return;
-                                ShowVerkaufPanel(transaktion);
-                            };
-                            aktienImDepotPanel.Controls.Add(aktienLabel);
-                            yPos += 30;
+                                Aktie aktie = myMan.Aktien.LoadAktieByID(transaktion.aktieID);
+
+                                double gesamtwert = transaktion.anzahl * aktie.CurrentValue;
+
+                                double veraenderung = ((aktie.CurrentValue - (double)transaktion.einzelpreis) / (double)transaktion.einzelpreis) * 100;
+                                string veraenderungStr = veraenderung >= 0 ? $"+{veraenderung:F2}%" : $"{veraenderung:F2}%";
+
+                                Label aktienLabel = new Label()
+                                {
+                                    Text = $"{aktie.name} ({aktie.firma}) - Anteile: {transaktion.anzahl} - Gesamtwert: {gesamtwert:F2}€ – Veränderung: {veraenderungStr}",
+                                    Location = new Point(10, yPos),
+                                    AutoSize = true,
+                                    Font = new Font("Arial", 10),
+                                    ForeColor = veraenderung >= 0 ? Color.Green : Color.Red,
+                                    Tag = transaktion
+                                };
+                                aktienLabel.Click += (s2, e2) =>
+                                {
+                                    if (depotListBox.SelectedItems.Count == 0) return;
+                                    ShowVerkaufPanel(transaktion);
+                                };
+                                aktienImDepotPanel.Controls.Add(aktienLabel);
+                                yPos += 30;
+                            }
                         }
                     }
                 };
@@ -640,18 +703,21 @@ namespace aktiensim
                     vorschlaegeLst.Visible = false;
                     return;
                 }
-                var treffer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe.ToLower()) || b.vorname.ToLower().Contains(eingabe.ToLower()));
-                if (treffer.Count() == 0)
+                using (var myMan = new MySqlManager())
                 {
-                    vorschlaegeLst.Visible = false;
-                    return;
+                    var treffer = myMan.Benutzer.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe.ToLower()) || b.vorname.ToLower().Contains(eingabe.ToLower()));
+                    if (treffer.Count() == 0)
+                    {
+                        vorschlaegeLst.Visible = false;
+                        return;
+                    }
+                    vorschlaegeLst.Items.Clear();
+                    foreach (var b in treffer)
+                    {
+                        vorschlaegeLst.Items.Add($"{b.name}, {b.vorname}: {b.email}");
+                    }
+                    vorschlaegeLst.Visible = true;
                 }
-                vorschlaegeLst.Items.Clear();
-                foreach (var b in treffer)
-                {
-                    vorschlaegeLst.Items.Add($"{b.name}, {b.vorname}: {b.email}");
-                }
-                vorschlaegeLst.Visible = true;
             };
             vorschlaegeLst.SelectedIndexChanged += (s, e) =>
             {
@@ -688,25 +754,29 @@ namespace aktiensim
                     statusLb.Text = "Ungültiger Betrag";
                     return;
                 }
-                Benutzer empfaenger = MySqlManager.Benutzerverwaltung.GetUserByInput(empfaengerInput);
-                if (empfaenger == null)
+                using (var myMan = new MySqlManager())
                 {
-                    statusLb.Text = "Benutzer nicht gefunden.";
-                    return;
-                }
-                activeUser = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
-                if (activeUser.kontoStand < betrag)
-                {
-                    statusLb.Text = "Nicht genügend Guthaben.";
-                    return;
-                }
-                activeUser.GeldAbziehen(betrag);
-                empfaenger.GeldHinzufuegen(betrag);
+                    Benutzer empfaenger = myMan.Benutzer.GetUserByInput(empfaengerInput);
+                    if (empfaenger == null)
+                    {
+                        statusLb.Text = "Benutzer nicht gefunden.";
+                        return;
+                    }
+                    LoadActiveUser();
+                    if (activeUser.kontoStand < betrag)
+                    {
+                        statusLb.Text = "Nicht genügend Guthaben.";
+                        return;
+                    }
+                    myMan.Transaktion.AddÜberweisung(activeUser, empfaenger, betrag);
+                    activeUser.GeldAbziehen(betrag);
+                    empfaenger.GeldHinzufuegen(betrag);
 
-                MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(activeUser.vorname, activeUser.name, activeUser.email, activeUser.benutzerID);
-                MySqlManager.Benutzerverwaltung.UpdateBenutzerDaten(empfaenger.vorname, empfaenger.name, empfaenger.email, empfaenger.benutzerID);
-                statusLb.ForeColor = Color.Green;
-                statusLb.Text = $"Überweisung erfolgreich an {empfaenger.name}, {empfaenger.vorname}";
+                    myMan.Benutzer.UpdateBenutzerDaten(activeUser.vorname, activeUser.name, activeUser.email, activeUser.benutzerID);
+                    myMan.Benutzer.UpdateBenutzerDaten(empfaenger.vorname, empfaenger.name, empfaenger.email, empfaenger.benutzerID);
+                    statusLb.ForeColor = Color.Green;
+                    statusLb.Text = $"Überweisung erfolgreich an {empfaenger.name}, {empfaenger.vorname}";
+                }
             };
         }
         public void ShowHomePanel()
@@ -1033,12 +1103,15 @@ namespace aktiensim
                 MessageBox.Show("Passwörter stimmen nicht überein!");
                 return;
             }
-            string passHash = MySqlManager.Benutzerverwaltung.Hash(password);
-            MessageBox.Show(passHash);
-            MySqlManager.Benutzerverwaltung.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
-            MessageBox.Show("Bitte, logen Sie sich ein");
-            registerPanel.Visible = false;
-            loginPanel.Visible = true;
+            using (var myMan = new MySqlManager())
+            {
+                string passHash = myMan.Benutzer.Hash(password);
+                MessageBox.Show(passHash);
+                myMan.Benutzer.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
+                MessageBox.Show("Bitte, logen Sie sich ein");
+                registerPanel.Visible = false;
+                loginPanel.Visible = true;
+            }
         }
 
         private void LoginBtn_Click(object sender, EventArgs e)
@@ -1051,13 +1124,17 @@ namespace aktiensim
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
                 return;
             }
-            MySqlManager.Benutzerverwaltung.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
-            if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser) != null) 
+            using (var myMan = new MySqlManager())
             {
-                Kredite.HoleKrediteAusDatenbank(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+                myMan.Benutzer.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
+            }
+            LoadActiveUser();
+            if(activeUser != null) 
+            {
+                Kredite.HoleKrediteAusDatenbank(activeUser);
             }
             homePanel.Controls.Clear();
-            Benutzer aNutzer = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
+            Benutzer aNutzer = activeUser;
             }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
  
@@ -1116,7 +1193,11 @@ namespace aktiensim
                 DialogResult result = MessageBox.Show($"Kaufe {anteilNum.Value} Anteile der Aktie {aktie.firma}. Insgesamt Preis: {Convert.ToDecimal(aktie.CurrentValue) * anteilNum.Value:f2}€");
                 if (result == DialogResult.OK )
                 {
-                    MySqlManager.TransaktionVerwaltung.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+                    LoadActiveUser();
+                    using (var myMan = new MySqlManager())
+                    {
+                        myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", Convert.ToDouble(anteilNum.Value), Convert.ToDecimal(aktie.CurrentValue), activeUser);
+                    }
                 }
                 kaufPanel.Visible = false;
             };
@@ -1124,7 +1205,8 @@ namespace aktiensim
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
-            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
+            LoadActiveUser();
+            Kredite kredit = new Kredite(0, 0, 0, 0, activeUser);
             kreditPanel.Controls.Clear();
             kreditPanel.Visible = true;
             kreditPanel.BringToFront();
@@ -1214,7 +1296,8 @@ namespace aktiensim
                 kredit.Betrag = (double)auswahlMenge.Value;
                 kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
                 kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+                LoadActiveUser();
+                kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, activeUser, aktiveKredite, kredit);
 
                 kreditPanel.Visible = false;
             };
@@ -1223,7 +1306,11 @@ namespace aktiensim
         }
         public void ShowVerkaufPanel(Transaktion transaktion)
         {
-            Aktie aktie = MySqlManager.AktienVerwaltung.LoadAktieByID(transaktion.aktieID);
+            Aktie aktie;
+            using (var myMan = new MySqlManager())
+            {
+                aktie = myMan.Aktien.LoadAktieByID(transaktion.aktieID);
+            }
             Panel verkaufPanel = new Panel
             {
                 Size = new Size(300, 200),
@@ -1283,14 +1370,17 @@ namespace aktiensim
                     double erloes = menge * aktie.CurrentValue;
 
                     // Geld gutschreiben
-                    MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GeldHinzufuegen(Convert.ToInt32(erloes));
+                    LoadActiveUser();
+                    activeUser.GeldHinzufuegen(Convert.ToInt32(erloes));
 
                     transaktion.anzahl -= menge;
-                    MySqlManager.TransaktionVerwaltung.AktualisiereTransaktion(transaktion);
-
+                    using (var myMan = new MySqlManager())
+                    {
+                        myMan.Transaktion.AktualisiereTransaktion(transaktion);
+                    }
                     MessageBox.Show($"Du hast {menge} Anteile für {erloes:F2}€ verkauft.");
                     homePanel.Controls.Remove(verkaufPanel);
-                    depotBtn.PerformClick(); 
+                    depotBtn.PerformClick();
                 }
                 else
                 {
@@ -1305,8 +1395,10 @@ namespace aktiensim
 
         public void SimuliereNächstenTag()
         {
-            var alleBenutzer = MySqlManager.Benutzerverwaltung.LadeAlleBenutzer();
-            var aktuellerBenutzer = MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser);
+            using (var myMan = new MySqlManager())
+            { 
+            var alleBenutzer = myMan.Benutzer.LadeAlleBenutzer();
+            var aktuellerBenutzer = myMan.Benutzer.ReturnActiveUser(activeUser);
 
             Dictionary<int, int> nachfrage = new Dictionary<int, int>();
             Random rand = new Random();
@@ -1314,11 +1406,11 @@ namespace aktiensim
             {
                 if (benutzer.benutzerID == aktuellerBenutzer.benutzerID)
                     continue;
-                var depots = MySqlManager.DepotVerwaltung.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
+                var depots = myMan.Depot.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
                 if (depots.Count == 0)
                 {
-                    MySqlManager.DepotVerwaltung.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
-                    depots = MySqlManager.DepotVerwaltung.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
+                    myMan.Depot.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
+                    depots = myMan.Depot.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
                 }
                 foreach(var depot in depots)
                 {
@@ -1332,14 +1424,14 @@ namespace aktiensim
                                 decimal kosten = Convert.ToDecimal(mengeKauf * aktie.CurrentValue);
                                 if(benutzer.kontoStand >= (double)kosten)
                                 {
-                                    MySqlManager.TransaktionVerwaltung.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
+                                    myMan.Transaktion.AddTransaktion(aktie.id, "Kauf", mengeKauf, Convert.ToDecimal(aktie.CurrentValue), benutzer);
                                     benutzer.UpdateKontoStand(Convert.ToInt32(kosten), benutzer.benutzerID);
                                     nachfrage.TryGetValue(aktie.id, out int wert);
                                     nachfrage[aktie.id] = wert + 1; 
                                 }
                                 break;
                             case 2:
-                                var transaktion = MySqlManager.TransaktionVerwaltung.LadeTransaktionenFürDepot(depot.ID).Where(t => t.aktieID == aktie.id && t.anzahl > 0).ToList();
+                                var transaktion = myMan.Transaktion.LadeTransaktionenFürDepot(depot.ID).Where(t => t.aktieID == aktie.id && t.anzahl > 0).ToList();
                                 if (transaktion.Any())
                                 {
                                     var trans = transaktion[rand.Next(transaktion.Count)];
@@ -1350,11 +1442,11 @@ namespace aktiensim
                                         trans.anzahl -= verkaufsMenge;
                                         if (trans.anzahl <= 0)
                                         {
-                                            MySqlManager.TransaktionVerwaltung.LöscheTransaktion(trans.id);
+                                            myMan.Transaktion.LöscheTransaktion(trans.id);
                                         }
                                         else
                                         {
-                                            MySqlManager.TransaktionVerwaltung.AktualisiereTransaktion(trans);
+                                            myMan.Transaktion.AktualisiereTransaktion(trans);
                                         }
                                         benutzer.GeldHinzufuegen((int)erloes);
                                         nachfrage.TryGetValue(aktie.id, out int wert);
@@ -1366,29 +1458,50 @@ namespace aktiensim
                     }
                 }
             }
-            foreach(var aktie in stonks)
-            {
-                nachfrage.TryGetValue(aktie.id, out int delta);
-                double prozent = Math.Min(5, Math.Abs(delta) * 0.01);
-                if (delta > 0)
+                var globaleEvents = myMan.Ereignis.LadeAktiveEreignisse("global");
+                var lokaleEvents = myMan.Ereignis.LadeAktiveEreignisse("lokal");
+                foreach (var aktie in stonks)
                 {
-                    aktie.CurrentValue *= (double)(1 + prozent);
-                    aktie.SimulateNextStep(aktie.CurrentValue);
+                    nachfrage.TryGetValue(aktie.id, out int delta);
+                    double prozent = Math.Min(5, Math.Abs(delta) * 0.01);
+                    if (delta > 0)
+                    {
+                        aktie.CurrentValue *= (double)(1 + prozent);
+                        AddEreignisse(aktie);
+                        aktie.SimulateNextStep(aktie.CurrentValue);
+                    }
+                    else if (delta < 0)
+                    {
+                        aktie.CurrentValue *= (double)(1 - prozent);
+                        AddEreignisse(aktie);
+                        aktie.SimulateNextStep(aktie.CurrentValue);
+                    }
+                    else
+                    {
+                        AddEreignisse(aktie);
+                        aktie.SimulateNextStep();
+                    }
+                    myMan.Aktien.UpdateAktie(aktie);
                 }
-                else if (delta < 0)
+            }
+        }
+        public void AddEreignisse(Aktie aktie)
+        {
+            using (var myMan = new MySqlManager())
+            { 
+                var globaleEvents = myMan.Ereignis.LadeAktiveEreignisse("global");
+                var lokaleEvents = myMan.Ereignis.LadeAktiveEreignisse("lokal");
+                Random rand = new Random();
+                List<Ereigniss> ereignisse = new List<Ereigniss>();
+                if (rand.NextDouble() < 0.1 && globaleEvents.Any())
+                    ereignisse.Add(globaleEvents[rand.Next(globaleEvents.Count)]);
+                if (rand.NextDouble() < 0.25 && lokaleEvents.Any())
+                    ereignisse.Add(lokaleEvents[rand.Next(lokaleEvents.Count)]);
+                foreach (Ereigniss e in ereignisse)
                 {
-                    aktie.CurrentValue *= (double)(1 - prozent);
-                    aktie.SimulateNextStep(aktie.CurrentValue);
+                    aktie.CurrentValue *= 1 + e.EinflussProzent;
+                    Console.WriteLine($"Ereignis für {aktie.name}: {e.Name} – {e.Beschreibung} ({e.EinflussProzent:P})");
                 }
-               else
-                {
-                    aktie.SimulateNextStep();
-                }
-
-
-
-                    MySqlManager.AktienVerwaltung.UpdateAktie(aktie);
-
             }
         }
         public void MouseEnterEffectDaten(object sender, EventArgs e) 
@@ -1414,6 +1527,13 @@ namespace aktiensim
             PictureBox pb = sender as PictureBox;
 
             pb.Image = Properties.Resources.kontostand2;
+        }
+        public void LoadActiveUser()
+        {
+            using (var myMan = new MySqlManager())
+            {
+                activeUser = myMan.Benutzer.ReturnActiveUser(activeUser);
+            }
         }
     }
 }

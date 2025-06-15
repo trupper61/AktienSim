@@ -84,8 +84,10 @@ namespace aktiensim
             }
             if (counter % 10 == 0)
                 SetLastClose(CurrentValue);
-            
-            MySqlManager.AktienVerwaltung.UpdateAktie(this);
+            using (var myMan = new MySqlManager())
+            {
+                myMan.Aktien.UpdateAktie(this);
+            }
             PlotChart();
         }
 
