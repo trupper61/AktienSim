@@ -630,7 +630,7 @@ namespace aktiensim
 
             public static void UpdateBenutzerDaten(string Vorname, string Nachname, string Email, string benutzerID)
             {
-                string qry = "UPDATE benutzer SET Vorname = @Vorname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Name = @Nachname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Email = @Email WHERE BenutzerID = @benutzerID";
+                string qry = "UPDATE benutzer SET Vorname = @Vorname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Name = @Nachname WHERE BenutzerID = @benutzerID; UPDATE benutzer SET Email = @Email WHERE BenutzerID = @benutzerID; UPDATE logininfo SET Email = @Email WHERE ID_Benutzer = @benutzerID";
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 { 
                     conn.Open();
