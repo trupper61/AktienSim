@@ -632,9 +632,45 @@ namespace aktiensim
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             flowLayoutPanel.Controls.Add(nextDayBtn);
+            int value = 0;
             nextDayBtn.Click += (s2, e2) =>
             {
                 SimuliereNächstenTag();
+                value++;
+                if(value > 6) 
+                {
+                    using (var myMan = new MySqlManager())
+                    {
+                        foreach (Benutzer benutzer in myMan.Benutzer.LadeAlleBenutzer())
+                        {
+                            List<Kredite> geloeschteKredite = new List<Kredite>();
+
+                            foreach (Kredite kr in benutzer.kredite)
+                            {
+                                kr.Laufzeit--;
+                                kr.Restschuld -= kr.zuZahlendeRate;
+                                benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                kr.UpdateKreditStatus(kr);
+                                if (kr.Laufzeit > 0)
+                                {
+                                    geloeschteKredite.Add(kr);
+                                }
+                                else
+                                {
+                                    kr.KreditLoeschen();
+                                }
+
+                            }
+                            if (benutzer.kredite.Count == 0)
+                            {
+                                benutzer.GeldAbziehen(0);
+                            }
+                            benutzer.kredite = geloeschteKredite;
+                        }
+
+                    }
+                    value = 0;
+                }
             };
             Button nextWeekBtn = new Button
             {
