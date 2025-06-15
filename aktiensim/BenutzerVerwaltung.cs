@@ -184,7 +184,7 @@ namespace aktiensim
         public List<Benutzer> LadeAlleBenutzer()
         {
             List<Benutzer> benutzer = new List<Benutzer>();
-            string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto FROM benutzer";
+            string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto, KreditRating, KreditScore FROM benutzer, konto";
             using (MySqlCommand cmd = new MySqlCommand(query, connection))
             {
                 using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -197,7 +197,9 @@ namespace aktiensim
                         string email = reader["Email"].ToString();
                         int kontoId = Convert.ToInt32(reader["ID_Konto"]);
                         int kontostand = GetBenutzerKontostand(kontoId);
-                        Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, Kredite.CreditRating.C, 1);
+                        Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                        int score = Convert.ToInt32(reader["KreditScore"]);
+                        Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, rating, score);
                         if (user != null)
                             benutzer.Add(user);
                     }
@@ -208,8 +210,8 @@ namespace aktiensim
         public Benutzer GetUserByInput(string input)
         {
             string query = @"
-                SELECT BenutzerID, Name, Vorname, Email 
-                FROM benutzer 
+                SELECT BenutzerID, Name, Vorname, Email, KreditRating, KreditScore
+                FROM benutzer, konto
                 WHERE Email = @input 
                     OR Name = @input 
                     OR Vorname = @input
@@ -225,7 +227,9 @@ namespace aktiensim
                         string name = reader["Name"].ToString();
                         string vorname = reader["Vorname"].ToString();
                         string email = reader["Email"].ToString();
-                        return new Benutzer(name, vorname, email, id, 0, null, Kredite.CreditRating.C, 1);
+                        Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                        int score = Convert.ToInt32(reader["KreditScore"]);
+                        return new Benutzer(name, vorname, email, id, 0, null, rating, score);
                     }
                 }
             }
@@ -234,7 +238,9 @@ namespace aktiensim
         public Benutzer GetUserByEMail(string givenEmail)
         {
             string email = null, benutzerID = null, name = null, vName = null;
-            string sql = $"SELECT BenutzerID, Name, Vorname, Email FROM benutzer WHERE Email = @email";
+            Kredite.CreditRating rating = Kredite.CreditRating.C;
+            int score = 0;
+            string sql = $"SELECT BenutzerID, Name, Vorname, Email, KreditRating, KreditScore FROM benutzer, konto WHERE Email = @email";
 
             using (MySqlCommand cmds = new MySqlCommand(sql, connection))
             {
@@ -247,12 +253,15 @@ namespace aktiensim
                         benutzerID = reader["BenutzerID"].ToString();
                         name = reader["Name"].ToString();
                         vName = reader["Vorname"].ToString();
+
+                        rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                        score = Convert.ToInt32(reader["KreditScore"]);
                     }
                 }
             }
             if (email != null && givenEmail == email)
             {
-                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, Kredite.CreditRating.C, 1);
+                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, rating, score);
                 return user;
             }
             else
@@ -262,7 +271,7 @@ namespace aktiensim
         }
         public Benutzer GetBenutzerById(int id)
         {
-            string query = "SELECT * FROM benutzer WHERE benutzerID = @id";
+            string query = "SELECT * FROM benutzer, konto WHERE benutzerID = @id";
             using (MySqlCommand cmd = new MySqlCommand(query, connection))
             {
                 cmd.Parameters.AddWithValue("@id", id);
@@ -276,7 +285,9 @@ namespace aktiensim
                         string email = reader["Email"].ToString();
                         int kontoId = Convert.ToInt32(reader["ID_Konto"]);
                         int konto = GetBenutzerKontostand(kontoId);
-                        return new Benutzer(name, vorname, email, benutzerId, konto, null, Kredite.CreditRating.C, 1); // TODO
+                        Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                        int score = Convert.ToInt32(reader["KreditScore"]);
+                        return new Benutzer(name, vorname, email, benutzerId, konto, null, rating, score); // TODO
                     }
                 }
             }

@@ -176,6 +176,7 @@ namespace aktiensim
                 };
                 homePanel.Controls.Add(profilbild);
                 LoadActiveUser();
+                Console.WriteLine($"{activeUser.ToString()}");
                 Label lb = new Label
                 {
                     AutoSize = true,
@@ -184,7 +185,7 @@ namespace aktiensim
                     Text = $"Hallo, {activeUser.vorname} {activeUser.name}"
                 };
                 homePanel.Controls.Add(lb);
-
+                
                 PictureBox kontostandBild = new PictureBox()
                 {
                     Size = new Size(400, 56),
@@ -249,9 +250,9 @@ namespace aktiensim
                             Size = new Size(500, 300),
                             Font = new Font("Arial", 10)
                         };
+                        LoadActiveUser();
                         using (var myMan = new MySqlManager())
-                        {
-                            LoadActiveUser();
+                        { 
                             var ueberweisungen = myMan.Transaktion.LadeUeberweisungenFürBenutzer(Convert.ToInt32(activeUser.benutzerID));
 
                             foreach (var ue in ueberweisungen)
@@ -264,9 +265,10 @@ namespace aktiensim
 
                                 listBox.Items.Add(zeile);
                             }
-                            if (listBox.Items.Count == 0)
-                                listBox.Items.Add("Keine Überweisungen gefunden.");
                         }
+                        if (listBox.Items.Count == 0)
+                            listBox.Items.Add("Keine Überweisungen gefunden.");
+                        
                         homePanel.Controls.Add(listBox);
 
                     };
@@ -319,11 +321,8 @@ namespace aktiensim
                         };
                         homePanel.Controls.Add(kreditaufnahme);
                         LoadActiveUser();
-                        using (var myMan = new MySqlManager())
-                        {
-                            Kredite.HoleKrediteAusDatenbank(myMan.Benutzer.ReturnActiveUser(activeUser));
-                            Kredite.RefreshDataGridView(aktiveKredite, myMan.Benutzer.ReturnActiveUser(activeUser));
-                        }
+                        Kredite.HoleKrediteAusDatenbank(activeUser);
+                        Kredite.RefreshDataGridView(aktiveKredite, activeUser);
                     };
                 };
 
@@ -584,10 +583,11 @@ namespace aktiensim
                 void LoadUserDepots()
                 {
                     depotListBox.Items.Clear();
-                    LoadActiveUser();
-                    int userId = Convert.ToInt32(activeUser.benutzerID);
                     using (var myMan = new MySqlManager())
                     {
+                        LoadActiveUser();
+                        int userId = Convert.ToInt32(activeUser.benutzerID);
+
                         var depots = myMan.Depot.GetUserDepot(userId);
                         foreach (var depot in depots)
                             depotListBox.Items.Add(depot);
