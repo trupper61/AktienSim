@@ -118,6 +118,7 @@ namespace aktiensim
 
             string qryRd = "SELECT * FROM logininfo WHERE Email = @email";
 
+            //Eingabe des Nutzers sollen mit Werte aus der Datenbank verglichen werden.
 
             using (MySqlCommand cmd = new MySqlCommand(qryRd, connection))
             {
@@ -164,10 +165,10 @@ namespace aktiensim
                     }
                 }
             }
-            //Eingabe des Nutzers sollen geholt werden
+            
 
         }
-
+        //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
         public string Hash(string input)
         {
             var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
@@ -305,7 +306,7 @@ namespace aktiensim
                         int konto = GetBenutzerKontostand(kontoId);
                         Kredite.CreditRating rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
                         int score = Convert.ToInt32(reader["KreditScore"]);
-                        return new Benutzer(name, vorname, email, benutzerId, konto, null, rating, score); // TODO
+                        return new Benutzer(name, vorname, email, benutzerId, konto, null, rating, score);
                     }
                 }
             }
