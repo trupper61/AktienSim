@@ -71,8 +71,8 @@ namespace aktiensim
                 cmd.ExecuteNonQuery();
             }
 
-            Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C);
-            user.AddKonto(BID, 0);
+            Benutzer user = new Benutzer(nName, vName, email, BID, 0, null, Kredite.CreditRating.C, 1);
+            user.AddKonto(BID, 0, Kredite.CreditRating.C, 1);
 
             string konIdQry = "SELECT KontoID FROM konto WHERE ID_Benutzer = @ID_Benutzer";
             string konIdUpdateQry = "UPDATE benutzer SET ID_Konto = @ID_Konto WHERE BenutzerID = @ID_Benutzer";
@@ -197,7 +197,7 @@ namespace aktiensim
                         string email = reader["Email"].ToString();
                         int kontoId = Convert.ToInt32(reader["ID_Konto"]);
                         int kontostand = GetBenutzerKontostand(kontoId);
-                        Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, Kredite.CreditRating.C);
+                        Benutzer user = new Benutzer(name, vorname, email, id, kontostand, null, Kredite.CreditRating.C, 1);
                         if (user != null)
                             benutzer.Add(user);
                     }
@@ -225,7 +225,7 @@ namespace aktiensim
                         string name = reader["Name"].ToString();
                         string vorname = reader["Vorname"].ToString();
                         string email = reader["Email"].ToString();
-                        return new Benutzer(name, vorname, email, id, 0, null, Kredite.CreditRating.C);
+                        return new Benutzer(name, vorname, email, id, 0, null, Kredite.CreditRating.C, 1);
                     }
                 }
             }
@@ -252,7 +252,7 @@ namespace aktiensim
             }
             if (email != null && givenEmail == email)
             {
-                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, Kredite.CreditRating.C);
+                Benutzer user = new Benutzer(name, vName, email, benutzerID, 0, null, Kredite.CreditRating.C, 1);
                 return user;
             }
             else
@@ -276,7 +276,7 @@ namespace aktiensim
                         string email = reader["Email"].ToString();
                         int kontoId = Convert.ToInt32(reader["ID_Konto"]);
                         int konto = GetBenutzerKontostand(kontoId);
-                        return new Benutzer(name, vorname, email, benutzerId, konto, null, Kredite.CreditRating.C); // TODO
+                        return new Benutzer(name, vorname, email, benutzerId, konto, null, Kredite.CreditRating.C, 1); // TODO
                     }
                 }
             }

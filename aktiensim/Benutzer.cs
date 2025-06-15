@@ -36,7 +36,6 @@ namespace aktiensim
 
         public void AddKonto(string ID_Benutzer, double Kontostand, Kredite.CreditRating rating, int score) //Nach Registrierung des Benutzers erhält der Benutzer ein Konto
         {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
             string qry = "INSERT INTO konto(ID_Benutzer, Kontostand, KreditRating, KreditScore) VALUES(@ID_Benutzer, @Kontostand, @rating, @score)";
 
             ID_Benutzer = this.benutzerID;
@@ -44,11 +43,14 @@ namespace aktiensim
 
             using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("ID_Benutzer", ID_Benutzer);
-                cmd.Parameters.AddWithValue("Kontostand", Kontostand);
-                cmd.Parameters.AddWithValue("rating", rating);
-                cmd.Parameters.AddWithValue("score", score);
-                cmd.ExecuteNonQuery();
+                using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
+                {
+                    cmd.Parameters.AddWithValue("ID_Benutzer", ID_Benutzer);
+                    cmd.Parameters.AddWithValue("Kontostand", Kontostand);
+                    cmd.Parameters.AddWithValue("rating", rating);
+                    cmd.Parameters.AddWithValue("score", score);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
@@ -97,15 +99,17 @@ namespace aktiensim
 
             using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("ID_Benutzer", this.benutzerID);
-                MySqlDataReader reader = cmd.ExecuteReader();
-
                 using (MySqlCommand cmd = new MySqlCommand(qry, myMan.Connection))
                 {
-                    this.kontoStand = Convert.ToInt32(reader["Kontostand"]);
-                    this.rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
-                    this.score = Convert.ToInt32(reader["KreditScore"]);
-                    cmd.Parameters.AddWithValue("ID_Benutzer", benutzer.benutzerID);
+                    cmd.Parameters.AddWithValue("ID_Benutzer", this.benutzerID);
+                    MySqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        this.kontoStand = Convert.ToInt32(reader["Kontostand"]);
+                        this.rating = (Kredite.CreditRating)Enum.Parse(typeof(Kredite.CreditRating), reader["KreditRating"].ToString());
+                        this.score = Convert.ToInt32(reader["KreditScore"]);
+                    }
                 }
                 return this.kontoStand;
             }

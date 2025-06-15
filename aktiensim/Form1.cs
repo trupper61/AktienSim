@@ -116,7 +116,7 @@ namespace aktiensim
                         {
                             using (var myMan = new MySqlManager())
                             {
-                                foreach(Benutzer benutzer in MySqlManager.Benutzerverwaltung.LadeAlleBenutzer()) 
+                                foreach(Benutzer benutzer in myMan.Benutzer.LadeAlleBenutzer()) 
                                 {
                                     List<Kredite> geloeschteKredite = new List<Kredite>();
 
@@ -319,10 +319,11 @@ namespace aktiensim
                         };
                         homePanel.Controls.Add(kreditaufnahme);
                         LoadActiveUser();
-
-                        Kredite.HoleKrediteAusDatenbank(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
-                        Kredite.RefreshDataGridView(aktiveKredite, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser));
-                        
+                        using (var myMan = new MySqlManager())
+                        {
+                            Kredite.HoleKrediteAusDatenbank(myMan.Benutzer.ReturnActiveUser(activeUser));
+                            Kredite.RefreshDataGridView(aktiveKredite, myMan.Benutzer.ReturnActiveUser(activeUser));
+                        }
                     };
                 };
 
@@ -1156,24 +1157,24 @@ namespace aktiensim
                 MessageBox.Show("Passwörter stimmen nicht überein!");
                 return;
             }
-            string passHash = MySqlManager.Benutzerverwaltung.Hash(password);
-            if (!email.Contains("@") || !email.Contains(".com"))
-            {
-                MessageBox.Show("Keine gültige Email!");
-                return;
-            }
-            if (nName.Any(char.IsDigit) || vName.Any(char.IsDigit))
-            {
-                MessageBox.Show("Ungültiger Name!");
-                return;
-            }
             using (var myMan = new MySqlManager())
             {
                 string passHash = myMan.Benutzer.Hash(password);
+                if (!email.Contains("@") || !email.Contains(".com"))
+                {
+                    MessageBox.Show("Keine gültige Email!");
+                    return;
+                }
+                if (nName.Any(char.IsDigit) || vName.Any(char.IsDigit))
+                {
+                    MessageBox.Show("Ungültiger Name!");
+                    return;
+                }
                 myMan.Benutzer.BenutzerAnlegen(email, vName, nName, passHash, BID, loginID, activeUser);
                 MessageBox.Show("Bitte, logen Sie sich ein");
                 registerPanel.Visible = false;
                 loginPanel.Visible = true;
+                
             }
         }
 
@@ -1268,7 +1269,8 @@ namespace aktiensim
         }
         public void ShowKreditPanel(DataGridView aktiveKredite)
         {
-            Kredite kredit = new Kredite(0, 0, 0, 0, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), 0);
+            LoadActiveUser();
+            Kredite kredit = new Kredite(0, 0, 0, 0, activeUser, 0);
             LoadActiveUser();
             kreditPanel.Controls.Clear();
             kreditPanel.Visible = true;
@@ -1303,22 +1305,22 @@ namespace aktiensim
             };
             kreditPanel.Controls.Add(auswahlLaufzeit);
 
-            if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D)
+            if (activeUser.rating == Kredite.CreditRating.D)
             {
                 auswahlMenge.Maximum = 2000;
                 auswahlLaufzeit.Maximum = 6;
             }
-            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.C)
+            else if (activeUser.rating == Kredite.CreditRating.C)
             {
                 auswahlMenge.Maximum = 5000;
                 auswahlLaufzeit.Maximum = 18;
             }
-            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.B)
+            else if (activeUser.rating == Kredite.CreditRating.B)
             {
                 auswahlMenge.Maximum = 7500;
                 auswahlLaufzeit.Maximum = 24;
             }
-            else if (MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.A)
+            else if (activeUser.rating == Kredite.CreditRating.A)
             {
                 auswahlMenge.Maximum = 10000;
                 auswahlLaufzeit.Maximum = 48;
@@ -1378,7 +1380,8 @@ namespace aktiensim
             kreditPanel.Controls.Add(kreditAufnehmen);
             kreditAufnehmen.Click += (q, w) =>
             {
-                if(MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).rating == Kredite.CreditRating.D && MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).kredite != null) 
+                LoadActiveUser();
+                if(activeUser.rating == Kredite.CreditRating.D && activeUser.kredite != null) 
                 {
                     MessageBox.Show("Du darfst aufgrund deines Credit-Ratings nicht mehr als 1 Kredit aufnehmen!");
                     kreditPanel.Visible = false;
@@ -1388,7 +1391,7 @@ namespace aktiensim
                     kredit.Betrag = (double)auswahlMenge.Value;
                     kredit.Restschuld = (double)auswahlMenge.Value * (1 + (double)kredit.bestimmeZinssatz() / 100);
                     kredit.Laufzeit = (int)auswahlLaufzeit.Value;
-                    kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser), aktiveKredite, kredit);
+                    kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, activeUser, aktiveKredite, kredit);
                 }
                 kreditPanel.Visible = false;
             };
