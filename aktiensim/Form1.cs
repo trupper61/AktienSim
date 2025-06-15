@@ -196,29 +196,19 @@ namespace aktiensim
                         AutoSize = true,
                         ForeColor = Color.Green,
                         BackColor = Color.Transparent,
-                        Font = new Font("Arial", 12),
-                        Location = new Point(0, y),
+                        Font = new Font("Arial", 16),
+                        Location = new Point(homePanel.Location.X + 20, y + 100),
                         Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GetKontoStand()}",
                     };
                     homePanel.Controls.Add(kontostand);
                     kontostand.BringToFront();
-
-                    Label schulden = new Label
-                    {
-                        AutoSize = true,
-                        ForeColor = Color.Red,
-                        Font = new Font("Arial", 12),
-                        Location = new Point(kontostand.Location.X, y + 30),
-                        Text = $"Ihre Schulden: TBD"
-                    };
-                    homePanel.Controls.Add(schulden);
 
                     Button kreditverwaltung = new Button
                     {
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(schulden.Location.X, schulden.Location.Y + 60),
+                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 60),
                         Text = $"Kredite Verwalten"
                     };
                     homePanel.Controls.Add(kreditverwaltung);
@@ -228,7 +218,7 @@ namespace aktiensim
                         AutoSize = true,
                         Size = new Size(100, 20),
                         Font = new Font("Arial", 12),
-                        Location = new Point(schulden.Location.X, schulden.Location.Y + 90),
+                        Location = new Point(kontostand.Location.X + 25, kontostand.Location.Y + 90),
                         Text = $"Umsätze"
                     };
                     homePanel.Controls.Add(umsaetze);
