@@ -90,6 +90,8 @@ namespace aktiensim
             string kreditAdd = "SELECT KreditID, Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit, Rate FROM kredite WHERE ID_Benutzer = @ID_Benutzer";
 
             List<Kredite> kredite = new List<Kredite>();
+
+            //Reader liest alle Zeilen der Tabelle und weist die Eigenschaften von Kredit die jeweiligen Werte zu.
             using (var MyMan = new MySqlManager()) 
             {
                 using (MySqlCommand cmds = new MySqlCommand(kreditAdd, MyMan.Connection))
@@ -110,7 +112,7 @@ namespace aktiensim
                     benutzer.kredite = kredite;
                 }
 
-                //Reader liest alle Zeilen der Tabelle und weist die Eigenschaften von Kredit die jeweiligen Werte zu.
+                
                 
             }
         }

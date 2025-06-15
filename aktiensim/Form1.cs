@@ -674,8 +674,6 @@ namespace aktiensim
             };
             Button nextWeekBtn = new Button
             {
-                //Text = "Nächste Woche...",
-                //Location = new Point(10, 50),
                 Width = 45,
                 Height = 45,
                 BackgroundImage = Properties.Resources.nxtButton2,
@@ -1292,7 +1290,7 @@ namespace aktiensim
 
             Benutzer aNutzer = activeUser;
             }
-        //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
+        
  
         public void ShowKaufPanel(Aktie aktie)
         {
