@@ -328,7 +328,7 @@ namespace aktiensim
                 string qryRd = "SELECT * FROM benutzer WHERE Email = @email";
                 string qryRdLogIn = "SELECT LoginID FROM logininfo WHERE Email = @email";
                 
-                using (MySqlConnection connection = new MySqlConnection(connectionString)) //Überprüfen, ob Email doppelt ist
+                using (MySqlConnection connection = new MySqlConnection(connectionString)) //Überprüfen, ob Email schon existiert
                 {
                     connection.Open();
                     using (MySqlCommand cmd = new MySqlCommand(qryRd, connection))
