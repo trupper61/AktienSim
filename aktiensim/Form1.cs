@@ -527,7 +527,7 @@ namespace aktiensim
 
                 TextBox depotTb = new TextBox()
                 {
-                    Location = new Point(200, 60)
+                    Location = new Point(15, 60)
                 };
                 homePanel.Controls.Add(depotTb);
 
