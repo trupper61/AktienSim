@@ -89,7 +89,35 @@ namespace aktiensim
                 homePanel.BackgroundImage = Properties.Resources.backround;
                 homePanel.Controls.Clear();
                 kreditPanel.Visible = false;
-                
+
+                PictureBox Logo = new PictureBox
+                {
+                    BackgroundImage = Properties.Resources.logo,
+                    Size = new Size(364, 128),
+                    Location = new Point(homePanel.Location.X / 2, homePanel.Location.Y / 2),
+                    BackColor = Color.Transparent,
+                    BackgroundImageLayout = ImageLayout.Stretch
+                };
+                homePanel.Controls.Add(Logo);
+
+                Button buttonLogout = new Button
+                {
+                    Size = new Size(50, 50),
+                    Location = new Point(440, 0),
+                    BackgroundImage = Properties.Resources.Logout
+                };
+                homePanel.Controls.Add(buttonLogout);
+                buttonLogout.Click += (l, p) =>
+                {
+                    InitLoginUi();
+                    activeUser = null;
+
+                    loginPanel.Visible = true;
+                    flowLayoutPanel.Visible = false;
+                    homePanel.Visible = false;
+                };
+                buttonLogout.BringToFront();
+
             };
             flowLayoutPanel.Controls.Add(homeBtn);
 
@@ -408,24 +436,6 @@ namespace aktiensim
                 };
                 homePanel.Controls.Add(backroundImage);
                 backroundImage.SendToBack();
-
-                Button buttonLogout = new Button
-                {
-                    Size = new Size(50, 50),
-                    Location = new Point(lb.Location.X + 280, lb.Location.Y - 130),
-                    BackgroundImage = Properties.Resources.Logout
-                };
-                homePanel.Controls.Add(buttonLogout);
-                buttonLogout.Click += (l, p) =>
-                {
-                    InitLoginUi();
-                    activeUser = null;
-                    
-                    loginPanel.Visible = true;
-                    flowLayoutPanel.Visible = false;
-                    homePanel.Visible = false;
-                };
-                buttonLogout.BringToFront();
             };
             flowLayoutPanel.Controls.Add(profileBtn);
 
@@ -1206,6 +1216,34 @@ namespace aktiensim
                 Kredite.HoleKrediteAusDatenbank(activeUser);
             }
             homePanel.Controls.Clear();
+            PictureBox Logo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(364, 128),
+                Location = new Point(homePanel.Location.X / 2, homePanel.Location.Y / 2),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            homePanel.Controls.Add(Logo);
+
+            Button buttonLogout = new Button
+            {
+                Size = new Size(50, 50),
+                Location = new Point(440, 0),
+                BackgroundImage = Properties.Resources.Logout
+            };
+            homePanel.Controls.Add(buttonLogout);
+            buttonLogout.Click += (l, p) =>
+            {
+                InitLoginUi();
+                activeUser = null;
+
+                loginPanel.Visible = true;
+                flowLayoutPanel.Visible = false;
+                homePanel.Visible = false;
+            };
+            buttonLogout.BringToFront();
+
             Benutzer aNutzer = activeUser;
             }
         //Credits: https://stackoverflow.com/questions/17292366/hashing-with-sha1-algorithm-in-c-sharp
