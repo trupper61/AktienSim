@@ -1389,7 +1389,7 @@ namespace aktiensim
             kreditAufnehmen.Click += (q, w) =>
             {
                 LoadActiveUser();
-                if(activeUser.rating == Kredite.CreditRating.D && activeUser.kredite != null) 
+                if(activeUser.rating == Kredite.CreditRating.D && activeUser.kredite.Count != 0) 
                 {
                     MessageBox.Show("Du darfst aufgrund deines Credit-Ratings nicht mehr als 1 Kredit aufnehmen!");
                     kreditPanel.Visible = false;
@@ -1636,6 +1636,7 @@ namespace aktiensim
             {
                 activeUser = myMan.Benutzer.ReturnActiveUser(activeUser);
                 activeUser.kontoStand = activeUser.GetKontoStand();
+                Kredite.HoleKrediteAusDatenbank(activeUser);
             }
         }
     }
