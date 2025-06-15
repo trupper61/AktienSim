@@ -30,7 +30,7 @@ namespace aktiensim
                     Depot userDepot = dv.GetUserDepot(Convert.ToInt32(activeUser.benutzerID)).FirstOrDefault();
                     cmd.Parameters.AddWithValue("@depot_id", userDepot.ID);
                     cmd.Parameters.AddWithValue("@zeitpunkt", DateTime.Now);
-                    activeUser.kontoStand -= anzahl * einzelpreis;
+                    activeUser.GeldAbziehen(anzahl * einzelpreis);
                     cmd.ExecuteNonQuery();
                 }
             }
