@@ -34,19 +34,19 @@ namespace aktiensim
 
         public static MySqlDataReader ExecuteNonQueryReader(string sql, params MySqlParameter[] parameters)
         {
-            string connString = "server=localhost;database=aktiensimdb;uid=root;password=\"\"";
-
-            MySqlConnection myconnection = new MySqlConnection(connString);
-            myconnection.Open();
-            using (MySqlCommand cmds = new MySqlCommand(sql, myconnection)) 
+            using(var MyMan = new MySqlManager()) 
             {
-                if(parameters != null) 
+                using (MySqlCommand cmds = new MySqlCommand(sql, MyMan.Connection))
                 {
-                    cmds.Parameters.AddRange(parameters);
+                    if (parameters != null)
+                    {
+                        cmds.Parameters.AddRange(parameters);
+                    }
+                    MySqlDataReader reader = cmds.ExecuteReader();
+                    return reader;
                 }
-                MySqlDataReader reader = cmds.ExecuteReader();
-                return reader;
             }
+            
         }
         public static int ExecuteInsertWithId(string sql, params MySqlParameter[] parameters)
         {
