@@ -83,6 +83,7 @@ namespace aktiensim
             };
             homeBtn.Click += (s, e) =>
             {
+                homePanel.BackgroundImage = Properties.Resources.backround;
                 homePanel.Controls.Clear();
                 kreditPanel.Visible = false;
                 Button nextDayBtn = new Button
@@ -146,6 +147,9 @@ namespace aktiensim
                 };
             };
             flowLayoutPanel.Controls.Add(homeBtn);
+
+            
+
             Button profileBtn = new Button
             {
                 Text = "Profile",
@@ -159,7 +163,7 @@ namespace aktiensim
                 kreditPanel.Visible = false;
                 int y = 10;
                 homePanel.Controls.Clear();
-
+                homePanel.BackgroundImage = null;
                 PictureBox profilbild = new PictureBox()
                 {
                     Size = new Size(80, 80),
@@ -190,14 +194,16 @@ namespace aktiensim
                 kontostandBild.MouseLeave += MouseEnterEffectKontoLeave;
                 kontostandBild.MouseClick += (p, l) => 
                 {
+                    homePanel.BackgroundImage = Properties.Resources.backround;
                     homePanel.Controls.Clear();
                     Label kontostand = new Label
                     {
                         AutoSize = true,
                         ForeColor = Color.Green,
                         BackColor = Color.Transparent,
-                        Font = new Font("Arial", 16),
-                        Location = new Point(homePanel.Location.X + 20, y + 100),
+                        Image = Properties.Resources.kontostand,
+                        Font = new Font("Arial", 16, FontStyle.Bold),
+                        Location = new Point(homePanel.Location.X + 35, y),
                         Text = $"Ihr Kontostand: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).GetKontoStand()}",
                     };
                     homePanel.Controls.Add(kontostand);
@@ -225,6 +231,7 @@ namespace aktiensim
 
                     kreditverwaltung.Click += (o, i) =>
                     {
+                        homePanel.BackgroundImage = Properties.Resources.backround;
                         homePanel.Controls.Clear();
 
                         Label kreditverwaltunglb = new Label()
@@ -288,12 +295,12 @@ namespace aktiensim
                 benutzerdatenBild.MouseClick += (p, l) =>
                 {
                     homePanel.Controls.Clear();
-
+                    homePanel.BackgroundImage = Properties.Resources.backround;
                     Label vorname = new Label
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y),
                         Text = $"Vorname: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).vorname}",
@@ -303,7 +310,7 @@ namespace aktiensim
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 20),
                         Text = $"Name: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).name}",
@@ -313,7 +320,7 @@ namespace aktiensim
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 12),
                         Location = new Point(0, y + 40),
                         Text = $"Email: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).email}",
@@ -323,7 +330,7 @@ namespace aktiensim
                     {
                         AutoSize = true,
                         ForeColor = Color.Black,
-                        BackColor = Color.Transparent,
+                        BackColor = Color.Wheat,
                         Font = new Font("Arial", 8),
                         Location = new Point(0, y + 330),
                         Text = $"BenutzerID: {MySqlManager.Benutzerverwaltung.ReturnActiveUser(activeUser).benutzerID}",
@@ -602,8 +609,19 @@ namespace aktiensim
                 Size = new Size(this.Size.Width - flowLayoutPanel.Width, this.Size.Height),
                 Location = new Point(flowLayoutPanel.Right, 0),
                 BackColor = Color.LightCyan,
-                Visible = false
+                Visible = false,
+                BackgroundImage = Properties.Resources.backround,
+                BackgroundImageLayout = ImageLayout.Stretch
             };
+            PictureBox registerLogo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(182, 64),
+                Location = new Point(0, 0),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            homePanel.Controls.Add(registerLogo);
             kaufPanel = new Panel
             {
                 Size = new Size(300, 200),
@@ -776,8 +794,19 @@ namespace aktiensim
             {
                 Size = this.ClientSize,
                 Location = new Point(0, 0),
-                BackColor = Color.LightBlue
+                BackColor = Color.LightBlue,
+                BackgroundImage = Properties.Resources.backround,
+                BackgroundImageLayout = ImageLayout.Stretch
             };
+            PictureBox registerLogo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(182, 64),
+                Location = new Point(400, 10),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            loginPanel.Controls.Add(registerLogo);
             Label loginLb = new Label
             {
                 Text = "Login",
@@ -868,8 +897,20 @@ namespace aktiensim
                 Size = this.ClientSize,
                 Location = new Point(0, 0),
                 BackColor = Color.LightGreen,
-                Visible = false
+                Visible = false,
+                BackgroundImage = Properties.Resources.backround,
+                BackgroundImageLayout = ImageLayout.Stretch
             };
+            PictureBox registerLogo = new PictureBox
+            {
+                BackgroundImage = Properties.Resources.logo,
+                Size = new Size(182, 64),
+                Location = new Point(400, 10),
+                BackColor = Color.Transparent,
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            registerPanel.Controls.Add(registerLogo);
+
             Label registerLabel = new Label
             {
                 Text = "Registrieren",
