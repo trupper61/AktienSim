@@ -541,7 +541,8 @@ namespace aktiensim
                 {
                     Size = new Size(80, 25),
                     Location = new Point(depotTb.Right + 15, 60),
-                    Text = "Depot erstellen"
+                    Text = "Depot erstellen",
+                    AutoSize = true
                 };
                 createDepot.Click += (h, i) =>
                 {
@@ -573,9 +574,13 @@ namespace aktiensim
                     BorderStyle = BorderStyle.FixedSingle
                 };
 
-                aktienImDepotPanel.Resize += (f, g) =>
+                homePanel.Resize += (f, g) =>
                 {
-                    aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+                    if (aktienImDepotPanel != null)
+                    {
+                        depotListBox.Size = new Size(homePanel.Width - depotListBox.Width, homePanel.Height - 120);
+                        aktienImDepotPanel.Size = new Size(homePanel.Width - depotListBox.Width - 50, homePanel.Height - 120);
+                    }
                 };
 
                 homePanel.Controls.Add(aktienImDepotPanel);
