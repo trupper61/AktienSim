@@ -1209,7 +1209,7 @@ namespace aktiensim
         {
             string email = loginEmailInput.Text;
             string password = loginPasswordInput.Text;
-
+            
             if (email == "" || password == "")
             {
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
@@ -1219,8 +1219,9 @@ namespace aktiensim
             {
                 myMan.Benutzer.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
             }
+
             LoadActiveUser();
-            if(activeUser != null) 
+            if (activeUser != null) 
             {
                 Kredite.HoleKrediteAusDatenbank(activeUser);
             }
@@ -1784,8 +1785,15 @@ namespace aktiensim
             using (var myMan = new MySqlManager())
             {
                 activeUser = myMan.Benutzer.ReturnActiveUser(activeUser);
-                activeUser.kontoStand = activeUser.GetKontoStand();
-                Kredite.HoleKrediteAusDatenbank(activeUser);
+                if (activeUser != null) 
+                {
+                    activeUser.kontoStand = activeUser.GetKontoStand();
+                    Kredite.HoleKrediteAusDatenbank(activeUser);
+                }
+                else 
+                {
+                    MessageBox.Show("Falsche Logindaten!");
+                }
             }
         }
     }
