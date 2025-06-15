@@ -632,9 +632,45 @@ namespace aktiensim
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             flowLayoutPanel.Controls.Add(nextDayBtn);
+            int value = 0;
             nextDayBtn.Click += (s2, e2) =>
             {
                 SimuliereNächstenTag();
+                value++;
+                if(value > 6) 
+                {
+                    using (var myMan = new MySqlManager())
+                    {
+                        foreach (Benutzer benutzer in myMan.Benutzer.LadeAlleBenutzer())
+                        {
+                            List<Kredite> geloeschteKredite = new List<Kredite>();
+
+                            foreach (Kredite kr in benutzer.kredite)
+                            {
+                                kr.Laufzeit--;
+                                kr.Restschuld -= kr.zuZahlendeRate;
+                                benutzer.GeldAbziehen(kr.zuZahlendeRate);
+                                kr.UpdateKreditStatus(kr);
+                                if (kr.Laufzeit > 0)
+                                {
+                                    geloeschteKredite.Add(kr);
+                                }
+                                else
+                                {
+                                    kr.KreditLoeschen();
+                                }
+
+                            }
+                            if (benutzer.kredite.Count == 0)
+                            {
+                                benutzer.GeldAbziehen(0);
+                            }
+                            benutzer.kredite = geloeschteKredite;
+                        }
+
+                    }
+                    value = 0;
+                }
             };
             Button nextWeekBtn = new Button
             {
@@ -907,7 +943,7 @@ namespace aktiensim
             {
                 Text = "Login",
                 Font = new Font("Arial", 16),
-                Location = new Point(150, 20),
+                Location = new Point(260, 20),
                 AutoSize = true
             };
             loginPanel.Controls.Add(loginLb);
@@ -915,7 +951,7 @@ namespace aktiensim
             {
                 Text = "Email...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 60),
+                Location = new Point(200, 90),
                 Size = new Size(200, 22)
             };
             loginEmailInput.GotFocus += (s, e) =>
@@ -939,7 +975,7 @@ namespace aktiensim
             {
                 Text = "Passwort...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 90),
+                Location = new Point(200, 120),
                 Size = new Size(200, 22),
             };
             loginPasswordInput.GotFocus += (s, e) =>
@@ -962,7 +998,7 @@ namespace aktiensim
             Button loginBtn = new Button
             {
                 Text = "Login",
-                Location = new Point(100, 130),
+                Location = new Point(200, 160),
                 BackColor = Color.SteelBlue,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -972,7 +1008,7 @@ namespace aktiensim
             Button registerBtn = new Button
             {
                 Text = "Hier, zum Registrieren",
-                Location = new Point(100, 170),
+                Location = new Point(200, 200),
                 Size = new Size(200, 30),
                 BackColor = Color.SeaGreen,
                 ForeColor = Color.White,
@@ -1011,7 +1047,7 @@ namespace aktiensim
             {
                 Text = "Registrieren",
                 Font = new Font("Arial", 16),
-                Location = new Point(150, 20),
+                Location = new Point(235, 20),
                 AutoSize = true
             };
             registerPanel.Controls.Add(registerLabel);
@@ -1019,7 +1055,7 @@ namespace aktiensim
             {
                 Text = "Vorname...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 60),
+                Location = new Point(200, 60),
                 Size = new Size(200, 22)
             };
             vNameInput.GotFocus += (s, e) =>
@@ -1043,7 +1079,7 @@ namespace aktiensim
             {
                 Text = "Nachname...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 90),
+                Location = new Point(200, 90),
                 Size = new Size(200, 22)
             };
             nNameInput.GotFocus += (s, e) =>
@@ -1067,7 +1103,7 @@ namespace aktiensim
             {
                 Text = "Email...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 120),
+                Location = new Point(200, 120),
                 Size = new Size(200, 22)
             };
             emailInput.GotFocus += (s, e) =>
@@ -1091,7 +1127,7 @@ namespace aktiensim
             {
                 Text = "Passwort...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 150),
+                Location = new Point(200, 150),
                 Size = new Size(200, 22)
             };
             passwdInput.GotFocus += (s, e) =>
@@ -1117,7 +1153,7 @@ namespace aktiensim
             {
                 Text = "Passwort wiederholen...",
                 ForeColor = Color.Gray,
-                Location = new Point(100, 180),
+                Location = new Point(200, 180),
                 Size = new Size(200, 22)
             };
             passwdCheckInput.GotFocus += (s, e) =>
@@ -1140,7 +1176,7 @@ namespace aktiensim
             Button registerBtn = new Button
             {
                 Text = "Registrieren",
-                Location = new Point(100, 220),
+                Location = new Point(200, 220),
                 BackColor = Color.SeaGreen,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -1150,7 +1186,7 @@ namespace aktiensim
             Button loginBtn = new Button
             {
                 Text = "Zurück zum Login",
-                Location = new Point(100, 260),
+                Location = new Point(200, 260),
                 Size = new Size(200, 30),
                 BackColor = Color.SteelBlue,
                 ForeColor = Color.White,
