@@ -90,24 +90,29 @@ namespace aktiensim
             string kreditAdd = "SELECT KreditID, Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit, Rate FROM kredite WHERE ID_Benutzer = @ID_Benutzer";
 
             List<Kredite> kredite = new List<Kredite>();
-
-            MySqlDataReader reader = SqlConnection.ExecuteNonQueryReader(kreditAdd,
-                new MySqlParameter("@ID_Benutzer", benutzer.benutzerID));
-
-            //Reader liest alle Zeilen der Tabelle und weist die Eigenschaften von Kredit die jeweiligen Werte zu.
-            while (reader.Read())
+            using (var MyMan = new MySqlManager()) 
             {
-                Kredite kredit = new Kredite(0, 0, 0, 0, benutzer, 0);
-                kredit.Betrag = Convert.ToDouble(reader["Betrag"]);
-                kredit.Zinssatz = Convert.ToInt32(reader["Zinssatz"]);
-                kredit.Restschuld = Convert.ToDouble(reader["Restschuld"]);
-                kredit.Laufzeit = Convert.ToInt32(reader["Laufzeit"]);
-                kredit.zuZahlendeRate = Convert.ToInt32(reader["Rate"]);
-                kredit.KreditID = Convert.ToInt32(reader["KreditID"]);
-                kredite.Add(kredit);
+                using (MySqlCommand cmds = new MySqlCommand(kreditAdd, MyMan.Connection))
+                {
+                    cmds.Parameters.AddWithValue("ID_Benutzer", benutzer.benutzerID);
+                    MySqlDataReader reader = cmds.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Kredite kredit = new Kredite(0, 0, 0, 0, benutzer, 0);
+                        kredit.Betrag = Convert.ToDouble(reader["Betrag"]);
+                        kredit.Zinssatz = Convert.ToInt32(reader["Zinssatz"]);
+                        kredit.Restschuld = Convert.ToDouble(reader["Restschuld"]);
+                        kredit.Laufzeit = Convert.ToInt32(reader["Laufzeit"]);
+                        kredit.zuZahlendeRate = Convert.ToInt32(reader["Rate"]);
+                        kredit.KreditID = Convert.ToInt32(reader["KreditID"]);
+                        kredite.Add(kredit);
+                    }
+                    benutzer.kredite = kredite;
+                }
+
+                //Reader liest alle Zeilen der Tabelle und weist die Eigenschaften von Kredit die jeweiligen Werte zu.
+                
             }
-            benutzer.kredite = kredite;
-            
         }
 
         public void UpdateKreditStatus(Kredite kredit) //Für die Simulierung einer Woche
