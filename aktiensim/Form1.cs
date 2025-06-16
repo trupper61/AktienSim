@@ -1670,7 +1670,7 @@ namespace aktiensim
                     myMan.Depot.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
                     depots = myMan.Depot.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
                 }
-                if (benutzer.GetKontoStand() < 15)
+                if (benutzer.GetKontoStand() < 15) // Unterstützungs geld
                     benutzer.GeldHinzufuegen(20.00);
                 foreach(var depot in depots)
                 {
@@ -1731,14 +1731,14 @@ namespace aktiensim
                 foreach (var aktie in stonks)
                 {
                     nachfrage.TryGetValue(aktie.id, out int delta);
-                    double prozent = Math.Min(5, Math.Abs(delta) * 0.01);
-                    if (delta > 0)
+                    double prozent = Math.Min(5, Math.Abs(delta) * 0.01); // max 5% veränderung
+                    if (delta > 0) // steigt
                     {
                         aktie.CurrentValue *= (double)(1 + prozent);
                         AddEreignisse(aktie);
                         aktie.SimulateNextStep(aktie.CurrentValue);
                     }
-                    else if (delta < 0)
+                    else if (delta < 0) // fällt
                     {
                         aktie.CurrentValue *= (double)(1 - prozent);
                         AddEreignisse(aktie);

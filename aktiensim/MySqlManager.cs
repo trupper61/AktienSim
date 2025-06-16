@@ -33,6 +33,11 @@ namespace aktiensim
             Benutzer = new Benutzerverwaltung(Connection);
             Ereignis = new EreignisVerwaltung(Connection);
         }
+        /// <summary>
+        /// Versucht, Datenbankverbindung mehrfach aufzubauen bei Serverüberlastungen
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         private MySqlConnection CreateConnectionWithRetry()
         {
             int retries = 0;
@@ -54,7 +59,7 @@ namespace aktiensim
                 }
             }
         }
-        public void Dispose()
+        public void Dispose() // Ressourcen Freigabe
         {
             Connection?.Close();
             Connection?.Dispose();
