@@ -199,7 +199,7 @@ namespace aktiensim
         public List<Benutzer> LadeAlleBenutzer()
         {
             List<Benutzer> benutzer = new List<Benutzer>();
-            string query = "SELECT BenutzerID, Name, Vorname, Email, ID_Konto, KreditRating, KreditScore FROM benutzer, konto";
+            string query = "SELECT b.BenutzerID, b.Name, b.Vorname, b.Email, b.ID_Konto, k.KreditRating, k.KreditScore FROM benutzer b JOIN konto k ON b.ID_Konto = k.KontoID";
             using (var MyMan = new MySqlManager()) 
             {
                 using (MySqlCommand cmd = new MySqlCommand(query, MyMan.Connection))

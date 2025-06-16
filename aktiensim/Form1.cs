@@ -762,7 +762,7 @@ namespace aktiensim
                 }
                 using (var myMan = new MySqlManager())
                 {
-                    var treffer = myMan.Benutzer.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe) || b.name.ToLower().Contains(eingabe.ToLower()) || b.vorname.ToLower().Contains(eingabe.ToLower()));
+                    var treffer = myMan.Benutzer.LadeAlleBenutzer().Where(b => b.email.ToLower().Contains(eingabe));
                     if (treffer.Count() == 0)
                     {
                         vorschlaegeLst.Visible = false;
