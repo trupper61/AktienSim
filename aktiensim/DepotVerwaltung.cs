@@ -17,14 +17,16 @@ namespace aktiensim
         public void CreateDepot(string name, int benutzerID)
         {
             string query = "INSERT INTO depot (benutzer_id, name, erstellt) VALUES(@benutzer_id, @name, @erstellt)";
-            using (MySqlCommand cmd = new MySqlCommand(query, connection))
+            using (var myMan = new MySqlManager())
             {
-                cmd.Parameters.AddWithValue("@benutzer_id", benutzerID);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@erstellt", DateTime.Now);
-                cmd.ExecuteNonQuery();
+                using (MySqlCommand cmd = new MySqlCommand(query, myMan.Connection))
+                {
+                    cmd.Parameters.AddWithValue("@benutzer_id", benutzerID);
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@erstellt", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
             }
-
         }
         public List<Depot> GetUserDepot(int benutzerID)
         {
