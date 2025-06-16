@@ -44,7 +44,7 @@ namespace aktiensim
                     conn.Open();
                     return conn;
                 }
-                catch (MySqlException ex) when (ex.Number == 1040) // "Too many connections"
+                catch (MySqlException ex) when (ex.Number == 1040)
                 {
                     retries++;
                     if (retries >= maxRetries)
