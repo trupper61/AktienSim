@@ -1,0 +1,2 @@
+1. Datenbank namens "aktiensimdb" erstellen
+2. Die Sql-Datei im Projektordner in die Datenbank importieren 
