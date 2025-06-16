@@ -1800,9 +1800,17 @@ namespace aktiensim
         {
             using (var myMan = new MySqlManager())
             {
+
                 activeUser = myMan.Benutzer.ReturnActiveUser(activeUser);
-                activeUser.kontoStand = activeUser.GetKontoStand();
-                Kredite.HoleKrediteAusDatenbank(activeUser);
+                if (activeUser != null)
+                {
+                    activeUser.kontoStand = activeUser.GetKontoStand();
+                    Kredite.HoleKrediteAusDatenbank(activeUser);
+                }
+                else
+                {
+                    MessageBox.Show("Falsche Logindaten!");
+                }
             }
         }
     }
