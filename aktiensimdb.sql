@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 16. Jun 2025 um 00:23
+-- Erstellungszeit: 16. Jun 2025 um 02:53
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -40,11 +40,14 @@ CREATE TABLE `aktiendaten` (
 --
 
 INSERT INTO `aktiendaten` (`aktienID`, `Firma`, `Name`, `Wert`, `letzterschluss`) VALUES
-(1, 'DAX', 'Deutscher Aktienindex', 89.86, 71.69),
-(2, 'DHL', 'Deutsche Post DHL Group', 0.24, 0.25),
-(3, 'LHA', 'Lufthansa AG', 0.13, 0.14),
-(4, 'SAP', 'SAP SE', 22.21, 24.08),
-(5, 'BMW', 'Bayerische Motoren Werke AG', 15.46, 12.56);
+(1, 'SAP SE', 'SAP', 22.81, 22.81),
+(2, 'Bayerische Motoren Werke AG', 'BMW', 6.60, 6.60),
+(3, 'Volkswagen AG', 'Volkswagen', 109.57, 109.57),
+(4, 'Deutsche Bank AG', 'DeutscheBank', 92.64, 92.64),
+(5, 'Siemens AG', 'Siemens', 161.69, 161.69),
+(6, 'Deutsche Post AG', 'DeutschePost', 45.02, 45.02),
+(7, 'Merck KGaA', 'Merck', 133.38, 133.38),
+(8, 'Microsoft Corporation', 'Microsoft', 301.24, 301.24);
 
 -- --------------------------------------------------------
 
@@ -67,21 +70,15 @@ CREATE TABLE `benutzer` (
 --
 
 INSERT INTO `benutzer` (`BenutzerID`, `ID_Konto`, `ID_Login`, `Name`, `Vorname`, `Email`, `MitgliedSeit`) VALUES
-(1, 0, 1, 'Mustermann', 'Max', '0@0.com', '2025-06-15'),
-(2, 0, 2, 'Mancini', 'Lela', 'LelaTMancini@gmail.com', '2025-06-16'),
-(3, 0, 3, 'Hobson', 'Rodney', 'rodney.hobson@gmail.com', '2025-06-16'),
-(4, 0, 4, 'Butler', 'Andrew', 'andrew.butler@gmail.com', '2025-06-16'),
-(5, 0, 5, 'Tanner', 'Kevin', 'kevin.tanner@gmail.com', '2025-06-16'),
-(6, 0, 6, 'Wright', 'Allen', 'allen.wright@gmail.com', '2025-06-16'),
-(7, 0, 7, 'Castillo', 'Arthur', 'arthur.castillo@gmail.com', '2025-06-16'),
-(8, 0, 8, 'Busch', 'Jörg', 'jörg.busch@gmail.com', '2025-06-16'),
-(9, 0, 9, 'Pfeifer', 'Uta', 'uta.pfeifer@gmail.com', '2025-06-16'),
-(10, 0, 10, 'Luft', 'Christina', 'christina.luft@gmail.com', '2025-06-16'),
-(11, 0, 11, 'Anrooji', 'Quin', 'quin.anroji@gmail.com', '2025-06-16'),
-(12, 0, 12, 'Hanekamp', 'Alfredo', 'alfredo.hanekamp@gmail.com', '2025-06-16'),
-(13, 0, 13, 'Boekestijn', 'Yoep', 'yoep.boekestijn@gmail.com', '2025-06-16'),
-(14, 0, 14, 'Deslauriers', 'Marmion', 'marmion.deslauriers@gmail.com', '2025-06-16'),
-(15, 0, 15, 'Frappier', 'Adélaïde ', 'adelaide.frappier@gmail.com', '2025-06-16');
+(1, 1, 1, 'Mustermann', 'Max', '0@0.com', '2025-06-15'),
+(2, 2, 2, 'Mancini', 'Lela', 'LelaTMancini@gmail.com', '2025-06-16'),
+(3, 3, 3, 'Hobson', 'Rodney', 'rodney.hobson@gmail.com', '2025-06-16'),
+(4, 4, 4, 'Butler', 'Andrew', 'andrew.butler@gmail.com', '2025-06-16'),
+(5, 5, 5, 'Tanner', 'Kevin', 'kevin.tanner@gmail.com', '2025-06-16'),
+(6, 6, 6, 'Wright', 'Allen', 'allen.wright@gmail.com', '2025-06-16'),
+(7, 7, 7, 'Castillo', 'Arthur', 'arthur.castillo@gmail.com', '2025-06-16'),
+(8, 8, 8, 'Busch', 'Jörg', 'jörg.busch@gmail.com', '2025-06-16'),
+(9, 9, 9, 'Pfeifer', 'Uta', 'uta.pfeifer@gmail.com', '2025-06-16');
 
 -- --------------------------------------------------------
 
@@ -95,13 +92,6 @@ CREATE TABLE `depot` (
   `name` varchar(100) DEFAULT NULL,
   `erstellt` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Daten für Tabelle `depot`
---
-
-INSERT INTO `depot` (`id`, `benutzer_id`, `name`, `erstellt`) VALUES
-(5, 1, 'Standard', '2025-06-15 23:02:36');
 
 -- --------------------------------------------------------
 
@@ -152,21 +142,15 @@ CREATE TABLE `konto` (
 --
 
 INSERT INTO `konto` (`KontoID`, `ID_Benutzer`, `Kontostand`, `KreditRating`, `KreditScore`) VALUES
-(1, 1, 115.00, 'C', 21),
-(2, 2, 0.00, '2', 50),
-(3, 3, 0.00, '2', 50),
-(4, 4, 0.00, '2', 50),
-(5, 5, 0.00, '2', 50),
-(6, 6, 0.00, '2', 50),
-(7, 7, 0.00, '2', 50),
-(8, 8, 0.00, '2', 50),
-(9, 9, 0.00, '2', 50),
-(10, 10, 0.00, '2', 50),
-(11, 11, 0.00, '2', 50),
-(12, 12, 0.00, '2', 50),
-(13, 13, 0.00, '2', 50),
-(14, 14, 0.00, '2', 50),
-(15, 15, 0.00, '2', 50);
+(1, 1, 0.00, 'A', 4110),
+(2, 2, 15.00, 'A', 4120),
+(3, 3, 15.00, 'A', 4120),
+(4, 4, 38.00, 'A', 4120),
+(5, 5, 253.00, 'A', 4120),
+(6, 6, 378.00, 'A', 4120),
+(7, 7, 96.00, 'A', 4120),
+(8, 8, 87.00, 'A', 4120),
+(9, 9, 47.00, 'A', 4120);
 
 -- --------------------------------------------------------
 
@@ -183,13 +167,6 @@ CREATE TABLE `kredite` (
   `Laufzeit` int(10) NOT NULL,
   `Rate` double(30,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Daten für Tabelle `kredite`
---
-
-INSERT INTO `kredite` (`KreditID`, `ID_Benutzer`, `Betrag`, `Zinssatz`, `Restschuld`, `Laufzeit`, `Rate`) VALUES
-(0, 1, 114.00, 25, 142.50, 4, 35.62);
 
 -- --------------------------------------------------------
 
@@ -217,13 +194,7 @@ INSERT INTO `logininfo` (`Email`, `ID_Benutzer`, `LoginID`, `passwort`) VALUES
 ('allen.wright@gmail.com', 6, 6, '02278623a43887406af4d60e0fcefa0d6e075954'),
 ('arthur.castillo@gmail.com', 7, 7, '87aaf72b44f84a845fd6feedfeaf2df99081c4dc'),
 ('jörg.busch@gmail.com', 8, 8, '4c25a2056f20d67d3aff6ec5acb0d6fc2ab18875'),
-('uta.pfeifer@gmail.com', 9, 9, 'a5d7dbe28c08abf1306577b0005bbf2f4da4634c'),
-('christina.luft@gmail.com', 10, 10, '5928759af61480c7ab65eedc21fe3923fab77046'),
-('quin.anroji@gmail.com', 11, 11, 'fed5ad14737604c9ad27b02dcb533acd9e9818a8'),
-('alfredo.hanekamp@gmail.com', 12, 12, 'ff24236570e1d80f635f848df5239fb9f85a4dc5'),
-('yoep.boekestijn@gmail.com', 13, 13, 'e4f587c3f1219e466304f37a9ee2e780098408ce'),
-('marmion.deslauriers@gmail.com', 14, 14, '31900e5186741731f175e076498196ace3ada9bd'),
-('adelaide.frappier@gmail.com', 15, 15, '95433d603f0f301b4e0c8db2720ee055cc1bcec1');
+('uta.pfeifer@gmail.com', 9, 9, 'a5d7dbe28c08abf1306577b0005bbf2f4da4634c');
 
 -- --------------------------------------------------------
 
@@ -240,14 +211,6 @@ CREATE TABLE `transaktion` (
   `zeitpunkt` datetime DEFAULT NULL,
   `depot_ID` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Daten für Tabelle `transaktion`
---
-
-INSERT INTO `transaktion` (`id`, `aktie_ID`, `typ`, `anzahl`, `einzelpreis`, `zeitpunkt`, `depot_ID`) VALUES
-(1, 2, 'Kauf', 0, 0.22, '2025-06-15 23:23:13', 5),
-(2, 4, 'Kauf', 2, 19.45, '2025-06-15 23:40:25', 5);
 
 -- --------------------------------------------------------
 
@@ -298,6 +261,12 @@ ALTER TABLE `konto`
   ADD PRIMARY KEY (`KontoID`);
 
 --
+-- Indizes für die Tabelle `kredite`
+--
+ALTER TABLE `kredite`
+  ADD PRIMARY KEY (`KreditID`);
+
+--
 -- Indizes für die Tabelle `logininfo`
 --
 ALTER TABLE `logininfo`
@@ -325,19 +294,19 @@ ALTER TABLE `ueberweisung`
 -- AUTO_INCREMENT für Tabelle `aktiendaten`
 --
 ALTER TABLE `aktiendaten`
-  MODIFY `aktienID` int(25) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `aktienID` int(25) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT für Tabelle `benutzer`
 --
 ALTER TABLE `benutzer`
-  MODIFY `BenutzerID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `BenutzerID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT für Tabelle `depot`
 --
 ALTER TABLE `depot`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `ereignisse`
@@ -349,19 +318,25 @@ ALTER TABLE `ereignisse`
 -- AUTO_INCREMENT für Tabelle `konto`
 --
 ALTER TABLE `konto`
-  MODIFY `KontoID` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `KontoID` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT für Tabelle `kredite`
+--
+ALTER TABLE `kredite`
+  MODIFY `KreditID` int(30) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `logininfo`
 --
 ALTER TABLE `logininfo`
-  MODIFY `LoginID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `LoginID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT für Tabelle `transaktion`
 --
 ALTER TABLE `transaktion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `ueberweisung`
