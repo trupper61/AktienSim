@@ -66,6 +66,7 @@ namespace aktiensim
         {
             string kreditAdd = "INSERT INTO kredite(Betrag, ID_Benutzer, Zinssatz, Restschuld, Laufzeit, Rate) VALUES (@betrag, @ID_Benutzer, @zinssatz, @restschuld, @laufzeit, @Rate); SELECT LAST_INSERT_ID();";
 
+
             kredit.zuZahlendeRate = kredit.Restschuld / kredit.Laufzeit;
 
             int neueId = SqlConnection.ExecuteInsertWithId(kreditAdd,

@@ -50,17 +50,12 @@ namespace aktiensim
 {
     new Aktie("SAP", "SAP SE", 125.45, 1),
     new Aktie("BMW", "Bayerische Motoren Werke AG", 98.30, 2),
-    new Aktie("BASFn", "BASF SE", 51.90, 3),
     new Aktie("Volkswagen", "Volkswagen AG", 118.70, 4),
     new Aktie("DeutscheBank", "Deutsche Bank AG", 118.70, 5),
     new Aktie ("Siemens", "Siemens AG", 143.10, 6),
-    new Aktie("Allianz", "Allianz SE", 242.80, 7),
-    new Aktie("Adidas", "Adidas AG", 170.25, 8),
     new Aktie("DeutschePost", "Deutsche Post AG", 42.60, 9),
     new Aktie("Merck", "Merck KGaA", 158.40, 10),
-    new Aktie("Apple", "Apple Inc.", 192.25, 11),
     new Aktie("Microsoft", "Microsoft Corporation", 328.10, 12),
-    new Aktie("Samsung", "Samsung Electronics", 65.10, 13)
 };
             using (var myMan = new MySqlManager())
             {
@@ -652,45 +647,9 @@ namespace aktiensim
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             flowLayoutPanel.Controls.Add(nextDayBtn);
-            int value = 0;
             nextDayBtn.Click += (s2, e2) =>
             {
                 SimuliereNächstenTag();
-                value++;
-                if(value > 6) 
-                {
-                    using (var myMan = new MySqlManager())
-                    {
-                        foreach (Benutzer benutzer in myMan.Benutzer.LadeAlleBenutzer())
-                        {
-                            List<Kredite> geloeschteKredite = new List<Kredite>();
-
-                            foreach (Kredite kr in benutzer.kredite)
-                            {
-                                kr.Laufzeit--;
-                                kr.Restschuld -= kr.zuZahlendeRate;
-                                benutzer.GeldAbziehen(kr.zuZahlendeRate);
-                                kr.UpdateKreditStatus(kr);
-                                if (kr.Laufzeit > 0)
-                                {
-                                    geloeschteKredite.Add(kr);
-                                }
-                                else
-                                {
-                                    kr.KreditLoeschen();
-                                }
-
-                            }
-                            if (benutzer.kredite.Count == 0)
-                            {
-                                benutzer.GeldAbziehen(0);
-                            }
-                            benutzer.kredite = geloeschteKredite;
-                        }
-
-                    }
-                    value = 0;
-                }
             };
             Button nextWeekBtn = new Button
             {
@@ -963,7 +922,7 @@ namespace aktiensim
             {
                 Text = "Login",
                 Font = new Font("Arial", 16),
-                Location = new Point(260, 20),
+                Location = new Point(150, 20),
                 AutoSize = true
             };
             loginPanel.Controls.Add(loginLb);
@@ -971,7 +930,7 @@ namespace aktiensim
             {
                 Text = "Email...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 90),
+                Location = new Point(100, 60),
                 Size = new Size(200, 22)
             };
             loginEmailInput.GotFocus += (s, e) =>
@@ -995,7 +954,7 @@ namespace aktiensim
             {
                 Text = "Passwort...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 120),
+                Location = new Point(100, 90),
                 Size = new Size(200, 22),
             };
             loginPasswordInput.GotFocus += (s, e) =>
@@ -1018,7 +977,7 @@ namespace aktiensim
             Button loginBtn = new Button
             {
                 Text = "Login",
-                Location = new Point(200, 160),
+                Location = new Point(100, 130),
                 BackColor = Color.SteelBlue,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -1028,7 +987,7 @@ namespace aktiensim
             Button registerBtn = new Button
             {
                 Text = "Hier, zum Registrieren",
-                Location = new Point(200, 200),
+                Location = new Point(100, 170),
                 Size = new Size(200, 30),
                 BackColor = Color.SeaGreen,
                 ForeColor = Color.White,
@@ -1067,7 +1026,7 @@ namespace aktiensim
             {
                 Text = "Registrieren",
                 Font = new Font("Arial", 16),
-                Location = new Point(235, 20),
+                Location = new Point(150, 20),
                 AutoSize = true
             };
             registerPanel.Controls.Add(registerLabel);
@@ -1075,7 +1034,7 @@ namespace aktiensim
             {
                 Text = "Vorname...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 60),
+                Location = new Point(100, 60),
                 Size = new Size(200, 22)
             };
             vNameInput.GotFocus += (s, e) =>
@@ -1099,7 +1058,7 @@ namespace aktiensim
             {
                 Text = "Nachname...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 90),
+                Location = new Point(100, 90),
                 Size = new Size(200, 22)
             };
             nNameInput.GotFocus += (s, e) =>
@@ -1123,7 +1082,7 @@ namespace aktiensim
             {
                 Text = "Email...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 120),
+                Location = new Point(100, 120),
                 Size = new Size(200, 22)
             };
             emailInput.GotFocus += (s, e) =>
@@ -1147,7 +1106,7 @@ namespace aktiensim
             {
                 Text = "Passwort...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 150),
+                Location = new Point(100, 150),
                 Size = new Size(200, 22)
             };
             passwdInput.GotFocus += (s, e) =>
@@ -1173,7 +1132,7 @@ namespace aktiensim
             {
                 Text = "Passwort wiederholen...",
                 ForeColor = Color.Gray,
-                Location = new Point(200, 180),
+                Location = new Point(100, 180),
                 Size = new Size(200, 22)
             };
             passwdCheckInput.GotFocus += (s, e) =>
@@ -1196,7 +1155,7 @@ namespace aktiensim
             Button registerBtn = new Button
             {
                 Text = "Registrieren",
-                Location = new Point(200, 220),
+                Location = new Point(100, 220),
                 BackColor = Color.SeaGreen,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -1206,7 +1165,7 @@ namespace aktiensim
             Button loginBtn = new Button
             {
                 Text = "Zurück zum Login",
-                Location = new Point(200, 260),
+                Location = new Point(100, 260),
                 Size = new Size(200, 30),
                 BackColor = Color.SteelBlue,
                 ForeColor = Color.White,
@@ -1265,7 +1224,7 @@ namespace aktiensim
         {
             string email = loginEmailInput.Text;
             string password = loginPasswordInput.Text;
-            
+
             if (email == "" || password == "")
             {
                 MessageBox.Show("Alle Felder wurden nicht ausgefüllt!");
@@ -1275,9 +1234,8 @@ namespace aktiensim
             {
                 myMan.Benutzer.BenutzerEinloggen(email, password, loginEmailInput.Text, loginPasswordInput.Text, activeUser, loginPanel, flowLayoutPanel, homePanel);
             }
-
             LoadActiveUser();
-            if (activeUser != null) 
+            if(activeUser != null) 
             {
                 Kredite.HoleKrediteAusDatenbank(activeUser);
             }
@@ -1586,9 +1544,7 @@ namespace aktiensim
                     kredit.KreditHinzufuegen(kredit.Betrag, kredit.Zinssatz, kredit.Restschuld, kredit.Laufzeit, activeUser, aktiveKredite, kredit);
                 }
                 kreditPanel.Visible = false;
-            };
-            
-            
+            }; 
         }
         public void ShowVerkaufPanel(Transaktion transaktion)
         {
@@ -1720,15 +1676,22 @@ namespace aktiensim
                     myMan.Depot.CreateDepot("Standarddepot", Convert.ToInt32(benutzer.benutzerID));
                     depots = myMan.Depot.GetUserDepot(Convert.ToInt32(benutzer.benutzerID));
                 }
+                if (benutzer.GetKontoStand() < 15)
+                    benutzer.GeldHinzufuegen(20.00);
                 foreach(var depot in depots)
                 {
-                    foreach (var aktie in stonks)
-                    {
-                        int choice = rand.Next(0, 3); // 0 = nichts, 1 = kaufen, 2 = verkaufen
-                        switch (choice)
+                        int maxAktionProTag = 2;
+                        int aktionHeute = 0;
+                        foreach (var aktie in stonks)
                         {
+                            int choice = rand.Next(0, 3); // 0 = nichts, 1 = kaufen, 2 = verkaufen
+                            if (aktionHeute >= maxAktionProTag) break;
+                            switch (choice)
+                            {
                             case 1:
-                                double mengeKauf = Math.Round(rand.NextDouble() * 5, 2);
+                                int mengeKauf = Convert.ToInt32(rand.NextDouble() * 5);
+                                    if (mengeKauf < 2)
+                                        continue;
                                 double kosten = mengeKauf * aktie.CurrentValue;
                                 if(benutzer.kontoStand >= kosten)
                                 {
@@ -1744,9 +1707,13 @@ namespace aktiensim
                                 {
                                     var trans = transaktion[rand.Next(transaktion.Count)];
                                     double verkaufsMenge = Math.Min(trans.anzahl, Math.Round(rand.NextDouble() * 5, 2));
-                                    if (verkaufsMenge > 0)
+                                    if (verkaufsMenge > 0.5)
                                     {
                                         double erloes = verkaufsMenge * aktie.CurrentValue;
+                                        if (trans.anzahl - verkaufsMenge <= 2) 
+                                        {
+                                            verkaufsMenge = trans.anzahl;
+                                        } 
                                         trans.anzahl -= verkaufsMenge;
                                         if (trans.anzahl <= 0)
                                         {
@@ -1763,6 +1730,7 @@ namespace aktiensim
                                 }
                                 break;
                         }
+                            aktionHeute++;
                     }
                 }
             }
@@ -1839,15 +1807,8 @@ namespace aktiensim
             using (var myMan = new MySqlManager())
             {
                 activeUser = myMan.Benutzer.ReturnActiveUser(activeUser);
-                if (activeUser != null) 
-                {
-                    activeUser.kontoStand = activeUser.GetKontoStand();
-                    Kredite.HoleKrediteAusDatenbank(activeUser);
-                }
-                else 
-                {
-                    MessageBox.Show("Falsche Logindaten!");
-                }
+                activeUser.kontoStand = activeUser.GetKontoStand();
+                Kredite.HoleKrediteAusDatenbank(activeUser);
             }
         }
     }
